@@ -9,8 +9,62 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as SummaryRouteImport } from './routes/summary'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as MemoryRouteImport } from './routes/memory'
+import { Route as MeetingRouteImport } from './routes/meeting'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as GroupsRouteImport } from './routes/groups'
+import { Route as GraphRouteImport } from './routes/graph'
+import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SummaryRoute = SummaryRouteImport.update({
+  id: '/summary',
+  path: '/summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemoryRoute = MemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingRoute = MeetingRouteImport.update({
+  id: '/meeting',
+  path: '/meeting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsRoute = GroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GraphRoute = GraphRouteImport.update({
+  id: '/graph',
+  path: '/graph',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BriefingRoute = BriefingRouteImport.update({
+  id: '/briefing',
+  path: '/briefing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +73,158 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/briefing': typeof BriefingRoute
+  '/graph': typeof GraphRoute
+  '/groups': typeof GroupsRoute
+  '/login': typeof LoginRoute
+  '/meeting': typeof MeetingRoute
+  '/memory': typeof MemoryRoute
+  '/profile': typeof ProfileRoute
+  '/summary': typeof SummaryRoute
+  '/tasks': typeof TasksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/briefing': typeof BriefingRoute
+  '/graph': typeof GraphRoute
+  '/groups': typeof GroupsRoute
+  '/login': typeof LoginRoute
+  '/meeting': typeof MeetingRoute
+  '/memory': typeof MemoryRoute
+  '/profile': typeof ProfileRoute
+  '/summary': typeof SummaryRoute
+  '/tasks': typeof TasksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/briefing': typeof BriefingRoute
+  '/graph': typeof GraphRoute
+  '/groups': typeof GroupsRoute
+  '/login': typeof LoginRoute
+  '/meeting': typeof MeetingRoute
+  '/memory': typeof MemoryRoute
+  '/profile': typeof ProfileRoute
+  '/summary': typeof SummaryRoute
+  '/tasks': typeof TasksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/briefing'
+    | '/graph'
+    | '/groups'
+    | '/login'
+    | '/meeting'
+    | '/memory'
+    | '/profile'
+    | '/summary'
+    | '/tasks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/briefing'
+    | '/graph'
+    | '/groups'
+    | '/login'
+    | '/meeting'
+    | '/memory'
+    | '/profile'
+    | '/summary'
+    | '/tasks'
+  id:
+    | '__root__'
+    | '/'
+    | '/briefing'
+    | '/graph'
+    | '/groups'
+    | '/login'
+    | '/meeting'
+    | '/memory'
+    | '/profile'
+    | '/summary'
+    | '/tasks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BriefingRoute: typeof BriefingRoute
+  GraphRoute: typeof GraphRoute
+  GroupsRoute: typeof GroupsRoute
+  LoginRoute: typeof LoginRoute
+  MeetingRoute: typeof MeetingRoute
+  MemoryRoute: typeof MemoryRoute
+  ProfileRoute: typeof ProfileRoute
+  SummaryRoute: typeof SummaryRoute
+  TasksRoute: typeof TasksRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/summary': {
+      id: '/summary'
+      path: '/summary'
+      fullPath: '/summary'
+      preLoaderRoute: typeof SummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memory': {
+      id: '/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof MemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meeting': {
+      id: '/meeting'
+      path: '/meeting'
+      fullPath: '/meeting'
+      preLoaderRoute: typeof MeetingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups': {
+      id: '/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof GroupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/graph': {
+      id: '/graph'
+      path: '/graph'
+      fullPath: '/graph'
+      preLoaderRoute: typeof GraphRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/briefing': {
+      id: '/briefing'
+      path: '/briefing'
+      fullPath: '/briefing'
+      preLoaderRoute: typeof BriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +237,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BriefingRoute: BriefingRoute,
+  GraphRoute: GraphRoute,
+  GroupsRoute: GroupsRoute,
+  LoginRoute: LoginRoute,
+  MeetingRoute: MeetingRoute,
+  MemoryRoute: MemoryRoute,
+  ProfileRoute: ProfileRoute,
+  SummaryRoute: SummaryRoute,
+  TasksRoute: TasksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
