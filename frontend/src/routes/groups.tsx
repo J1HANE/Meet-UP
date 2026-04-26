@@ -16,7 +16,7 @@ export const Route = createFileRoute("/groups")({
 const groups = [
   { name: "Frontend Team", members: ["JD", "SK", "EM", "AJ"], tasks: 8, meetings: 12 },
   { name: "Backend Team", members: ["SK", "MC", "JD", "LK"], tasks: 5, meetings: 9 },
-  { name: "Design Sprint", members: ["EM", "AJ", "SK", "MC", "JD", "LK"], tasks: 12, meetings: 6 },
+  { name: "Design Ops", members: ["EM", "AJ", "SK", "MC", "JD", "LK"], tasks: 12, meetings: 6 },
   { name: "Security Guild", members: ["JD", "MC"], tasks: 3, meetings: 4 },
 ];
 

@@ -16,7 +16,7 @@ export const Route = createFileRoute("/memory")({
 const meetings = [
   {
     id: "1",
-    title: "Sprint Planning",
+    title: "Task Planning",
     date: "Apr 14, 2026",
     time: "10:00 AM",
     decisions: ["Extended API deadline", "Adopted OAuth2 PKCE", "Feature flags for rollout"],

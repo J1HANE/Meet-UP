@@ -10,7 +10,7 @@ interface ActivityItem {
 
 const activities: ActivityItem[] = [
   { id: "1", user: "Sarah", action: "completed task 'Update API docs'", time: "2 min ago", type: "task" },
-  { id: "2", user: "Alex", action: "created meeting 'Sprint Review'", time: "15 min ago", type: "meeting" },
+  { id: "2", user: "Alex", action: "created meeting 'Task Review'", time: "15 min ago", type: "meeting" },
   { id: "3", user: "Mike", action: "joined group 'Backend Team'", time: "1h ago", type: "group" },
   { id: "4", user: "Emma", action: "approved summary for 'Design Sync'", time: "2h ago", type: "meeting" },
   { id: "5", user: "Chris", action: "assigned task to Sarah", time: "3h ago", type: "task" },
