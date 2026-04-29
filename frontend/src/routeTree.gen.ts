@@ -13,12 +13,13 @@ import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MemoryRouteImport } from './routes/memory'
-import { Route as MeetingRouteImport } from './routes/meeting'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
 import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MeetingListRouteImport } from './routes/meeting.list'
+import { Route as MeetingIdRouteImport } from './routes/meeting.$id'
 
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
@@ -38,11 +39,6 @@ const ProfileRoute = ProfileRouteImport.update({
 const MemoryRoute = MemoryRouteImport.update({
   id: '/memory',
   path: '/memory',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MeetingRoute = MeetingRouteImport.update({
-  id: '/meeting',
-  path: '/meeting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -70,6 +66,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeetingListRoute = MeetingListRouteImport.update({
+  id: '/meeting/list',
+  path: '/meeting/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingIdRoute = MeetingIdRouteImport.update({
+  id: '/meeting/$id',
+  path: '/meeting/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -77,11 +83,12 @@ export interface FileRoutesByFullPath {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/meeting/$id': typeof MeetingIdRoute
+  '/meeting/list': typeof MeetingListRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,11 +96,12 @@ export interface FileRoutesByTo {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/meeting/$id': typeof MeetingIdRoute
+  '/meeting/list': typeof MeetingListRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,11 +110,12 @@ export interface FileRoutesById {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/meeting/$id': typeof MeetingIdRoute
+  '/meeting/list': typeof MeetingListRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,11 +125,12 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/memory'
     | '/profile'
     | '/summary'
     | '/tasks'
+    | '/meeting/$id'
+    | '/meeting/list'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,11 +138,12 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/memory'
     | '/profile'
     | '/summary'
     | '/tasks'
+    | '/meeting/$id'
+    | '/meeting/list'
   id:
     | '__root__'
     | '/'
@@ -140,11 +151,12 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/memory'
     | '/profile'
     | '/summary'
     | '/tasks'
+    | '/meeting/$id'
+    | '/meeting/list'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,11 +165,12 @@ export interface RootRouteChildren {
   GraphRoute: typeof GraphRoute
   GroupsRoute: typeof GroupsRoute
   LoginRoute: typeof LoginRoute
-  MeetingRoute: typeof MeetingRoute
   MemoryRoute: typeof MemoryRoute
   ProfileRoute: typeof ProfileRoute
   SummaryRoute: typeof SummaryRoute
   TasksRoute: typeof TasksRoute
+  MeetingIdRoute: typeof MeetingIdRoute
+  MeetingListRoute: typeof MeetingListRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -188,13 +201,6 @@ declare module '@tanstack/react-router' {
       path: '/memory'
       fullPath: '/memory'
       preLoaderRoute: typeof MemoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/meeting': {
-      id: '/meeting'
-      path: '/meeting'
-      fullPath: '/meeting'
-      preLoaderRoute: typeof MeetingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -232,6 +238,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meeting/list': {
+      id: '/meeting/list'
+      path: '/meeting/list'
+      fullPath: '/meeting/list'
+      preLoaderRoute: typeof MeetingListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meeting/$id': {
+      id: '/meeting/$id'
+      path: '/meeting/$id'
+      fullPath: '/meeting/$id'
+      preLoaderRoute: typeof MeetingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -241,11 +261,12 @@ const rootRouteChildren: RootRouteChildren = {
   GraphRoute: GraphRoute,
   GroupsRoute: GroupsRoute,
   LoginRoute: LoginRoute,
-  MeetingRoute: MeetingRoute,
   MemoryRoute: MemoryRoute,
   ProfileRoute: ProfileRoute,
   SummaryRoute: SummaryRoute,
   TasksRoute: TasksRoute,
+  MeetingIdRoute: MeetingIdRoute,
+  MeetingListRoute: MeetingListRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

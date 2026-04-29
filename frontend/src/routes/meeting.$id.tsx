@@ -1,17 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { z } from "zod";
-import { ArrowLeft, Clock3, FileText, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, Users, Video, VideoOff } from "lucide-react";
+import { ArrowLeft, Clock3, FileText, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, Users, Video, VideoOff, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMeetingById, meetings } from "@/lib/meetings";
-import { useState } from "react";
+import { getMeetingById } from "@/lib/meetings";
+import { useState, useEffect, useRef } from "react";
+import { chatClient, ChatMessage } from "@/lib/chat";
 
-const meetingSearchSchema = z.object({
-  meetingId: z.string().optional(),
-});
-
-export const Route = createFileRoute("/meeting")({
-  validateSearch: meetingSearchSchema,
+export const Route = createFileRoute("/meeting/$id")({
   component: MeetingRoomPage,
   head: () => ({
     meta: [
@@ -22,11 +17,23 @@ export const Route = createFileRoute("/meeting")({
 });
 
 function MeetingRoomPage() {
-  const { meetingId } = Route.useSearch();
-  const meeting = getMeetingById(meetingId);
+  const { id } = Route.useParams();
+  const meeting = getMeetingById(id);
 
   if (!meeting) {
-    return <MeetingRoomSelector />;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Meeting not found</h1>
+          <p className="text-muted-foreground mt-2">The meeting you're looking for doesn't exist.</p>
+          <Button asChild className="mt-4">
+            <Link to="/meeting/list">
+              Back to meetings
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return <MeetingRoom meetingId={meeting.id} />;
@@ -37,9 +44,64 @@ function MeetingRoom({ meetingId }: { meetingId: string }) {
   const [muted, setMuted] = useState(false);
   const [videoOn, setVideoOn] = useState(true);
   const [activeTab, setActiveTab] = useState<"chat" | "transcript">("transcript");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [username, setUsername] = useState("You");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    console.log('Meeting room useEffect triggered for meetingId:', meetingId);
+    
+    const connectToChat = async () => {
+      try {
+        console.log('Connecting to chat...');
+        await chatClient.connect(meetingId, username);
+        
+        // Listen for chat messages
+        const unsubscribe = chatClient.onMessages((messages) => {
+          console.log('Received chat messages:', messages);
+          setChatMessages(messages);
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        });
+        
+        return unsubscribe;
+      } catch (error) {
+        console.error('Failed to connect to chat:', error);
+      }
+    };
+
+    connectToChat();
+
+    return () => {
+      console.log('Cleaning up chat connection');
+      chatClient.disconnect();
+    };
+  }, [meetingId, username]);
+
+  const handleSendMessage = () => {
+    console.log('handleSendMessage called, newMessage:', newMessage);
+    if (newMessage.trim()) {
+      chatClient.sendMessage(newMessage, username);
+      setNewMessage("");
+    }
+  };
 
   if (!meeting) {
-    return <MeetingRoomSelector />;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Meeting not found</h1>
+          <p className="text-muted-foreground mt-2">The meeting you're looking for doesn't exist.</p>
+          <Button asChild className="mt-4">
+            <Link to="/meeting/list">
+              Back to meetings
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -47,7 +109,7 @@ function MeetingRoom({ meetingId }: { meetingId: string }) {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="space-y-3">
           <Button asChild variant="outline" size="sm">
-            <Link to="/meeting" search={{}}>
+            <Link to="/meeting/list">
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to meetings
             </Link>
@@ -208,99 +270,53 @@ function MeetingRoom({ meetingId }: { meetingId: string }) {
                 </motion.div>
               ))
             ) : (
-              <div className="mt-8 text-center text-sm text-muted-foreground">No chat messages yet</div>
+              <>
+                <div className="space-y-3">
+                  {chatMessages.length === 0 ? (
+                    <div className="mt-8 text-center text-sm text-muted-foreground">No chat messages yet</div>
+                  ) : (
+                    chatMessages.map((message) => (
+                      <div key={message.id} className="mb-3 p-3 rounded-lg bg-muted/50">
+                        <div className="mb-1">
+                          <span className="text-xs font-semibold text-primary">{message.username}</span>
+                          <span className="text-[10px] text-muted-foreground ml-2">
+                            {new Date(message.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground">{message.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="border-t border-border p-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          handleSendMessage();
+                        }
+                      }}
+                      placeholder="Type a message..."
+                      className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                      size="icon"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
+          <div ref={messagesEndRef} />
         </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function MeetingRoomSelector() {
-  return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-6xl space-y-8">
-      <div className="relative overflow-hidden rounded-[2.25rem] border border-primary/15 bg-card/70 p-6 shadow-[0_28px_80px_oklch(0.08_0.03_280/0.45)]">
-        <div className="absolute -left-20 top-10 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl" />
-        <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-        <div className="relative grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-end">
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-primary">Meeting Room</p>
-            <h1 className="text-3xl font-heading font-bold text-foreground">Choose the live room you want to enter</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Pick a meeting and we will drop you into the active collaboration room with live transcript, participants, and task context.
-            </p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-2xl border border-border bg-card px-4 py-5">
-              <div className="text-2xl font-heading font-bold text-foreground">{meetings.length}</div>
-              <div className="text-xs text-muted-foreground">Rooms</div>
-            </div>
-            <div className="rounded-2xl border border-primary/20 gradient-surface px-4 py-5">
-              <div className="text-2xl font-heading font-bold text-foreground">9</div>
-              <div className="text-xs text-muted-foreground">Participants</div>
-            </div>
-            <div className="rounded-2xl border border-border bg-card px-4 py-5">
-              <div className="text-2xl font-heading font-bold text-foreground">11</div>
-              <div className="text-xs text-muted-foreground">Tasks live</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {meetings.map((meeting, index) => (
-          <motion.div
-            key={meeting.id}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.07 }}
-            whileHover={{ y: -4 }}
-            className="group relative overflow-hidden rounded-[2rem] border border-border bg-card p-5 shadow-[0_18px_50px_oklch(0.08_0.03_280/0.35)]"
-          >
-            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/60 to-transparent" />
-            <div className="mb-5 flex items-start justify-between gap-3">
-              <div>
-                <div className="text-xs uppercase tracking-[0.24em] text-primary">{meeting.group}</div>
-                <h2 className="mt-2 text-xl font-heading font-semibold text-foreground">{meeting.title}</h2>
-              </div>
-              <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary">
-                {meeting.status}
-              </div>
-            </div>
-
-            <div className="mb-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-border/70 bg-muted/15 p-3">
-                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Room</div>
-                <div className="mt-1 text-sm font-medium text-foreground">{meeting.roomLabel}</div>
-              </div>
-              <div className="rounded-2xl border border-border/70 bg-muted/15 p-3">
-                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Time</div>
-                <div className="mt-1 text-sm font-medium text-foreground">{meeting.time}</div>
-              </div>
-            </div>
-
-            <div className="mb-5 flex -space-x-2">
-              {meeting.participants.map((participant) => (
-                <div
-                  key={participant.name}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-card bg-secondary text-xs font-bold text-secondary-foreground"
-                >
-                  {participant.initials}
-                </div>
-              ))}
-            </div>
-
-            <p className="mb-5 text-sm leading-relaxed text-muted-foreground">{meeting.summary}</p>
-
-            <Button asChild className="w-full bg-orange-500 text-slate-950 hover:bg-orange-400">
-              <Link to="/meeting" search={{ meetingId: meeting.id }}>
-                Enter room
-                <Video className="w-4 h-4" />
-              </Link>
-            </Button>
-          </motion.div>
-        ))}
       </div>
     </motion.div>
   );

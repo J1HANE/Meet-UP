@@ -165,5 +165,39 @@ export const meetings: MeetingRecord[] = [
 ];
 
 export function getMeetingById(meetingId?: string) {
-  return meetings.find((meeting) => meeting.id === meetingId);
+  // First try to find in static meetings
+  const staticMeeting = meetings.find((meeting) => meeting.id === meetingId);
+  if (staticMeeting) {
+    return staticMeeting;
+  }
+  
+  // If not found, create a dynamic meeting from the meeting ID
+  if (meetingId) {
+    return {
+      id: meetingId,
+      title: "Live Meeting",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      dateLabel: "Today",
+      duration: "Live",
+      group: "Dynamic Team",
+      status: "LIVE",
+      roomLabel: "Virtual Room",
+      briefing: "This is a live meeting created from the backend API.",
+      summary: "Participants can join this meeting using the meeting link.",
+      participants: [
+        { name: "You", initials: "YU", role: "Host", speaking: false },
+      ],
+      openTasks: [
+        { title: "Share meeting link", done: false },
+        { title: "Start recording", done: false },
+      ],
+      decisions: [],
+      actionItems: [],
+      transcriptLines: [
+        { speaker: "System", text: "Meeting started", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+      ],
+    };
+  }
+  
+  return undefined;
 }
