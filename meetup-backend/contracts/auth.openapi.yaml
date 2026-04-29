@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: Meet-Up Auth Service API
+  description: Authentication and authorization API for Meet-Up
+  version: 1.0.0
+  contact:
+    name: Meet-Up Team
+
+servers:
+  - url: http://localhost:8081/api
+    description: Local development server
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: Login with email and password
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      summary: Logout and revoke refresh token
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '403':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      summary: Get current user information
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - displayName
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "securePassword123"
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "Jane Doe"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "securePassword123"
+
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiJ9..."
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiJ9..."
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiJ9..."
+        tokenType:
+          type: string
+          example: "Bearer"
+        expiresIn:
+          type: integer
+          example: 900
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "550e8400-e29b-41d4-a716-446655440000"
+            email:
+              type: string
+              example: "user@example.com"
+            displayName:
+              type: string
+              example: "Jane Doe"
+            roles:
+              type: array
+              items:
+                type: string
+              example: ["member"]
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          example: "user@example.com"
+        displayName:
+          type: string
+          example: "Jane Doe"
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["member"]
+        tweenIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440001"]
+        active:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:00:00Z"
+        lastLoginAt:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "USER_NOT_FOUND"
+        message:
+          type: string
+          example: "User not found"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:00:00Z"
+        path:
+          type: string
+          example: "/api/auth/me"

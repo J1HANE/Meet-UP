@@ -1,0 +1,149 @@
+{
+  "info": {
+    "name": "Meet-Up Auth Service",
+    "description": "Authentication API collection for Meet-Up collaboration platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"securePassword123\",\n  \"displayName\": \"Test User\"\n}"
+            },
+            "description": "Register a new user with email, password, and display name"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"securePassword123\"\n}"
+            },
+            "description": "Login and get access token and refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/auth/me",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get current authenticated user information"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/auth/refresh",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "refresh"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "description": "Refresh access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/auth/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "logout"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "description": "Logout and revoke refresh token"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ]
+}
