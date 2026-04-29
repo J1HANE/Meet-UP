@@ -1,0 +1,96 @@
+package com.meetup.authservice.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "users")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private String displayName;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private List<String> roles;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_tweens", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "tween_id")
+    private List<UUID> tweenIds;
+
+    @Column(nullable = false)
+    private boolean active;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column
+    private LocalDateTime lastLoginAt;
+
+    @Column(length = 1000)
+    private String bio;
+
+    @Column
+    private String location;
+
+    @Column
+    private String recoveryEmail;
+
+    @Column
+    private String avatarUrl;
+
+    @Column
+    private String phone;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_topics", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "topic")
+    private List<String> topics;
+
+    // Preferences
+    @Column(nullable = false)
+    private boolean meetingReminders = true;
+
+    @Column(nullable = false)
+    private boolean taskDigest = true;
+
+    @Column(nullable = false)
+    private boolean profileVisibility = false;
+
+    // 2FA
+    @Column
+    private boolean twoFactorEnabled = false;
+
+    @Column
+    private String twoFactorSecret;
+}
