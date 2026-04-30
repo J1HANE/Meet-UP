@@ -1,22 +1,51 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
   head: () => ({
     meta: [
-      { title: "Login — MeetFlow" },
-      { name: "description", content: "Sign in to your MeetFlow account" },
+      { title: "Login — Meet-Up" },
+      { name: "description", content: "Sign in to your Meet-Up account" },
     ],
   }),
 });
 
 function LoginPage() {
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (isAuthenticated) {
+    return <Navigate to="/profile" />;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await login(email, password);
+      toast.success("Login successful!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
@@ -37,7 +66,7 @@ function LoginPage() {
             <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-heading font-bold text-xl text-foreground">MeetFlow</span>
+            <span className="font-heading font-bold text-xl text-foreground">Meet-Up</span>
           </div>
 
           <div className="text-center">
@@ -45,36 +74,46 @@ function LoginPage() {
             <p className="text-sm text-muted-foreground mt-1">Sign in to continue</p>
           </div>
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full h-10 px-4 rounded-xl bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+                className="w-full h-10"
+                required
               />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-10 px-4 rounded-xl bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+                className="w-full h-10"
+                required
               />
             </div>
-          </div>
 
-          <Button variant="glow" size="lg" className="w-full">
-            Sign In <ArrowRight className="w-4 h-4" />
-          </Button>
+            <Button 
+              type="submit" 
+              variant="glow" 
+              size="lg" 
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"} <ArrowRight className="w-4 h-4" />
+            </Button>
+          </form>
 
           <p className="text-xs text-muted-foreground text-center">
             Don&apos;t have an account?{" "}
-            <span className="text-primary cursor-pointer hover:underline">Request invite</span>
+            <Link to="/register" className="text-primary hover:underline">
+              Sign up
+            </Link>
           </p>
         </div>
       </motion.div>
