@@ -1,0 +1,30 @@
+services:
+  # MongoDB for Context Service
+  mongodb:
+    image: mongo:latest
+    container_name: meetup-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  # Redis for Caching
+  redis:
+    image: redis:latest
+    container_name: meetup-redis
+    ports:
+      - "6379:6379"
+
+  # RabbitMQ for Event Bus
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: meetup-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+volumes:
+  mongodb_data:
