@@ -1,0 +1,19 @@
+api:
+  info:
+    title: Task Service
+    description: Microservice responsible for managing tasks within a given context
+    version: v1
+    termsOfService: https://example.com/terms
+
+  contact:
+    name: Amos Nyirenda
+    email: nyirendaamos1@gmail.com
+    url: https://yourportfolio.com
+
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+service:
+  name: task-service
+  environment: dev
