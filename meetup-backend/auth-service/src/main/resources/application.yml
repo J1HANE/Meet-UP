@@ -2,41 +2,16 @@ server:
   port: 8081
 
 spring:
-  application:
-    name: auth-service
-
   datasource:
-    url: jdbc:postgresql://db.zbtuwalermdsrikadnol.supabase.co:5432/postgres?sslmode=require&connectTimeout=10&socketTimeout=30
-    username: postgres
-    password: Up5xt*fdF6&XCXg
+    url: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.zbtuwalermdsrikadnol
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-  hikari:
-    connection-timeout: 20000
-    minimum-idle: 5
-    maximum-pool-size: 10
-    idle-timeout: 300000
-    max-lifetime: 1200000
-
-jwt:
-  secret: ${JWT_SECRET:meetupAuthSecretKeyForDevelopmentOnly2024}
-  access-token:
-    expiration: 900
-  refresh-token:
-    expiration: 604800
-
-logging:
-  level:
-    com.meetup.authservice: INFO
-    org.springframework.security: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+        format_sql: true

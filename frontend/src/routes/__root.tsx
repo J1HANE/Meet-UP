@@ -1,5 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
+import { AuthProvider } from "@/hooks/useAuth";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 
@@ -66,11 +68,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
+  const isLoginPage = location.pathname === "/login" || location.pathname === "/register";
 
-  if (isLoginPage) {
-    return <Outlet />;
-  }
-
-  return <AppLayout />;
+  return (
+    <AuthProvider>
+      {isLoginPage ? (
+        <Outlet />
+      ) : (
+        <AppLayout />
+      )}
+      <Toaster />
+    </AuthProvider>
+  );
 }
