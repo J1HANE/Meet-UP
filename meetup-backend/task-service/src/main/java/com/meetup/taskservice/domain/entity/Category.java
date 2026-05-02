@@ -1,0 +1,50 @@
+package com.meetup.taskservice.domain.entity;
+
+
+import com.meetup.taskservice.config.TaskServiceConfig;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Category {
+    @Id
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false)
+    private UUID categoryId;
+
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    private String description;
+
+    @Column(length = TaskServiceConfig.COLOR_CODE_LENGTH)
+    private String color;
+
+    private String icon;
+
+    @Column(nullable = false)
+    private boolean isActive = true;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private List<Task> tasks = new ArrayList<>();
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private OffsetDateTime updatedAt;
+}

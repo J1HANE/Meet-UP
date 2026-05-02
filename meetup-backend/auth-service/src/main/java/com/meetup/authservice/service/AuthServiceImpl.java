@@ -38,15 +38,14 @@ public class AuthServiceImpl implements AuthService {
         }
 
         List<String> roles = request.getRoles() != null && !request.getRoles().isEmpty() 
-                ? request.getRoles() 
-                : List.of("member");
+                ? new java.util.ArrayList<>(request.getRoles()) 
+                : new java.util.ArrayList<>(List.of("member"));
 
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .displayName(request.getDisplayName())
                 .roles(roles)
-                .tweenIds(List.of())
                 .active(true)
                 .build();
 
@@ -255,8 +254,8 @@ public class AuthServiceImpl implements AuthService {
                 .id(user.getId())
                 .email(user.getEmail())
                 .displayName(user.getDisplayName())
-                .roles(user.getRoles())
-                .tweenIds(user.getTweenIds())
+                .roles(user.getRoles() != null ? user.getRoles() : new java.util.ArrayList<>())
+                .tweenIds(user.getTweenIds() != null ? user.getTweenIds() : new java.util.ArrayList<>())
                 .active(user.isActive())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
@@ -266,7 +265,7 @@ public class AuthServiceImpl implements AuthService {
                 .recoveryEmail(user.getRecoveryEmail())
                 .avatarUrl(user.getAvatarUrl())
                 .phone(user.getPhone())
-                .topics(user.getTopics())
+                .topics(user.getTopics() != null ? user.getTopics() : new java.util.ArrayList<>())
                 .meetingReminders(user.isMeetingReminders())
                 .taskDigest(user.isTaskDigest())
                 .profileVisibility(user.isProfileVisibility())

@@ -33,15 +33,17 @@ public class User {
     @Column(nullable = false)
     private String displayName;
 
+    @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
-    private List<String> roles;
+    private List<String> roles = new java.util.ArrayList<>();
 
+    @Builder.Default
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_tweens", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "tween_id")
-    private List<UUID> tweenIds;
+    private List<UUID> tweenIds = new java.util.ArrayList<>();
 
     @Column(nullable = false)
     private boolean active;
@@ -72,22 +74,27 @@ public class User {
     @Column
     private String phone;
 
+    @Builder.Default
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_topics", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "topic")
-    private List<String> topics;
+    private List<String> topics = new java.util.ArrayList<>();
 
     // Preferences
+    @Builder.Default
     @Column(nullable = false)
     private boolean meetingReminders = true;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean taskDigest = true;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean profileVisibility = false;
 
     // 2FA
+    @Builder.Default
     @Column
     private boolean twoFactorEnabled = false;
 
