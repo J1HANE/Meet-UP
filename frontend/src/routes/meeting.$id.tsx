@@ -59,8 +59,11 @@ function MeetingRoom({ meetingId }: { meetingId: string }) {
         
         // Listen for chat messages
         const unsubscribe = chatClient.onMessages((messages) => {
+          console.log('=== CHAT UPDATE ===');
           console.log('Received chat messages:', messages);
+          console.log('Setting chatMessages state...');
           setChatMessages(messages);
+          console.log('ChatMessages state updated');
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
           }, 100);
@@ -85,6 +88,13 @@ function MeetingRoom({ meetingId }: { meetingId: string }) {
     if (newMessage.trim()) {
       chatClient.sendMessage(newMessage, username);
       setNewMessage("");
+      
+      // Force React re-render
+      setTimeout(() => {
+        const currentMessages = chatClient.getMessages();
+        console.log('Forcing update with messages:', currentMessages);
+        setChatMessages([...currentMessages]);
+      }, 100);
     }
   };
 

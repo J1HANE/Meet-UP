@@ -21,21 +21,30 @@ class ChatClient {
 
   async connect(meetingId: string, userId: string) {
     try {
-      // For now, skip backend connection and use mock data
-      console.log('Connecting to chat for meeting:', meetingId, 'user:', userId);
+      // Connect to REAL backend API
+      console.log('Connecting to REAL backend for meeting:', meetingId, 'user:', userId);
       
-      // Simulate WebSocket connection immediately
+      const response = await fetch(`http://localhost:8080/api/meetings/${meetingId}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to join chat');
+      }
+
+      const joinResponse = await response.json();
+      this.config = joinResponse.chat;
+      
+      console.log('Backend response:', joinResponse);
+      
+      // Simulate WebSocket connection
       this.simulateMessages();
       
-      return {
-        meetingId,
-        chat: {
-          apiKey: 'mock-api-key',
-          channelId: meetingId,
-          channelType: 'messaging',
-          userToken: 'mock-token'
-        }
-      };
+      return joinResponse;
     } catch (error) {
       console.error('Chat connection error:', error);
       throw error;
@@ -118,7 +127,16 @@ class ChatClient {
   }
 
   private notifyListeners() {
-    this.listeners.forEach(callback => callback(this.getMessages()));
+    console.log('=== NOTIFYING LISTENERS ===');
+    console.log('Current messages:', this.messages);
+    console.log('Number of listeners:', this.listeners.length);
+    
+    this.listeners.forEach(callback => {
+      console.log('Calling listener with messages...');
+      callback(this.getMessages());
+    });
+    
+    console.log('All listeners notified');
   }
 
   disconnect() {
