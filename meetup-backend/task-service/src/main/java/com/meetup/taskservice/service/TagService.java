@@ -11,6 +11,7 @@ import com.meetup.taskservice.mapper.TagMapper;
 import com.meetup.taskservice.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class TagService {
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
 
+    @Transactional
     public List<TagResponseDto> getTags() {
 
         return tagRepository.findAll()
@@ -39,8 +41,12 @@ public class TagService {
         if (tagRepository.existsByName(tagCreateDto.getName())) {
             throw new EntityAlreadyExistsException("A tag with this name already exists: " + tagCreateDto.getName());
         }
-        Tag newTag = tagRepository.save(tagMapper.toEntity(tagCreateDto));
-        return tagMapper.toResponseDto(newTag);
+
+        Tag newTag = tagMapper.toEntity(tagCreateDto);
+        //CreatedBy to be gotten from security context;
+        newTag.setCreatedBy("user-1");
+        Tag savedTag = tagRepository.save(newTag);
+        return tagMapper.toResponseDto(savedTag);
     }
 
     public TagResponseDto updateTag(UUID id, TagUpdateDto tagUpdateDto) {

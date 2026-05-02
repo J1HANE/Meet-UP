@@ -3,9 +3,7 @@ package com.meetup.taskservice.domain.entity;
 
 import com.meetup.taskservice.config.TaskServiceConfig;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -14,7 +12,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "tags")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Tag {
@@ -44,4 +43,17 @@ public class Tag {
 
     @Column(name = "created_by", nullable = false)
     private String createdBy;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Tag other)) return false;
+        return tagId != null && tagId.equals(other.tagId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

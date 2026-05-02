@@ -2,6 +2,7 @@ package com.meetup.taskservice.service;
 
 import com.meetup.taskservice.domain.entity.Task;
 import com.meetup.taskservice.domain.entity.TaskDependency;
+import com.meetup.taskservice.domain.entity.TaskDependencyId;
 import com.meetup.taskservice.dto.request.TaskDependencyCreateDto;
 import com.meetup.taskservice.dto.request.TaskDependencyUpdateDto;
 import com.meetup.taskservice.dto.response.TaskDependencyResponseDto;
@@ -41,6 +42,7 @@ public class TaskDependencyService {
         }
 
         TaskDependency dependency = dependencyMapper.toEntity(dto);
+        dependency.setId(new TaskDependencyId());
         dependency.setTask(task);
         dependency.setDependsOnTask(dependsOnTask);
 

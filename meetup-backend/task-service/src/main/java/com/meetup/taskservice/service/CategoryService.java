@@ -1,9 +1,11 @@
 package com.meetup.taskservice.service;
 
 import com.meetup.taskservice.domain.entity.Category;
+import com.meetup.taskservice.domain.entity.Task;
 import com.meetup.taskservice.dto.request.CategoryCreateDto;
 import com.meetup.taskservice.dto.request.CategoryUpdateDto;
 import com.meetup.taskservice.dto.response.CategoryResponseDto;
+import com.meetup.taskservice.dto.response.TaskResponseDto;
 import com.meetup.taskservice.exception.EntityAlreadyExistsException;
 import com.meetup.taskservice.exception.EntityNotFoundException;
 import com.meetup.taskservice.mapper.CategoryMapper;
@@ -25,6 +27,14 @@ public class CategoryService {
 
         return categories.stream().map(categoryMapper::toResponseDto).toList();
     }
+
+    public CategoryResponseDto getTaskById(UUID id) {
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Category not found with ID: " + id)
+        );
+        return categoryMapper.toResponseDto(category);
+    }
+
 
 
     public CategoryResponseDto createCategory(CategoryCreateDto categoryCreateDto) {

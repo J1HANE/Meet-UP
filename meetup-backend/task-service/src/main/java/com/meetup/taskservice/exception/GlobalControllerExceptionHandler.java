@@ -1,5 +1,6 @@
 package com.meetup.taskservice.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,48 +20,37 @@ class GlobalControllerExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(GlobalControllerExceptionHandler.class);
 
-    @ResponseStatus(NOT_FOUND)
     @ExceptionHandler(EntityNotFoundException.class)
     public @ResponseBody HttpErrorInfo handleTaskNotFoundException(
-            ServerHttpRequest request, EntityNotFoundException ex) {
-
+            HttpServletRequest request, EntityNotFoundException ex) {
         return createHttpErrorInfo(NOT_FOUND, request, ex);
     }
 
-    @ResponseStatus(CONFLICT)
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public @ResponseBody HttpErrorInfo handleTaskAlreadyExistsException(
-            ServerHttpRequest request, EntityAlreadyExistsException ex) {
-
+            HttpServletRequest request, EntityAlreadyExistsException ex) {
         return createHttpErrorInfo(CONFLICT, request, ex);
     }
 
-    @ResponseStatus(UNPROCESSABLE_ENTITY)
     @ExceptionHandler(InvalidTaskException.class)
     public @ResponseBody HttpErrorInfo handleInvalidTaskException(
-            ServerHttpRequest request, InvalidTaskException ex) {
-
+            HttpServletRequest request, InvalidTaskException ex) {
         return createHttpErrorInfo(UNPROCESSABLE_ENTITY, request, ex);
     }
 
-    @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)        // handles @Valid failures
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public @ResponseBody HttpErrorInfo handleValidationExceptions(
-            ServerHttpRequest request, MethodArgumentNotValidException ex) {
-
+            HttpServletRequest request, MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .collect(Collectors.joining(", "));
-
         return createHttpErrorInfo(BAD_REQUEST, request, new RuntimeException(message));
     }
 
     private HttpErrorInfo createHttpErrorInfo(
-            HttpStatus httpStatus, ServerHttpRequest request, Exception ex) {
-
-        final String path = request.getURI().getPath();
+            HttpStatus httpStatus, HttpServletRequest request, Exception ex) {
+        final String path = request.getRequestURI();
         final String message = ex.getMessage();
-
         LOG.debug("Returning HTTP status: {} for path: {}, message: {}", httpStatus, path, message);
         return new HttpErrorInfo(httpStatus, path, message);
     }

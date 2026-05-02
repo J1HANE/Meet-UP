@@ -2,14 +2,13 @@ package com.meetup.taskservice.domain.entity;
 
 import com.meetup.taskservice.domain.enums.DependencyType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
 @Table(name = "task_dependencies")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskDependency {
@@ -33,4 +32,17 @@ public class TaskDependency {
 
     @Column(nullable = false)
     private short lagDays = 0;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TaskDependency other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
