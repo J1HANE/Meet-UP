@@ -14,7 +14,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class, TagMapper.class})
 public interface TaskMapper {
 
-    // ─── Entity → Response DTO ────────────────────────────────────────────────
+
 
     @Mapping(target = "parentTaskId",   source = "parentTask.taskId")
     @Mapping(target = "subTaskCount",   expression = "java(task.getSubTasks().size())")
@@ -25,18 +25,18 @@ public interface TaskMapper {
     @Mapping(target = "dependencyIds",  expression = "java(task.getDependencies().stream().map(d -> d.getDependsOnTask().getTaskId()).collect(java.util.stream.Collectors.toSet()))")
     TaskResponseDto toResponseDto(Task task);
 
-    // ─── Entity → Summary DTO (for sub-task lists / parent references) ────────
+
 
     @Mapping(target = "parentTaskId", source = "parentTask.taskId")
     TaskSummaryDto toSummaryDto(Task task);
 
-    // ─── Create DTO → Entity ──────────────────────────────────────────────────
+
 
     @Mapping(target = "taskId",          ignore = true)
-    @Mapping(target = "parentTask",      ignore = true)   // resolved in service by parentTaskId
+    @Mapping(target = "parentTask",      ignore = true)
     @Mapping(target = "subTasks",        ignore = true)
-    @Mapping(target = "category",        ignore = true)   // resolved in service by categoryId
-    @Mapping(target = "tags",            ignore = true)   // resolved in service by tagIds
+    @Mapping(target = "category",        ignore = true)
+    @Mapping(target = "tags",            ignore = true)
     @Mapping(target = "dependencies",    ignore = true)
     @Mapping(target = "dependents",      ignore = true)
     @Mapping(target = "blockHistory",    ignore = true)
@@ -56,7 +56,7 @@ public interface TaskMapper {
     @Mapping(target = "createdBy",     ignore = true)
     Task toEntity(TaskCreateDto dto);
 
-    // ─── Update DTO → existing Entity ────────────────────────────────────────
+
 
     @Mapping(target = "taskId",          ignore = true)
     @Mapping(target = "parentTask",      ignore = true)
@@ -66,8 +66,8 @@ public interface TaskMapper {
     @Mapping(target = "dependencies",    ignore = true)
     @Mapping(target = "dependents",      ignore = true)
     @Mapping(target = "blockHistory",    ignore = true)
-    @Mapping(target = "status",          ignore = true)   // status transitions via service
-    @Mapping(target = "progressPercent", ignore = true)   // updated via dedicated endpoint
+    @Mapping(target = "status",          ignore = true)
+    @Mapping(target = "progressPercent", ignore = true)
     @Mapping(target = "createdBy",       ignore = true)
     @Mapping(target = "lastActivityAt",  ignore = true)
     @Mapping(target = "createdAt",       ignore = true)
@@ -81,7 +81,7 @@ public interface TaskMapper {
     @Mapping(target = "cancelledAt",     ignore = true)
     void updateEntityFromDto(TaskUpdateDto dto, @MappingTarget Task task);
 
-    // ─── List mapping ─────────────────────────────────────────────────────────
+
 
     List<TaskResponseDto> toResponseDtoList(List<Task> tasks);
     List<TaskSummaryDto> toSummaryDtoList(List<Task> tasks);

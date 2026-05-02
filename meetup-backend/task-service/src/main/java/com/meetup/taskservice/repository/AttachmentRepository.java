@@ -1,9 +1,13 @@
 package com.meetup.taskservice.repository;
 
 import com.meetup.taskservice.domain.entity.Attachment;
-import org.springframework.data.repository.CrudRepository;
+import com.meetup.taskservice.domain.enums.AttachmentEntityType;
+import org.springframework.data.jpa.repository.JpaRepository;
 
+
+import java.util.List;
 import java.util.UUID;
 
-public interface AttachmentRepository extends CrudRepository<Attachment, UUID> {
+public interface AttachmentRepository extends JpaRepository<Attachment, UUID> {
+    List<Attachment> findByEntityIdAndEntityType(UUID entityId, AttachmentEntityType entityType);
 }

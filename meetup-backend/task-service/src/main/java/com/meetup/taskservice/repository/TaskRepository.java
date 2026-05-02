@@ -1,11 +1,12 @@
 package com.meetup.taskservice.repository;
 
 import com.meetup.taskservice.domain.entity.Task;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
 
 import java.util.UUID;
 
-public interface TaskRepository extends PagingAndSortingRepository<Task, UUID>, CrudRepository<Task, UUID> {
+public interface TaskRepository extends JpaRepository<Task, UUID> {
 
 }

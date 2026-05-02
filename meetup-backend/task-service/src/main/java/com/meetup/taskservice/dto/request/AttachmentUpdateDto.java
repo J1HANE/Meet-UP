@@ -11,5 +11,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AttachmentUpdateDto {
     private String description;
-    // Everything else is immutable after upload
 }

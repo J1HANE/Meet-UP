@@ -18,5 +18,5 @@ public class TaskDependencyUpdateDto {
 
     @Min(0)
     private short          lagDays;
-    // taskId / dependsOnTaskId are PK components — never updatable
+
 }
