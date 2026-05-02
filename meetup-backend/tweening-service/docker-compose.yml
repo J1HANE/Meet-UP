@@ -1,0 +1,25 @@
+services:
+  neo4j:
+    image: neo4j:5
+    container_name: meetup-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - neo4j_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: meetup-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+
+volumes:
+  neo4j_data:

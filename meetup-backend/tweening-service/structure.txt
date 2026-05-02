@@ -1,0 +1,37 @@
+com.meetup.tweeningservice/
+├── TweeningServiceApplication.java
+├── config/
+│   └── KafkaConfig.java
+├── domain/
+│   ├── node/
+│   │   ├── PersonNode.java
+│   │   ├── GroupNode.java
+│   │   ├── TaskNode.java
+│   │   └── MeetingNode.java
+│   └── relationship/
+│       ├── MemberOf.java
+│       └── WorksOn.java
+├── repository/
+│   ├── PersonRepository.java
+│   ├── GroupRepository.java
+│   └── TaskRepository.java
+├── event/
+│   ├── in/
+│   │   ├── UserRegisteredEvent.java
+│   │   ├── TaskCreatedEvent.java
+│   │   ├── TaskCompletedEvent.java
+│   │   ├── MeetingStartedEvent.java
+│   │   └── MeetingEndedEvent.java
+│   └── out/
+│       ├── GroupFormedEvent.java
+│       ├── GroupEvolvedEvent.java
+│       ├── GroupDissolvedEvent.java
+│       ├── MemberJoinedEvent.java
+│       └── MemberLeftEvent.java
+├── service/
+│   ├── GroupService.java
+│   └── MembershipResolverService.java
+├── controller/
+│   └── GroupController.java
+└── listener/
+    └── EventListener.java
