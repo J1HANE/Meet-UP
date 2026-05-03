@@ -1,5 +1,7 @@
 package com.meetup.taskservice.dto.gantt;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.meetup.taskservice.domain.enums.AssignedToType;
 import com.meetup.taskservice.domain.enums.TaskPriority;
 import com.meetup.taskservice.domain.enums.TaskStatus;
@@ -28,7 +30,8 @@ public class GanttTaskDto {
     short          progressPercent;
     TaskStatus status;
     TaskPriority priority;
-    boolean        isMilestone;
+    @JsonProperty("isMilestone")
+    boolean milestone;
     boolean        isOverdue;
     boolean        isCriticalPath;   // set by service analysis
 

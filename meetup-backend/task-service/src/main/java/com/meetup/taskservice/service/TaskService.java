@@ -35,7 +35,7 @@ public class TaskService {
     private final TagRepository tagRepository;
     private final TaskMapper taskMapper;
     private final TaskDependencyRepository taskDependencyRepository;
-    private final TaskDependencyService taskDependencyService;
+
 
 
 
@@ -436,7 +436,6 @@ public class TaskService {
 
 
     //Statistics
-
     public TaskStatsDto getTaskStats(UUID id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + id));
@@ -481,7 +480,6 @@ public class TaskService {
 
 
     // Helper functions
-
     private Task findTask(UUID id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + id));
