@@ -1,6 +1,8 @@
 package com.meetup.taskservice.mapper;
 
 import com.meetup.taskservice.domain.entity.Task;
+import com.meetup.taskservice.dto.TaskDetailDto;
+import com.meetup.taskservice.dto.TaskStatsDto;
 import com.meetup.taskservice.dto.TaskSummaryDto;
 import com.meetup.taskservice.dto.request.TaskCreateDto;
 import com.meetup.taskservice.dto.request.TaskUpdateDto;
@@ -80,6 +82,37 @@ public interface TaskMapper {
     @Mapping(target = "completedAt",     ignore = true)
     @Mapping(target = "cancelledAt",     ignore = true)
     void updateEntityFromDto(TaskUpdateDto dto, @MappingTarget Task task);
+
+
+
+    @Mapping(target = "categoryId",    source = "category.categoryId")
+    @Mapping(target = "categoryName",  source = "category.name")
+    @Mapping(target = "parentTaskId",  source = "parentTask.taskId")
+    @Mapping(target = "parentTaskName",source = "parentTask.taskName")
+    @Mapping(target = "tags",          source = "tags")         // delegated to TagMapper
+    @Mapping(target = "subTasks",      source = "subTasks")     // recursive toSummaryDto
+    TaskDetailDto toDetailDto(Task task);
+
+
+    @Mapping(target = "taskId",          source = "taskId")
+    @Mapping(target = "progressPercent", source = "progressPercent")
+    @Mapping(target = "estimatedHours",  source = "estimatedHours")
+    @Mapping(target = "actualHours",     source = "actualHours")
+    @Mapping(target = "createdAt",       source = "createdAt")
+    @Mapping(target = "assignedAt",      source = "assignedAt")
+    @Mapping(target = "startedAt",       source = "startedAt")
+    @Mapping(target = "completedAt",     source = "completedAt")
+    // To be set manually in service
+    @Mapping(target = "totalSubTasks",         ignore = true)
+    @Mapping(target = "completedSubTasks",     ignore = true)
+    @Mapping(target = "subTaskCompletionRate", ignore = true)
+    @Mapping(target = "hoursVariance",         ignore = true)
+    @Mapping(target = "blockedByCount",        ignore = true)
+    @Mapping(target = "blockingCount",         ignore = true)
+    @Mapping(target = "tagCount",              ignore = true)
+    @Mapping(target = "ageInDays",             ignore = true)
+    @Mapping(target = "isOverdue",             ignore = true)
+    TaskStatsDto toStatsDto(Task task);
 
 
 

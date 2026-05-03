@@ -1,9 +1,6 @@
 package com.meetup.taskservice.dto.response;
 
-import com.meetup.taskservice.domain.enums.RecurrenceInterval;
-import com.meetup.taskservice.domain.enums.TaskPriority;
-import com.meetup.taskservice.domain.enums.TaskStatus;
-import com.meetup.taskservice.domain.enums.TaskVisibility;
+import com.meetup.taskservice.domain.enums.*;
 import com.meetup.taskservice.dto.CategorySummaryDto;
 import com.meetup.taskservice.dto.TagDto;
 import lombok.AllArgsConstructor;
@@ -40,6 +37,7 @@ public class TaskResponseDto {
     private CategorySummaryDto category;        // from CategoryMapper
     private String           createdBy;
     private String           assignedTo;
+    private AssignedToType assignedToType;
     private String           reviewedBy;
     private TaskStatus status;
     private boolean          requiresReview;

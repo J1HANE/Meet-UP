@@ -1,5 +1,6 @@
 package com.meetup.taskservice.dto.request;
 
+import com.meetup.taskservice.domain.enums.AssignedToType;
 import com.meetup.taskservice.domain.enums.RecurrenceInterval;
 import com.meetup.taskservice.domain.enums.TaskPriority;
 import com.meetup.taskservice.domain.enums.TaskVisibility;
@@ -43,6 +44,7 @@ public class TaskCreateDto {
     private TaskPriority priority;
     private Short            points;
     private String           assignedTo;
+    private AssignedToType assignedToType;
     private String           reviewedBy;
     private boolean          requiresReview;
     private TaskVisibility visibility;

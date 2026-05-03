@@ -1,9 +1,6 @@
 package com.meetup.taskservice.domain.entity;
 
-import com.meetup.taskservice.domain.enums.RecurrenceInterval;
-import com.meetup.taskservice.domain.enums.TaskPriority;
-import com.meetup.taskservice.domain.enums.TaskStatus;
-import com.meetup.taskservice.domain.enums.TaskVisibility;
+import com.meetup.taskservice.domain.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -82,6 +79,9 @@ public class Task {
 
 
     private String assignedTo;
+
+    @Enumerated(EnumType.STRING)
+    private AssignedToType assignedToType = AssignedToType.PERSON;
 
 
     private String reviewedBy;
