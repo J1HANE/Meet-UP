@@ -25,7 +25,7 @@ class RabbitMQEventListenerTest {
         String taskId = "task-123";
         TaskCreatedEvent event = new TaskCreatedEvent(taskId, "Task Title", "Description", LocalDateTime.now());
 
-        listener.onTaskEvent(event);
+        listener.onTaskCreatedEvent(event);
 
         verify(groupService).createLatentGroup(taskId);
     }
@@ -35,7 +35,7 @@ class RabbitMQEventListenerTest {
         String taskId = "task-123";
         TaskCompletedEvent event = new TaskCompletedEvent(taskId, LocalDateTime.now());
 
-        listener.onTaskEvent(event);
+        listener.onTaskCompletedEvent(event);
 
         verify(groupService).dissolveGroupForTask(taskId);
     }
