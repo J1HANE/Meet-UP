@@ -3,11 +3,10 @@ package com.meetup.taskservice.domain.entity;
 
 import com.meetup.taskservice.config.TaskServiceConfig;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -15,9 +14,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Category {
     @Id
     @GeneratedValue
@@ -47,4 +48,17 @@ public class Category {
     @LastModifiedDate
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Category other)) return false;
+        return categoryId != null && categoryId.equals(other.categoryId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

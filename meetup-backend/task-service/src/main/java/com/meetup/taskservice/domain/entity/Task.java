@@ -1,13 +1,8 @@
 package com.meetup.taskservice.domain.entity;
 
-import com.meetup.taskservice.domain.enums.RecurrenceInterval;
-import com.meetup.taskservice.domain.enums.TaskPriority;
-import com.meetup.taskservice.domain.enums.TaskStatus;
-import com.meetup.taskservice.domain.enums.TaskVisibility;
+import com.meetup.taskservice.domain.enums.*;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,7 +19,8 @@ import java.util.*;
                 @Index(name = "idx_tasks_dates",       columnList = "start_date, end_date")
         }
 )
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Task {
@@ -83,6 +79,9 @@ public class Task {
 
 
     private String assignedTo;
+
+    @Enumerated(EnumType.STRING)
+    private AssignedToType assignedToType = AssignedToType.PERSON;
 
 
     private String reviewedBy;
@@ -150,4 +149,17 @@ public class Task {
     private OffsetDateTime submittedAt;
     private OffsetDateTime completedAt;
     private OffsetDateTime cancelledAt;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Task other)) return false;
+        return taskId != null && taskId.equals(other.taskId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
