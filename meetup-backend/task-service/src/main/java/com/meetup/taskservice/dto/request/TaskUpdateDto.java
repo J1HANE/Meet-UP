@@ -26,7 +26,6 @@ public class TaskUpdateDto {
     @NotBlank
     private String           taskName;
     private String           taskDescription;
-    private String           contextId;
 
     private UUID categoryId;
     private Set<UUID> tagIds;
