@@ -25,17 +25,15 @@ public class GanttService {
     private final TaskRepository taskRepository;
     private final GanttMapper ganttMapper;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Public API
-    // ─────────────────────────────────────────────────────────────────────────
 
-    public GanttResponseDto getGanttData() {
-        List<Task> allTasks = taskRepository.findAllWithRelations();
+
+    public GanttResponseDto getGanttData(String contextId) {
+        List<Task> allTasks = taskRepository.findAllWithRelations(contextId);
         return buildGantt(allTasks);
     }
 
-    public GanttResponseDto getGanttDataByCategory(UUID categoryId) {
-        List<Task> tasks = taskRepository.findAllWithRelationsByCategoryId(categoryId);
+    public GanttResponseDto getGanttDataByCategory(UUID categoryId, String contextId) {
+        List<Task> tasks = taskRepository.findAllWithRelationsByCategoryId(categoryId, contextId);
         return buildGantt(tasks);
     }
 
@@ -164,9 +162,7 @@ public class GanttService {
         return order;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Step 2 — Tree flattening (DFS, roots first)
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     private List<GanttTaskDto> flattenToRows(List<Task> allTasks, Set<UUID> criticalPathIds) {
         List<Task> roots = allTasks.stream()
@@ -183,9 +179,7 @@ public class GanttService {
         task.getSubTasks().forEach(child -> dfs(child, depth + 1, criticalPathIds, rows));
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Step 3 — Dependency arrows
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     private List<GanttDependencyDto> collectDependencies(List<Task> tasks) {
         return tasks.stream()
@@ -194,9 +188,7 @@ public class GanttService {
                 .toList();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Step 4 — Meta
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     private GanttMetaDto buildMeta(List<Task> tasks) {
         List<Task> scheduled = tasks.stream()
@@ -205,6 +197,7 @@ public class GanttService {
 
         LocalDate projectStart = scheduled.stream()
                 .map(Task::getStartDate).min(Comparator.naturalOrder()).orElse(LocalDate.now());
+
         LocalDate projectEnd = scheduled.stream()
                 .map(Task::getEndDate).max(Comparator.naturalOrder()).orElse(LocalDate.now());
 

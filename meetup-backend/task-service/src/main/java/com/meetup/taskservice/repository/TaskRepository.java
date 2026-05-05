@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
+    List<Task> findByContextId(String contextId);
+
     @Query("""
             SELECT DISTINCT t FROM Task t
             LEFT JOIN FETCH t.category
@@ -21,9 +23,10 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             LEFT JOIN FETCH t.dependencies d
             LEFT JOIN FETCH d.dependsOnTask
             LEFT JOIN FETCH t.dependents
-            WHERE t.deletedAt IS NULL
+            WHERE t.contextId = :contextId
+              AND t.deletedAt IS NULL
             """)
-    List<Task> findAllWithRelations();
+    List<Task> findAllWithRelations(@Param("contextId") String contextId);
 
     @Query("""
             SELECT DISTINCT t FROM Task t
@@ -34,8 +37,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             LEFT JOIN FETCH d.dependsOnTask
             LEFT JOIN FETCH t.dependents
             WHERE t.category.categoryId = :categoryId
+              AND t.contextId = :contextId
               AND t.deletedAt IS NULL
             """)
-    List<Task> findAllWithRelationsByCategoryId(@Param("categoryId") UUID categoryId);
+    List<Task> findAllWithRelationsByCategoryId(@Param("categoryId") UUID categoryId, @Param("contextId") String contextId);
 
 }

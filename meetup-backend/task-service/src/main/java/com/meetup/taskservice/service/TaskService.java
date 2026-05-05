@@ -37,27 +37,23 @@ public class TaskService {
     private final TaskDependencyRepository taskDependencyRepository;
 
 
-
-
-    @Transactional
-    public List<TaskResponseDto> getTasks() {
-        return taskRepository.findAll()
+    @Transactional(readOnly = true)
+    public List<TaskResponseDto> getTasks(String contextId) {
+        return taskRepository.findByContextId(contextId)
                 .stream()
                 .map(taskMapper::toResponseDto)
                 .toList();
     }
 
-    @Transactional
-    public TaskResponseDto getTaskById(UUID id) {
-        Task task = taskRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Task not found with ID: " + id));
-        return taskMapper.toResponseDto(task);
+    @Transactional(readOnly = true)
+    public TaskResponseDto getTaskById(String contextId, UUID id) {
+        return taskMapper.toResponseDto(findTask(contextId, id));
     }
 
     @Transactional
-    public TaskResponseDto createTask(TaskCreateDto taskCreateDto) {
+    public TaskResponseDto createTask(String contextId, TaskCreateDto taskCreateDto) {
         Task newTask = taskMapper.toEntity(taskCreateDto);
-
+        newTask.setContextId(contextId);
 
         //Resolve categoryId to Category entity
         if(taskCreateDto.getCategoryId() != null) {
@@ -121,9 +117,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updateTask(UUID id, TaskUpdateDto taskUpdateDto) {
-        Task task = taskRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Task not found with ID: " + id));
+    public TaskResponseDto updateTask(String contextId, UUID id, TaskUpdateDto taskUpdateDto) {
+        Task task = findTask(contextId, id);
 
         boolean hasChanges = false;
 
@@ -205,25 +200,23 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(UUID id) {
-        if (!taskRepository.existsById(id)) {
-            throw new EntityNotFoundException("Task not found with ID: " + id);
-        }
+    public void deleteTask(String contextId, UUID id) {
+        findTask(contextId, id);
         taskRepository.deleteById(id);
     }
 
 
-    public TaskDetailDto getTaskDetail(UUID id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + id));
-        return taskMapper.toDetailDto(task);
+    @Transactional(readOnly = true)
+    public TaskDetailDto getTaskDetail(String contextId, UUID taskId) {
+        return taskMapper.toDetailDto(findTask(contextId, taskId));
     }
+
 
 
     //Tags
     @Transactional
-    public TaskResponseDto addTag(UUID taskId, UUID tagId) {
-        Task task = findTask(taskId);
+    public TaskResponseDto addTag(String contextId, UUID taskId, UUID tagId) {
+        Task task = findTask(contextId, taskId);
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new EntityNotFoundException("Tag not found with ID: " + tagId));
         task.getTags().add(tag);
@@ -232,8 +225,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto removeTag(UUID taskId, UUID tagId) {
-        Task task = findTask(taskId);
+    public TaskResponseDto removeTag(String contextId, UUID taskId, UUID tagId) {
+        Task task = findTask(contextId, taskId);
         boolean removed = task.getTags().removeIf(t -> t.getTagId().equals(tagId));
         if (!removed) throw new EntityNotFoundException("Tag not found on this task with ID: " + tagId);
         touch(task);
@@ -241,8 +234,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto replaceTags(UUID taskId, Set<UUID> tagIds) {
-        Task task = findTask(taskId);
+    public TaskResponseDto replaceTags(String contextId, UUID taskId, Set<UUID> tagIds) {
+        Task task = findTask(contextId, taskId);
         Set<Tag> newTags = tagIds.stream()
                 .map(tid -> tagRepository.findById(tid)
                         .orElseThrow(() -> new EntityNotFoundException("Tag not found with ID: " + tid)))
@@ -254,17 +247,16 @@ public class TaskService {
 
 
     //Sub tasks
-    public List<TaskSummaryDto> getSubTasks(UUID taskId) {
-        Task task = findTask(taskId);
-        return task.getSubTasks()
+    public List<TaskSummaryDto> getSubTasks(String contextId, UUID taskId) {
+        return findTask(contextId, taskId).getSubTasks()
                 .stream()
                 .map(taskMapper::toSummaryDto)
                 .toList();
     }
 
 
-    public TaskDependencySummaryDto getDependencySummary(UUID taskId) {
-        findTask(taskId); // ensure task exists
+    public TaskDependencySummaryDto getDependencySummary(String contextId, UUID taskId) {
+        findTask(contextId, taskId); // ensure task exists
         List<TaskDependency> blockedBy = taskDependencyRepository.findByTask_TaskId(taskId);
         List<TaskDependency> blocking  = taskDependencyRepository.findByDependsOnTask_TaskId(taskId);
         return new TaskDependencySummaryDto(
@@ -278,8 +270,8 @@ public class TaskService {
 
     // Assignee
     @Transactional
-    public TaskResponseDto assign(UUID id, String assignedTo, AssignedToType assignedToType) {
-        Task task = findTask(id);
+    public TaskResponseDto assign(String contextId, UUID id, String assignedTo, AssignedToType assignedToType) {
+        Task task = findTask(contextId, id);
         task.setAssignedTo(assignedTo);
         task.setAssignedToType(assignedToType != null ? assignedToType : AssignedToType.PERSON);
         task.setAssignedAt(OffsetDateTime.now());
@@ -288,8 +280,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto unassign(UUID id) {
-        Task task = findTask(id);
+    public TaskResponseDto unassign(String contextId, UUID id) {
+        Task task = findTask(contextId, id);
         task.setAssignedTo(null);
         task.setAssignedAt(null);
         touch(task);
@@ -300,8 +292,8 @@ public class TaskService {
     // Patch Operations
 
     @Transactional
-    public TaskResponseDto updatePriority(UUID id, TaskPriority priority) {
-        Task task = findTask(id);
+    public TaskResponseDto updatePriority(String contextId, UUID id, TaskPriority priority) {
+        Task task = findTask(contextId, id);
         if (priority.equals(task.getPriority())) return taskMapper.toResponseDto(task);
         task.setPriority(priority);
         touch(task);
@@ -309,8 +301,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updatePoints(UUID id, Short points) {
-        Task task = findTask(id);
+    public TaskResponseDto updatePoints(String contextId, UUID id, Short points) {
+        Task task = findTask(contextId, id);
         if (points != null && points < 0) throw new IllegalArgumentException("Points cannot be negative");
         if (Objects.equals(points, task.getPoints())) return taskMapper.toResponseDto(task);
         task.setPoints(points);
@@ -319,8 +311,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updateReviewer(UUID id, String reviewedBy) {
-        Task task = findTask(id);
+    public TaskResponseDto updateReviewer(String contextId, UUID id, String reviewedBy) {
+        Task task = findTask(contextId, id);
         if (Objects.equals(reviewedBy, task.getReviewedBy())) return taskMapper.toResponseDto(task);
         task.setReviewedBy(reviewedBy);
         touch(task);
@@ -328,16 +320,16 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto toggleMilestone(UUID id) {
-        Task task = findTask(id);
+    public TaskResponseDto toggleMilestone(String contextId, UUID id) {
+        Task task = findTask(contextId, id);
         task.setMilestone(!task.isMilestone());
         touch(task);
         return taskMapper.toResponseDto(taskRepository.save(task));
     }
 
     @Transactional
-    public TaskResponseDto setMilestone(UUID id, boolean isMilestone) {
-        Task task = findTask(id);
+    public TaskResponseDto setMilestone(String contextId, UUID id, boolean isMilestone) {
+        Task task = findTask(contextId, id);
         if (task.isMilestone() == isMilestone) return taskMapper.toResponseDto(task);
         task.setMilestone(isMilestone);
         touch(task);
@@ -345,8 +337,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updateRecurrence(UUID id, RecurrenceInterval interval) {
-        Task task = findTask(id);
+    public TaskResponseDto updateRecurrence(String contextId, UUID id, RecurrenceInterval interval) {
+        Task task = findTask(contextId, id);
         if (interval == null) {
             task.setRecurring(false);
             task.setRecurrenceInterval(null);
@@ -359,8 +351,8 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updateDates(UUID id, TaskDatesDto dto) {
-        Task task = findTask(id);
+    public TaskResponseDto updateDates(String contextId, UUID id, TaskDatesDto dto) {
+        Task task = findTask(contextId, id);
         if (dto.getStartDate() != null)     task.setStartDate(dto.getStartDate());
         if (dto.getEndDate() != null)        task.setEndDate(dto.getEndDate());
         if (dto.getBaselineStart() != null)  task.setBaselineStart(dto.getBaselineStart());
@@ -372,8 +364,8 @@ public class TaskService {
 
 
     @Transactional
-    public TaskResponseDto updateHours(UUID id, TaskHoursDto dto) {
-        Task task = findTask(id);
+    public TaskResponseDto updateHours(String contextId, UUID id, TaskHoursDto dto) {
+        Task task = findTask(contextId, id);
         if (dto.getEstimatedHours() != null) task.setEstimatedHours(dto.getEstimatedHours());
         if (dto.getActualHours() != null)    task.setActualHours(dto.getActualHours());
         touch(task);
@@ -382,10 +374,10 @@ public class TaskService {
 
 
     @Transactional
-    public TaskResponseDto updateProgress(UUID id, short progressPercent) {
+    public TaskResponseDto updateProgress(String contextId, UUID id, short progressPercent) {
         if (progressPercent < 0 || progressPercent > 100)
             throw new IllegalArgumentException("Progress must be between 0 and 100");
-        Task task = findTask(id);
+        Task task = findTask(contextId, id);
         task.setProgressPercent(progressPercent);
         touch(task);
         return taskMapper.toResponseDto(taskRepository.save(task));
@@ -393,8 +385,8 @@ public class TaskService {
 
 
     @Transactional
-    public TaskResponseDto updateVisibility(UUID id, TaskVisibility visibility) {
-        Task task = findTask(id);
+    public TaskResponseDto updateVisibility(String contextId, UUID id, TaskVisibility visibility) {
+        Task task = findTask(contextId, id);
         if (visibility.equals(task.getVisibility())) return taskMapper.toResponseDto(task);
         task.setVisibility(visibility);
         touch(task);
@@ -403,8 +395,8 @@ public class TaskService {
 
 
     @Transactional
-    public TaskResponseDto updateStatus(UUID id, TaskStatus status) {
-        Task task = findTask(id);
+    public TaskResponseDto updateStatus(String contextId, UUID id, TaskStatus status) {
+        Task task = findTask(contextId, id);
         if (status.equals(task.getStatus())) return taskMapper.toResponseDto(task);
         task.setStatus(status);
         applyStatusTimestamp(task, status);
@@ -413,16 +405,16 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto toggleRequiresReview(UUID id) {
-        Task task = findTask(id);
+    public TaskResponseDto toggleRequiresReview(String contextId, UUID id) {
+        Task task = findTask(contextId, id);
         task.setRequiresReview(!task.isRequiresReview());
         touch(task);
         return taskMapper.toResponseDto(taskRepository.save(task));
     }
 
     @Transactional
-    public TaskResponseDto updateCategory(UUID taskId, UUID categoryId) {
-        Task task = findTask(taskId);
+    public TaskResponseDto updateCategory(String contextId, UUID taskId, UUID categoryId) {
+        Task task = findTask(contextId, taskId);
         if (categoryId == null) {
             task.setCategory(null);
         } else {
@@ -436,9 +428,8 @@ public class TaskService {
 
 
     //Statistics
-    public TaskStatsDto getTaskStats(UUID id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + id));
+    public TaskStatsDto getTaskStats(String contextId, UUID id) {
+        Task task = findTask(contextId, id);
 
         long totalSubTasks     = task.getSubTasks().size();
         long completedSubTasks = task.getSubTasks().stream()
@@ -480,9 +471,13 @@ public class TaskService {
 
 
     // Helper functions
-    private Task findTask(UUID id) {
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + id));
+    private Task findTask(String contextId, UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
+        if (!task.getContextId().equals(contextId)) {
+            throw new EntityNotFoundException("Task not found with ID: " + taskId);
+        }
+        return task;
     }
 
 
@@ -496,6 +491,9 @@ public class TaskService {
             throw new IllegalArgumentException("End date cannot be before start date");
         }
     }
+
+
+
 
     private void applyStatusTimestamp(Task task, TaskStatus status) {
         OffsetDateTime now = OffsetDateTime.now();

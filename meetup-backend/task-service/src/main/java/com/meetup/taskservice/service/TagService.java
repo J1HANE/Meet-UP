@@ -2,6 +2,7 @@ package com.meetup.taskservice.service;
 
 import com.meetup.taskservice.domain.entity.Category;
 import com.meetup.taskservice.domain.entity.Tag;
+import com.meetup.taskservice.domain.entity.Task;
 import com.meetup.taskservice.dto.request.TagCreateDto;
 import com.meetup.taskservice.dto.request.TagUpdateDto;
 import com.meetup.taskservice.dto.response.TagResponseDto;
@@ -23,35 +24,33 @@ public class TagService {
     private final TagMapper tagMapper;
 
     @Transactional
-    public List<TagResponseDto> getTags() {
+    public List<TagResponseDto> getTags(String contextId) {
 
-        return tagRepository.findAll()
+        return tagRepository.findByContextId(contextId)
                 .stream()
                 .map(tagMapper::toResponseDto)
                 .toList();
     }
 
-    public TagResponseDto getTagById(UUID id) {
-        Tag tag = tagRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Tag not found with ID: " + id));
+    public TagResponseDto getTagById(String contextId, UUID id) {
+        Tag tag = findTag(contextId, id);
         return tagMapper.toResponseDto(tag);
     }
 
-    public TagResponseDto createTag(TagCreateDto tagCreateDto) {
-        if (tagRepository.existsByName(tagCreateDto.getName())) {
+    public TagResponseDto createTag(String contextId, TagCreateDto tagCreateDto) {
+        if (tagRepository.existsByNameIgnoreCaseAndContextId(contextId, tagCreateDto.getName())) {
             throw new EntityAlreadyExistsException("A tag with this name already exists: " + tagCreateDto.getName());
         }
 
         Tag newTag = tagMapper.toEntity(tagCreateDto);
-        //CreatedBy to be gotten from security context;
+        newTag.setContextId(contextId);
         newTag.setCreatedBy("user-1");
         Tag savedTag = tagRepository.save(newTag);
         return tagMapper.toResponseDto(savedTag);
     }
 
-    public TagResponseDto updateTag(UUID id, TagUpdateDto tagUpdateDto) {
-        Tag tag = tagRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Tag not found with ID: " + id));
+    public TagResponseDto updateTag(String contextId, UUID id, TagUpdateDto tagUpdateDto) {
+        Tag tag = findTag(contextId, id);
 
         boolean hasChanges = false;
 
@@ -79,10 +78,18 @@ public class TagService {
         return tagMapper.toResponseDto(tagRepository.save(tag));
     }
 
-    public void deleteTag(UUID id) {
-        if (!tagRepository.existsById(id)) {
-            throw new EntityNotFoundException("Tag not found with ID: " + id);
-        }
+    public void deleteTag(String contextId, UUID id) {
+        findTag(contextId, id);
         tagRepository.deleteById(id);
+    }
+
+    //Helper functions
+    private Tag findTag(String contextId, UUID tagId) {
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found with ID: " + tagId));
+        if (!tag.getContextId().equals(contextId)) {
+            throw new EntityNotFoundException("Tag not found with ID: " + tagId);
+        }
+        return tag;
     }
 }

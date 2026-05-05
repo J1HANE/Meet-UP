@@ -12,19 +12,19 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/tasks/gantt")
+@RequestMapping("/context/{contextId}/tasks/gantt")
 @RequiredArgsConstructor
 public class GanttController {
 
     private final GanttService ganttService;
 
     @GetMapping
-    public ResponseEntity<GanttResponseDto> getGantt() {
-        return ResponseEntity.ok(ganttService.getGanttData());
+    public ResponseEntity<GanttResponseDto> getGantt(@PathVariable String contextId) {
+        return ResponseEntity.ok(ganttService.getGanttData(contextId));
     }
 
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<GanttResponseDto> getGanttByCategory(@PathVariable UUID categoryId) {
-        return ResponseEntity.ok(ganttService.getGanttDataByCategory(categoryId));
+    public ResponseEntity<GanttResponseDto> getGanttByCategory(@PathVariable UUID categoryId, @PathVariable String contextId) {
+        return ResponseEntity.ok(ganttService.getGanttDataByCategory(categoryId, contextId));
     }
 }

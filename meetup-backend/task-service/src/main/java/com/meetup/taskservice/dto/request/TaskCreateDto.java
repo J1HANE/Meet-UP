@@ -7,6 +7,7 @@ import com.meetup.taskservice.domain.enums.TaskVisibility;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,31 +25,32 @@ import java.util.UUID;
 public class TaskCreateDto {
 
     @NotBlank
-    private String           taskName;
-    private String           taskDescription;
-    private String           contextId;
+    private String              taskName;
+    private String              taskDescription;
 
-    private UUID parentTaskId;      // resolved to Task in service
-    private UUID             categoryId;        // resolved to Category in service
-    private Set<UUID> tagIds;            // resolved to Set<Tag> in service
-    private Set<UUID>        dependencyIds;     // resolved to TaskDependency in service
+    private UUID                parentTaskId;      // resolved to Task in service
+    private UUID                categoryId;        // resolved to Category in service
+    private Set<UUID>           tagIds;            // resolved to Set<Tag> in service
+    private Set<UUID>           dependencyIds;     // resolved to TaskDependency in service
 
-    private LocalDate startDate;
-    private LocalDate        endDate;
-    private LocalDate        baselineStart;
-    private LocalDate        baselineEnd;
 
-    @DecimalMin("0.00") @DecimalMax("9999.99")
-    private BigDecimal estimatedHours;
+    private LocalDate           startDate;
+    private LocalDate           endDate;
+    private LocalDate           baselineStart;
+    private LocalDate           baselineEnd;
 
-    private TaskPriority priority;
-    private Short            points;
-    private String           assignedTo;
-    private AssignedToType assignedToType;
-    private String           reviewedBy;
-    private boolean          requiresReview;
-    private TaskVisibility visibility;
-    private boolean          isRecurring;
-    private RecurrenceInterval recurrenceInterval;
-    private boolean          isMilestone;
+    @DecimalMin("0.00")
+    @DecimalMax("9999.99")
+    private BigDecimal          estimatedHours;
+
+    private TaskPriority        priority;
+    private Short               points;
+    private String              assignedTo;
+    private AssignedToType      assignedToType;
+    private String              reviewedBy;
+    private boolean             requiresReview;
+    private TaskVisibility      visibility;
+    private boolean             isRecurring;
+    private RecurrenceInterval  recurrenceInterval;
+    private boolean             isMilestone;
 }

@@ -33,6 +33,8 @@ public class Tag {
 
     private String icon;
 
+    private String contextId;
+
 
     @ManyToMany(mappedBy = "tags")
     private Set<Task> tasks = new HashSet<>();

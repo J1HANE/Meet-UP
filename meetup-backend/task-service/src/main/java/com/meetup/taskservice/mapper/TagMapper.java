@@ -29,6 +29,7 @@ public interface TagMapper {
     @Mapping(target = "tagId",    ignore = true)
     @Mapping(target = "tasks",    ignore = true)
     @Mapping(target = "createdBy",    ignore = true)
+    @Mapping(target = "contextId",    ignore = true)
     @Mapping(target = "createdAt", expression = "java(java.time.OffsetDateTime.now())")
     Tag toEntity(TagCreateDto dto);
 
@@ -38,6 +39,7 @@ public interface TagMapper {
     @Mapping(target = "tasks",     ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)  // ownership never changes
+    @Mapping(target = "contextId", ignore = true)
     void updateEntityFromDto(TagUpdateDto dto, @MappingTarget Tag tag);
 
     // ─── List mappings ────────────────────────────────────────────────────────

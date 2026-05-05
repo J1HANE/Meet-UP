@@ -56,6 +56,7 @@ public interface TaskMapper {
     @Mapping(target = "cancelledAt",     ignore = true)
     @Mapping(target = "actualHours",     ignore = true)
     @Mapping(target = "createdBy",     ignore = true)
+    @Mapping(target = "contextId",     ignore = true)
     Task toEntity(TaskCreateDto dto);
 
 
@@ -81,6 +82,7 @@ public interface TaskMapper {
     @Mapping(target = "submittedAt",     ignore = true)
     @Mapping(target = "completedAt",     ignore = true)
     @Mapping(target = "cancelledAt",     ignore = true)
+    @Mapping(target = "contextId",     ignore = true)
     void updateEntityFromDto(TaskUpdateDto dto, @MappingTarget Task task);
 
 
