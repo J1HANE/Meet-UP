@@ -268,4 +268,15 @@ public class GroupService {
             personRepository.save(p1);
         }
     }
+
+    @Transactional("transactionManager")
+    public List<GroupNode> getAllGroups() {
+        return groupRepository.findAll();
+    }
+
+    @Transactional("transactionManager")
+    public GroupNode getGroupById(String groupId) {
+        return groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+    }
 }
