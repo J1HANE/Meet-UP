@@ -6,7 +6,7 @@ import { getMeetingById } from "@/lib/meetings";
 import { useState, useEffect, useRef } from "react";
 import { chatClient, ChatMessage } from "@/lib/chat";
 
-export const Route = createFileRoute("/meeting/$id")({
+export const Route = createFileRoute("/meeting")({
   component: MeetingRoomPage,
   head: () => ({
     meta: [

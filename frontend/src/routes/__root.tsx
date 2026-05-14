@@ -2,8 +2,11 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from
 import { AppLayout } from "@/components/AppLayout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Toaster } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import appCss from "../styles.css?url";
+
+const queryClient = new QueryClient();
 
 function NotFoundComponent() {
   return (
@@ -71,13 +74,15 @@ function RootComponent() {
   const isLoginPage = location.pathname === "/login" || location.pathname === "/register";
 
   return (
-    <AuthProvider>
-      {isLoginPage ? (
-        <Outlet />
-      ) : (
-        <AppLayout />
-      )}
-      <Toaster />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        {isLoginPage ? (
+          <Outlet />
+        ) : (
+          <AppLayout />
+        )}
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

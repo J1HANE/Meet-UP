@@ -1,5 +1,6 @@
 package com.meetup.tweeningservice.domain.relationship;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.meetup.tweeningservice.domain.node.PersonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,5 +27,6 @@ public class MemberOf {
     private String roleInGroup;
 
     @TargetNode
+    @JsonIgnoreProperties("collaborations")
     private PersonNode person;
 }
