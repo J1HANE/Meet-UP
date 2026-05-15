@@ -310,6 +310,25 @@ public class TaskService {
         return taskMapper.toResponseDto(taskRepository.save(task));
     }
 
+    public TaskResponseDto updateTaskName(String contextId, UUID id, String name) {
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Task name must not be blank");
+        }
+        name = name.trim();
+        if (name.length() > 255) {
+            throw new IllegalArgumentException("Task name must not exceed 255 characters");
+        }
+
+        name = name.replaceAll("<[^>]*>", "")
+                .replaceAll("\\p{Cntrl}&&[^\t]", "");
+        Task task = findTask(contextId, id);
+        task.setTaskName(name);
+        touch(task);
+
+        return taskMapper.toResponseDto(taskRepository.save(task));
+    }
+
     @Transactional
     public TaskResponseDto updateReviewer(String contextId, UUID id, String reviewedBy) {
         Task task = findTask(contextId, id);
