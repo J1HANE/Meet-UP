@@ -12,11 +12,22 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/groups")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class GroupController {
 
     private final GroupService groupService;
     private final MembershipResolverService membershipResolverService;
+
+    @GetMapping
+    public ResponseEntity<List<GroupNode>> getAllGroups() {
+        return ResponseEntity.ok(groupService.getAllGroups());
+    }
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupNode> getGroupById(@PathVariable String groupId) {
+        return ResponseEntity.ok(groupService.getGroupById(groupId));
+    }
 
     @PostMapping("/form")
     public ResponseEntity<GroupNode> formGroup(@RequestParam String taskId, 

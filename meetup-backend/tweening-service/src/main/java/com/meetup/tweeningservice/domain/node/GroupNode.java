@@ -25,6 +25,7 @@ import static org.springframework.data.neo4j.core.schema.Relationship.Direction.
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@com.fasterxml.jackson.annotation.JsonIdentityInfo(generator = com.fasterxml.jackson.annotation.ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class GroupNode {
 
     @Id
@@ -56,5 +57,11 @@ public class GroupNode {
 
     @Relationship(type = "SIBLING_OF", direction = OUTGOING)
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<SiblingGroup> siblings = new ArrayList<>();
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public List<SiblingGroup> getSiblings() {
+        return siblings;
+    }
 }

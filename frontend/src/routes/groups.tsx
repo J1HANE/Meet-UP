@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Users, GitFork, GitMerge, ListTodo, Network, Clock } from "lucide-react";
+import { Users, GitFork, GitMerge, ListTodo, Network, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { groupsApi } from "@/lib/api/groups";
 
 export const Route = createFileRoute("/groups")({
   component: GroupsPage,
@@ -13,14 +15,11 @@ export const Route = createFileRoute("/groups")({
   }),
 });
 
-const groups = [
-  { name: "Frontend Team", members: ["JD", "SK", "EM", "AJ"], tasks: 8, meetings: 12 },
-  { name: "Backend Team", members: ["SK", "MC", "JD", "LK"], tasks: 5, meetings: 9 },
-  { name: "Design Ops", members: ["EM", "AJ", "SK", "MC", "JD", "LK"], tasks: 12, meetings: 6 },
-  { name: "Security Guild", members: ["JD", "MC"], tasks: 3, meetings: 4 },
-];
-
 function GroupsPage() {
+  const { data: groups = [], isLoading } = useQuery({
+    queryKey: ["groups"],
+    queryFn: groupsApi.getAllGroups,
+  });
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto space-y-6">
       <div>
@@ -28,6 +27,21 @@ function GroupsPage() {
         <p className="text-muted-foreground text-sm mt-1">Manage your collaborative groups (tweens)</p>
       </div>
 
+      <div className="flex justify-end">
+        <Link to="/groups/form">
+          <Button variant="default" className="gap-2">
+            <Plus className="w-4 h-4" /> Form New Group
+          </Button>
+        </Link>
+      </div>
+
+      {isLoading ? (
+        <div className="text-muted-foreground">Loading groups...</div>
+      ) : groups.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground bg-card rounded-2xl border border-border">
+          No groups found. Form a new group to start collaborating!
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {groups.map((g, i) => (
           <motion.div
@@ -43,31 +57,41 @@ function GroupsPage() {
                 <div className="w-10 h-10 rounded-xl gradient-surface flex items-center justify-center">
                   <Users className="w-5 h-5 text-primary" />
                 </div>
-                <h3 className="font-heading font-semibold text-foreground">{g.name}</h3>
+                <h3 className="font-heading font-semibold text-foreground">{g.name || "Unnamed Group"}</h3>
               </div>
             </div>
 
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2 py-1 rounded-full ${
+                g.state === 'ACTIVE' ? 'bg-green-500/10 text-green-500' : 
+                g.state === 'FORMING' ? 'bg-blue-500/10 text-blue-500' : 
+                'bg-yellow-500/10 text-yellow-500'
+              }`}>
+                {g.state}
+              </span>
+            </div>
+
             <div className="flex -space-x-2">
-              {g.members.map((m, j) => (
-                <div key={j} className="w-8 h-8 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-xs font-bold text-secondary-foreground">
-                  {m}
+              {(g.members || []).map((m, j) => (
+                <div key={j} className="w-8 h-8 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-xs font-bold text-secondary-foreground" title={m.person.id}>
+                  {(m.person.name || m.person.id).substring(0, 2).toUpperCase()}
                 </div>
               ))}
             </div>
 
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><ListTodo className="w-3.5 h-3.5" /> {g.tasks} tasks</span>
-              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {g.meetings} meetings</span>
-              <span className="flex items-center gap-1"><Network className="w-3.5 h-3.5" /> Graph</span>
+              <span className="flex items-center gap-1"><ListTodo className="w-3.5 h-3.5" /> Task: {g.taskId || "None"}</span>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm"><GitFork className="w-3.5 h-3.5" /> Fork</Button>
-              <Button variant="outline" size="sm"><GitMerge className="w-3.5 h-3.5" /> Merge</Button>
+              <Link to={`/groups/$groupId`} params={{ groupId: g.id }}>
+                <Button variant="outline" size="sm">View Details</Button>
+              </Link>
             </div>
           </motion.div>
         ))}
       </div>
+      )}
     </motion.div>
   );
 }
