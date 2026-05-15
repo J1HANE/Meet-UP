@@ -4,8 +4,12 @@ package com.meetup.taskservice.controller;
 import com.meetup.taskservice.dto.*;
 import com.meetup.taskservice.dto.patch.*;
 import com.meetup.taskservice.dto.request.TaskCreateDto;
+import com.meetup.taskservice.dto.request.TaskDependencyCreateDto;
+import com.meetup.taskservice.dto.request.TaskDependencyUpdateDto;
 import com.meetup.taskservice.dto.request.TaskUpdateDto;
+import com.meetup.taskservice.dto.response.TaskDependencyResponseDto;
 import com.meetup.taskservice.dto.response.TaskResponseDto;
+import com.meetup.taskservice.service.TaskDependencyService;
 import com.meetup.taskservice.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ import java.util.UUID;
 public class TaskController {
 
     private final TaskService taskService;
+    private final TaskDependencyService dependencyService;
 
     @GetMapping
     public ResponseEntity<List<TaskResponseDto>> getTasks(@PathVariable String contextId) {
@@ -92,6 +97,14 @@ public class TaskController {
             @RequestBody @Valid PointsPatchDto dto,
             @PathVariable String contextId) {
         return ResponseEntity.ok(taskService.updatePoints(contextId, id, dto.points()));
+    }
+
+    @PatchMapping("/{id}/name")
+    public ResponseEntity<TaskResponseDto> updateName(
+            @PathVariable String contextId,
+            @PathVariable UUID id,
+            @RequestBody @Valid NamePatchDto dto) {
+        return ResponseEntity.ok(taskService.updateTaskName(contextId, id, dto.name()));
     }
 
     @PatchMapping("/{id}/assign")
@@ -211,6 +224,44 @@ public class TaskController {
     public ResponseEntity<Void> deleteTask(@PathVariable UUID id,
                                            @PathVariable String contextId) {
         taskService.deleteTask(contextId, id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+    //Dependencies
+
+    @GetMapping("/{id}/dependencies")
+    public ResponseEntity<List<TaskDependencyResponseDto>> getDependencies(
+            @PathVariable String contextId,
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(dependencyService.getDependencies(contextId, id));
+    }
+
+    @PostMapping("/{id}/dependencies")
+    public ResponseEntity<TaskDependencyResponseDto> createDependency(
+            @PathVariable String contextId,
+            @PathVariable UUID id,
+            @RequestBody @Valid TaskDependencyCreateDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dependencyService.createDependency(contextId, id, dto));
+    }
+
+    @PutMapping("/{id}/dependencies/{dependencyId}")
+    public ResponseEntity<TaskDependencyResponseDto> updateDependency(
+            @PathVariable String contextId,
+            @PathVariable UUID id,
+            @PathVariable UUID dependencyId,
+            @RequestBody @Valid TaskDependencyUpdateDto dto) {
+        return ResponseEntity.ok(dependencyService.updateDependency(contextId, id, dependencyId, dto));
+    }
+
+    @DeleteMapping("/{id}/dependencies/{dependencyId}")
+    public ResponseEntity<Void> deleteDependency(
+            @PathVariable String contextId,
+            @PathVariable UUID id,
+            @PathVariable UUID dependencyId) {
+        dependencyService.deleteDependency(contextId, id, dependencyId);
         return ResponseEntity.noContent().build();
     }
 }

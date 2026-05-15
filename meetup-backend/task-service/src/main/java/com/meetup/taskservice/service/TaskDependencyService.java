@@ -24,18 +24,17 @@ public class TaskDependencyService {
     private final TaskRepository taskRepository;
     private final TaskDependencyMapper dependencyMapper;
 
-    public List<TaskDependencyResponseDto> getDependencies(UUID taskId) {
+    public List<TaskDependencyResponseDto> getDependencies(String contextId, UUID taskId) {
+        findTask(contextId, taskId);
         return dependencyRepository.findByTask_TaskId(taskId)
                 .stream()
                 .map(dependencyMapper::toResponseDto)
                 .toList();
     }
 
-    public TaskDependencyResponseDto createDependency(UUID taskId, TaskDependencyCreateDto dto) {
-        Task task = taskRepository.findById(taskId).orElseThrow(
-                () -> new EntityNotFoundException("Task not found with ID: " + taskId));
-        Task dependsOnTask = taskRepository.findById(dto.getDependsOnTaskId()).orElseThrow(
-                () -> new EntityNotFoundException("Depends-on task not found with ID: " + dto.getDependsOnTaskId()));
+    public TaskDependencyResponseDto createDependency(String contextId, UUID taskId, TaskDependencyCreateDto dto) {
+        Task task = findTask(contextId, taskId);
+        Task dependsOnTask = findTask(contextId, dto.getDependsOnTaskId());
 
         if (dependencyRepository.existsByTask_TaskIdAndDependsOnTask_TaskId(taskId, dto.getDependsOnTaskId())) {
             throw new EntityAlreadyExistsException("Dependency already exists between these tasks");
@@ -49,10 +48,10 @@ public class TaskDependencyService {
         return dependencyMapper.toResponseDto(dependencyRepository.save(dependency));
     }
 
-    public TaskDependencyResponseDto updateDependency(UUID taskId, UUID dependencyId, TaskDependencyUpdateDto dto) {
-        TaskDependency dependency = dependencyRepository.findById(dependencyId).orElseThrow(
-                () -> new EntityNotFoundException("Dependency not found with ID: " + dependencyId));
-
+    public TaskDependencyResponseDto updateDependency(String contextId, UUID taskId, UUID dependencyId, TaskDependencyUpdateDto dto) {
+        findTask(contextId, taskId);
+        findTask(contextId, dependencyId);
+        TaskDependency dependency = findDependency(taskId,  dependencyId);
         boolean hasChanges = false;
 
         if (dto.getDependencyType() != null && !dto.getDependencyType().equals(dependency.getDependencyType())) {
@@ -71,10 +70,33 @@ public class TaskDependencyService {
         return dependencyMapper.toResponseDto(dependencyRepository.save(dependency));
     }
 
-    public void deleteDependency(UUID taskId, UUID dependencyId) {
-        if (!dependencyRepository.existsById(dependencyId)) {
+    public void deleteDependency(String contextId, UUID taskId, UUID dependencyId) {
+        findTask(contextId, taskId);
+        findTask(contextId, dependencyId);
+        TaskDependencyId taskDependencyId = new TaskDependencyId();
+        taskDependencyId.setTaskId(taskId);
+        taskDependencyId.setDependsOnTaskId(dependencyId);
+        if (!dependencyRepository.existsById(taskDependencyId)) {
             throw new EntityNotFoundException("Dependency not found with ID: " + dependencyId);
         }
-        dependencyRepository.deleteById(dependencyId);
+        dependencyRepository.deleteById(taskDependencyId);
+    }
+
+    private TaskDependency findDependency(UUID taskId, UUID dependencyId){
+        TaskDependencyId taskDependencyId = new TaskDependencyId();
+        taskDependencyId.setTaskId(taskId);
+        taskDependencyId.setDependsOnTaskId(dependencyId);
+
+        return dependencyRepository.findById(taskDependencyId).orElseThrow(
+                () -> new EntityNotFoundException("Dependency not found with ID: " + dependencyId));
+    }
+
+    private Task findTask(String contextId, UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
+        if (!task.getContextId().equals(contextId)) {
+            throw new EntityNotFoundException("Task not found with ID: " + taskId);
+        }
+        return task;
     }
 }
