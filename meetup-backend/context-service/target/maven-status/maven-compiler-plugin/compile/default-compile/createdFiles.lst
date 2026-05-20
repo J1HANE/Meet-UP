@@ -1,3 +1,4 @@
+com\meetup\contextservice\config\GatewayHeaderAuthenticationFilter.class
 com\meetup\contextservice\controller\ContextController.class
 com\meetup\contextservice\listener\ContextIngestionListener.class
 com\meetup\contextservice\ContextServiceApplication.class
@@ -20,5 +21,6 @@ com\meetup\contextservice\service\TopicExtractionService.class
 com\meetup\contextservice\config\RabbitMQConfig.class
 com\meetup\contextservice\repository\MeetingContextRepository.class
 com\meetup\contextservice\event\MeetupEvents$TranscriptChunk.class
+com\meetup\contextservice\config\AuthenticatedUser.class
 com\meetup\contextservice\event\MeetupEvents$MeetingStarted.class
 com\meetup\contextservice\service\ContextService.class

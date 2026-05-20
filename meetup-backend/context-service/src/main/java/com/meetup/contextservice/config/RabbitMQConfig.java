@@ -62,6 +62,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding meetingEndedBinding(Queue contextIngestionQueue, TopicExchange meetingExchange) {
+        return BindingBuilder.bind(contextIngestionQueue).to(meetingExchange).with("meeting.ended");
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
         DefaultJackson2JavaTypeMapper typeMapper = new DefaultJackson2JavaTypeMapper();

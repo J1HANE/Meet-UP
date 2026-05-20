@@ -4,8 +4,10 @@ import com.meetup.contextservice.model.MeetingContext;
 import com.meetup.contextservice.repository.MeetingContextRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,33 +22,50 @@ public class ContextService {
     private final MeetingContextRepository contextRepository;
 
     @Cacheable(value = "briefings", key = "#meetingId")
-    public MeetingContext getBriefing(UUID meetingId) {
+    public MeetingContext getBriefing(UUID meetingId, List<UUID> userTweenIds) {
         log.info("Generating briefing for meeting: {}", meetingId);
-        // 1. Find the current meeting context to get participants/groups
-        return contextRepository.findByMeetingId(meetingId)
-                .map(currentContext -> {
-                    // 2. Query prior sessions for the same participants or groups
-                    List<MeetingContext> priorContexts = contextRepository.findByParticipantIdsIn(currentContext.getParticipantIds());
-                    // In a real scenario, you'd filter out the current one and maybe sort by date
-                    return currentContext; // Simplification for MVP: returning current
-                })
-                .orElseThrow(() -> new RuntimeException("Meeting context not found"));
+        MeetingContext context = contextRepository.findByMeetingId(meetingId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Meeting context not found"));
+
+        validateAccess(context, userTweenIds);
+
+        // Logic for briefing generation could go here
+        return context;
     }
 
-    public List<MeetingContext.Decision> getDecisions(UUID groupId) {
+    public List<MeetingContext.Decision> getDecisions(UUID groupId, List<UUID> userTweenIds) {
         log.info("Fetching decisions for group: {}", groupId);
+        
+        if (!userTweenIds.contains(groupId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to group decisions");
+        }
+
         return contextRepository.findByTweenGroupIdsIn(List.of(groupId))
                 .stream()
                 .flatMap(context -> context.getDecisions().stream())
                 .collect(Collectors.toList());
     }
 
-    public void updateSummary(UUID meetingId, String summary) {
+    public void updateSummary(UUID meetingId, String summary, List<UUID> userTweenIds) {
         log.info("Updating summary for meeting: {}", meetingId);
         contextRepository.findByMeetingId(meetingId).ifPresent(context -> {
+            validateAccess(context, userTweenIds);
             context.setSummary(summary);
             context.setUpdatedAt(LocalDateTime.now());
             contextRepository.save(context);
         });
+    }
+
+    private void validateAccess(MeetingContext context, List<UUID> userTweenIds) {
+        log.info("Validating access for meeting: {} with userTweenIds: {}", context.getMeetingId(), userTweenIds);
+        log.info("Context tweenGroupIds: {}", context.getTweenGroupIds());
+        
+        boolean hasAccess = context.getTweenGroupIds().stream()
+                .anyMatch(userTweenIds::contains);
+        
+        if (!hasAccess) {
+            log.warn("Access denied for userTweenIds: {}", userTweenIds);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to meeting context");
+        }
     }
 }
