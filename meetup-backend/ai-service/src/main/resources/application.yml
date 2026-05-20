@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: meetup-ai-service
+
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 30000  # default 30s — overridden per cache in config
+
+  # Spring AI — Ollama (local dev)
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        model: llama3
+
+    # Spring AI — OpenAI-compatible (points to Gemini's OpenAI-compat endpoint)
+    openai:
+      api-key: ${GEMINI_API_KEY:placeholder}
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai
+      chat:
+        options:
+          model: gemini-2.0-flash
+
+# MeetUp! config
+meetup:
+  ai:
+    # Switch between "ollama" and "gemini" — no code changes needed
+    active-provider: ${AI_PROVIDER:ollama}
+
+  services:
+    context-service-url: ${CONTEXT_SERVICE_URL:http://localhost:8083}
+    task-service-url: ${TASK_SERVICE_URL:http://localhost:8084}
+
+  cache:
+    snapshot-ttl-seconds: 30
+    # Live meeting summaries cached for 30s, completed meetings indefinitely
+    summary-live-ttl-seconds: 30
+    summary-completed-ttl-seconds: 86400  # 24h (effectively permanent for a project)
+
+server:
+  port: 8086
+
+logging:
+  level:
+    com.meetup.ai: DEBUG
+    org.springframework.ai: INFO

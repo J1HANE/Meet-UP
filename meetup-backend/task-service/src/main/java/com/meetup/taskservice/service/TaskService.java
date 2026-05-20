@@ -35,6 +35,7 @@ public class TaskService {
     private final TagRepository tagRepository;
     private final TaskMapper taskMapper;
     private final TaskDependencyRepository taskDependencyRepository;
+    private final TaskDependencyService taskDependencyService;
 
 
     @Transactional(readOnly = true)
@@ -42,6 +43,14 @@ public class TaskService {
         return taskRepository.findByContextId(contextId)
                 .stream()
                 .map(taskMapper::toResponseDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskDetailDto> getSnapshot(String contextId) {
+        return taskRepository.findByContextId(contextId)
+                .stream()
+                .map(taskMapper::toDetailDto)
                 .toList();
     }
 
@@ -421,7 +430,13 @@ public class TaskService {
         task.setStatus(status);
         applyStatusTimestamp(task, status);
         touch(task);
-        return taskMapper.toResponseDto(taskRepository.save(task));
+
+        Task saved = taskRepository.save(task);
+
+        // Notify dependency service so downstream block records get resolved
+        taskDependencyService.handleUpstreamStatusChange(saved);
+
+        return taskMapper.toResponseDto(saved);
     }
 
     @Transactional

@@ -16,7 +16,7 @@ public class TaskDependencyUpdateDto {
     @NotNull
     private DependencyType dependencyType;
 
-    @Min(0)
+
     private short          lagDays;
 
 }
