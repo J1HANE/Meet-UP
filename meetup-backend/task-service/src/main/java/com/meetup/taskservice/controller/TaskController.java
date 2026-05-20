@@ -49,6 +49,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTasks(contextId));
     }
 
+    @GetMapping("/snapshot")
+    public ResponseEntity<List<TaskSnapShot>> getSnapshot(@PathVariable String contextId) {
+        return ResponseEntity.ok(taskService.getSnapshot(contextId));
+    }
+
     @Operation(summary = "Get task by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Task found"),

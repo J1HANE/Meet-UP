@@ -10,6 +10,7 @@ import com.meetup.taskservice.dto.request.TaskCreateDto;
 import com.meetup.taskservice.dto.request.TaskUpdateDto;
 import com.meetup.taskservice.dto.response.TaskResponseDto;
 import com.meetup.taskservice.exception.EntityNotFoundException;
+import com.meetup.taskservice.mapper.TagMapper;
 import com.meetup.taskservice.mapper.TaskMapper;
 import com.meetup.taskservice.repository.CategoryRepository;
 import com.meetup.taskservice.repository.TagRepository;
@@ -47,10 +48,118 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskDetailDto> getSnapshot(String contextId) {
-        return taskRepository.findByContextId(contextId)
-                .stream()
-                .map(taskMapper::toDetailDto)
+    public List<TaskSnapShot> getSnapshot(String contextId) {
+
+        List<Task> tasks = taskRepository.findByContextId(contextId);
+
+
+        List<UUID> taskIds = tasks.stream().map(Task::getTaskId).toList();
+        Map<UUID, List<BlockingDependencyDto>> blockingByTaskId =
+                taskDependencyService.getBlockingByTaskIds(taskIds);
+
+        return tasks.stream()
+                .map(task -> {
+                    long totalSubTasks     = task.getSubTasks().size();
+                    long completedSubTasks = task.getSubTasks().stream()
+                            .filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
+                    long blockedByCount    = task.getDependencies().size();
+                    long blockingCount     = task.getDependents().size();
+
+                    boolean isBlocked = !blockingByTaskId
+                            .getOrDefault(task.getTaskId(), List.of()).isEmpty();
+
+                    BigDecimal variance = null;
+                    if (task.getEstimatedHours() != null && task.getActualHours() != null) {
+                        variance = task.getActualHours().subtract(task.getEstimatedHours());
+                    }
+
+                    String varianceLabel = variance == null     ? "unknown"
+                            : variance.compareTo(BigDecimal.ZERO) > 0 ? "over budget"
+                            : variance.compareTo(BigDecimal.ZERO) < 0 ? "under budget"
+                            : "on track";
+
+                    Duration age = Duration.between(task.getCreatedAt(), OffsetDateTime.now());
+
+                    Category category = task.getCategory();  // may be null
+
+                    Set<TagSummary> tags = task.getTags().stream()
+                            .map(tag -> TagSummary.builder()
+                                    .tagId(tag.getTagId())
+                                    .name(tag.getName())
+                                    .description(tag.getDescription())
+                                    .build())
+                            .collect(Collectors.toSet());
+
+                    List<TaskSummaryDto> subTasks = task.getSubTasks().stream()
+                            .map(subTask -> TaskSummaryDto.builder()
+                                    .taskId(subTask.getTaskId())
+                                    .taskName(subTask.getTaskName())
+                                    .parentTaskId(subTask.getParentTask().getTaskId())
+                                    .status(subTask.getStatus())
+                                    .priority(subTask.getPriority())
+                                    .progressPercent(subTask.getProgressPercent())
+                                    .endDate(subTask.getEndDate())
+                                    .build())
+                            .toList();
+
+                    return TaskSnapShot.builder()
+                            .taskId(task.getTaskId())
+                            .taskName(task.getTaskName())
+                            .isBlocked(isBlocked)
+                            .taskDescription(task.getTaskDescription())
+                            .status(task.getStatus())
+                            .priority(task.getPriority())
+                            .visibility(task.getVisibility())
+                            .points(task.getPoints())
+                            .progressPercent(task.getProgressPercent())
+                            .isMilestone(task.isMilestone())
+                            .requiresReview(task.isRequiresReview())
+                            .isRecurring(task.isRecurring())
+                            .recurrenceInterval(task.getRecurrenceInterval())
+                            .startDate(task.getStartDate())
+                            .endDate(task.getEndDate())
+                            .baselineStart(task.getBaselineStart())
+                            .baselineEnd(task.getBaselineEnd())
+                            .estimatedHours(task.getEstimatedHours())
+                            .actualHours(task.getActualHours())
+                            .assignedTo(task.getAssignedTo())
+                            .assignedToType(task.getAssignedToType())
+                            .reviewedBy(task.getReviewedBy())
+                            .createdBy(task.getCreatedBy())
+                            .categoryId(category != null ? category.getCategoryId() : null)
+                            .categoryName(category != null ? category.getName() : null)
+                            .parentTaskId(task.getParentTask() != null ? task.getParentTask().getTaskId() : null)
+                            .parentTaskName(task.getParentTask() != null ? task.getParentTask().getTaskName() : null)
+                            .subTasks(subTasks)
+                            .tags(tags.isEmpty() ? Collections.emptySet() : tags)
+                            .blockingDependencies(blockingByTaskId.getOrDefault(task.getTaskId(), List.of()))
+                            .totalSubTasks(totalSubTasks)
+                            .completedSubTasks(completedSubTasks)
+                            .subTaskCompletionRate(totalSubTasks == 0 ? null
+                                    : BigDecimal.valueOf(completedSubTasks * 100.0 / totalSubTasks)
+                                    .setScale(1, RoundingMode.HALF_UP))
+                            .hoursVariance(variance)
+                            .varianceLabel(varianceLabel)
+                            .blockedByCount(blockedByCount)
+                            .blockingCount(blockingCount)
+                            .tagCount(tags.size())
+                            .ageInDays(age.toDays())
+                            .isOverdue(task.getEndDate() != null
+                                    && task.getEndDate().isBefore(LocalDate.now())
+                                    && task.getStatus() != TaskStatus.COMPLETED)
+                            .taskTimeline(TaskTimelineDto.builder()
+                                    .createdAt(task.getCreatedAt())
+                                    .assignedAt(task.getAssignedAt())
+                                    .lastActivityAt(task.getLastActivityAt())
+                                    .submittedAt(task.getSubmittedAt())
+                                    .blockedAt(task.getBlockedAt())
+                                    .unblockedAt(task.getUnblockedAt())
+                                    .completedAt(task.getCompletedAt())
+                                    .cancelledAt(task.getCancelledAt())
+                                    .deleteAt(task.getDeletedAt())
+                                    .build())
+                            .build();
+                })
                 .toList();
     }
 

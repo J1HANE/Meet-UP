@@ -22,8 +22,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -143,6 +146,23 @@ public class TaskDependencyService {
                 resolveOpenBlockRecord(dep.getTask(), upstreamTask);
             }
         }
+    }
+
+
+    public Map<UUID, List<BlockingDependencyDto>> getBlockingByTaskIds(Collection<UUID> taskIds) {
+        return dependencyRepository.findByTask_TaskIdIn(taskIds)
+                .stream()
+                .filter(this::isBlocking)
+                .collect(Collectors.groupingBy(
+                        dep -> dep.getTask().getTaskId(),
+                        Collectors.mapping(dep -> new BlockingDependencyDto(
+                                dep.getDependsOnTask().getTaskId(),
+                                dep.getDependsOnTask().getTaskName(),
+                                dep.getDependsOnTask().getStatus(),
+                                dep.getDependencyType(),
+                                resolveBlockReason(dep)
+                        ), Collectors.toList())
+                ));
     }
 
 

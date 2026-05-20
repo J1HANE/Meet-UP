@@ -2,6 +2,7 @@ package com.meetup.taskservice.mapper;
 
 import com.meetup.taskservice.domain.entity.Tag;
 import com.meetup.taskservice.dto.TagDto;
+import com.meetup.taskservice.dto.TagSummary;
 import com.meetup.taskservice.dto.request.TagCreateDto;
 import com.meetup.taskservice.dto.request.TagUpdateDto;
 import com.meetup.taskservice.dto.response.TagResponseDto;
@@ -41,6 +42,8 @@ public interface TagMapper {
     @Mapping(target = "createdBy", ignore = true)  // ownership never changes
     @Mapping(target = "contextId", ignore = true)
     void updateEntityFromDto(TagUpdateDto dto, @MappingTarget Tag tag);
+
+
 
     // ─── List mappings ────────────────────────────────────────────────────────
 
