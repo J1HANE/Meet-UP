@@ -11,12 +11,12 @@ import java.util.UUID;
 @Data
 @Builder
 public class TaskSummaryDto {
-    private UUID taskId;
-    private UUID         parentTaskId;
-    private String       taskName;
-    private TaskStatus status;
-    private TaskPriority priority;
-    private short        progressPercent;
-    private LocalDate endDate;
+    private UUID            taskId;
+    private UUID            parentTaskId;
+    private String          taskName;
+    private TaskStatus      status;
+    private TaskPriority    priority;
+    private short           progressPercent;
+    private LocalDate       endDate;
 }
 

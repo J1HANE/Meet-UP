@@ -87,14 +87,14 @@ public interface TaskMapper {
 
 
 
-    @Mapping(target = "categoryId",    source = "category.categoryId")
-    @Mapping(target = "categoryName",  source = "category.name")
-    @Mapping(target = "parentTaskId",  source = "parentTask.taskId")
-    @Mapping(target = "parentTaskName",source = "parentTask.taskName")
-    @Mapping(target = "tags",          source = "tags")         // delegated to TagMapper
-    @Mapping(target = "subTasks",      source = "subTasks")     // recursive toSummaryDto
-    @Mapping(target = "isMilestone",      source = "milestone")
-    @Mapping(target = "isRecurring",      source = "recurring")
+    @Mapping(target = "categoryId",         source = "category.categoryId")
+    @Mapping(target = "categoryName",       source = "category.name")
+    @Mapping(target = "parentTaskId",       source = "parentTask.taskId")
+    @Mapping(target = "parentTaskName",     source = "parentTask.taskName")
+    @Mapping(target = "tags",               source = "tags")         // delegated to TagMapper
+    @Mapping(target = "subTasks",           source = "subTasks")     // recursive toSummaryDto
+    @Mapping(target = "isMilestone",        source = "milestone")
+    @Mapping(target = "isRecurring",        source = "recurring")
     TaskDetailDto toDetailDto(Task task);
 
 
