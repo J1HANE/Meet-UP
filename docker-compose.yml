@@ -26,5 +26,19 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
 
+  # PostgreSQL for Auth Service
+  postgres:
+    image: postgres:16
+    container_name: meetup-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: meetup_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
 volumes:
   mongodb_data:
+  postgres_data:

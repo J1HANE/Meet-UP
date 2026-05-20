@@ -28,6 +28,12 @@ public class ContextIngestionListener {
     @RabbitHandler
     public void handleMeetingStarted(MeetupEvents.MeetingStarted event) {
         log.info("Handling meeting.started for meeting: {}", event.getMeetingId());
+        
+        if (contextRepository.findByMeetingId(event.getMeetingId()).isPresent()) {
+            log.warn("Meeting context already exists for meeting: {}. Ignoring duplicate start event.", event.getMeetingId());
+            return;
+        }
+
         MeetingContext context = MeetingContext.builder()
                 .meetingId(event.getMeetingId())
                 .participantIds(event.getParticipantIds())

@@ -40,3 +40,4 @@ logging:
   level:
     com.meetup.contextservice: DEBUG
     org.springframework.data.mongodb: DEBUG
+    org.springframework.security: TRACE
