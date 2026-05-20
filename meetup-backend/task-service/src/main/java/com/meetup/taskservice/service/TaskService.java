@@ -109,7 +109,8 @@ public class TaskService {
                 savedTask.getDependencies().add(dependency);
 
             });
-
+            //TODO: must uncomment this line if it will be possible to create a task in a different state either than "IN_BACKLOG"
+//            applyStatusTimestamp(savedTask, taskCreateDto.);
             taskRepository.save(savedTask);
         }
 
@@ -310,6 +311,25 @@ public class TaskService {
         return taskMapper.toResponseDto(taskRepository.save(task));
     }
 
+    public TaskResponseDto updateTaskName(String contextId, UUID id, String name) {
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Task name must not be blank");
+        }
+        name = name.trim();
+        if (name.length() > 255) {
+            throw new IllegalArgumentException("Task name must not exceed 255 characters");
+        }
+
+        name = name.replaceAll("<[^>]*>", "")
+                .replaceAll("\\p{Cntrl}&&[^\t]", "");
+        Task task = findTask(contextId, id);
+        task.setTaskName(name);
+        touch(task);
+
+        return taskMapper.toResponseDto(taskRepository.save(task));
+    }
+
     @Transactional
     public TaskResponseDto updateReviewer(String contextId, UUID id, String reviewedBy) {
         Task task = findTask(contextId, id);
@@ -498,13 +518,13 @@ public class TaskService {
     private void applyStatusTimestamp(Task task, TaskStatus status) {
         OffsetDateTime now = OffsetDateTime.now();
         switch (status) {
-            case IN_PROGRESS  -> task.setStartedAt(now);
-            case COMPLETED    -> task.setCompletedAt(now);
-            case CANCELLED    -> task.setCancelledAt(now);
-            case IN_REVIEW    -> task.setSubmittedAt(now);
-            case BLOCKED      -> task.setBlockedAt(now);
-            case ASSIGNED     -> task.setAssignedAt(now);
-            default           -> {}
+            case IN_PROGRESS -> { task.setStartedAt(now); task.setStartDate(LocalDate.now()); }
+            case COMPLETED   -> { task.setCompletedAt(now); task.setEndDate(LocalDate.now()); }
+            case CANCELLED   -> task.setCancelledAt(now);
+            case IN_REVIEW   -> task.setSubmittedAt(now);
+            case BLOCKED     -> task.setBlockedAt(now);
+            case ASSIGNED    -> task.setAssignedAt(now);
+            default          -> {}
         }
     }
 }

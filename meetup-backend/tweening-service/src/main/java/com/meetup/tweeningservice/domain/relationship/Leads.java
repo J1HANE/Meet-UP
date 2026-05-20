@@ -1,5 +1,6 @@
 package com.meetup.tweeningservice.domain.relationship;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.meetup.tweeningservice.domain.node.PersonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,5 +26,6 @@ public class Leads {
     private LocalDateTime toDate;
 
     @TargetNode
+    @JsonIgnoreProperties("collaborations")
     private PersonNode person;
 }

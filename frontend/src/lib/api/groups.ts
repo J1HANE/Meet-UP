@@ -48,7 +48,7 @@ export interface GroupNode {
   meeting?: FormedIn;
 }
 
-const API_BASE_URL = "http://localhost:8088/api/groups"; 
+const API_BASE_URL = "http://localhost:8083/api/groups"; 
 
 export const groupsApi = {
   // Fetch all groups

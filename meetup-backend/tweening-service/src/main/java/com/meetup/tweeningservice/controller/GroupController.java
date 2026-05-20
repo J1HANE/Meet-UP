@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/groups")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class GroupController {
 

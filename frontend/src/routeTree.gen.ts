@@ -20,6 +20,12 @@ import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
 import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GroupsFormRouteImport } from './routes/groups_/form'
+import { Route as GroupsGroupIdRouteImport } from './routes/groups_.$groupId'
+import { Route as GroupsGroupIdTransferRouteImport } from './routes/groups_.$groupId.transfer'
+import { Route as GroupsGroupIdSplitRouteImport } from './routes/groups_.$groupId.split'
+import { Route as GroupsGroupIdMergeRouteImport } from './routes/groups_.$groupId.merge'
+import { Route as GroupsGroupIdAddMemberRouteImport } from './routes/groups_.$groupId.add-member'
 
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
@@ -76,6 +82,36 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsFormRoute = GroupsFormRouteImport.update({
+  id: '/groups_/form',
+  path: '/groups/form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
+  id: '/groups_/$groupId',
+  path: '/groups/$groupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsGroupIdTransferRoute = GroupsGroupIdTransferRouteImport.update({
+  id: '/transfer',
+  path: '/transfer',
+  getParentRoute: () => GroupsGroupIdRoute,
+} as any)
+const GroupsGroupIdSplitRoute = GroupsGroupIdSplitRouteImport.update({
+  id: '/split',
+  path: '/split',
+  getParentRoute: () => GroupsGroupIdRoute,
+} as any)
+const GroupsGroupIdMergeRoute = GroupsGroupIdMergeRouteImport.update({
+  id: '/merge',
+  path: '/merge',
+  getParentRoute: () => GroupsGroupIdRoute,
+} as any)
+const GroupsGroupIdAddMemberRoute = GroupsGroupIdAddMemberRouteImport.update({
+  id: '/add-member',
+  path: '/add-member',
+  getParentRoute: () => GroupsGroupIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +125,12 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
+  '/groups/form': typeof GroupsFormRoute
+  '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
+  '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
+  '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
+  '/groups/$groupId/transfer': typeof GroupsGroupIdTransferRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +144,12 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
+  '/groups/form': typeof GroupsFormRoute
+  '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
+  '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
+  '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
+  '/groups/$groupId/transfer': typeof GroupsGroupIdTransferRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +164,12 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/groups_/$groupId': typeof GroupsGroupIdRouteWithChildren
+  '/groups_/form': typeof GroupsFormRoute
+  '/groups_/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
+  '/groups_/$groupId/merge': typeof GroupsGroupIdMergeRoute
+  '/groups_/$groupId/split': typeof GroupsGroupIdSplitRoute
+  '/groups_/$groupId/transfer': typeof GroupsGroupIdTransferRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +185,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/summary'
     | '/tasks'
+    | '/groups/$groupId'
+    | '/groups/form'
+    | '/groups/$groupId/add-member'
+    | '/groups/$groupId/merge'
+    | '/groups/$groupId/split'
+    | '/groups/$groupId/transfer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +204,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/summary'
     | '/tasks'
+    | '/groups/$groupId'
+    | '/groups/form'
+    | '/groups/$groupId/add-member'
+    | '/groups/$groupId/merge'
+    | '/groups/$groupId/split'
+    | '/groups/$groupId/transfer'
   id:
     | '__root__'
     | '/'
@@ -157,6 +223,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/summary'
     | '/tasks'
+    | '/groups_/$groupId'
+    | '/groups_/form'
+    | '/groups_/$groupId/add-member'
+    | '/groups_/$groupId/merge'
+    | '/groups_/$groupId/split'
+    | '/groups_/$groupId/transfer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +243,8 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   SummaryRoute: typeof SummaryRoute
   TasksRoute: typeof TasksRoute
+  GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
+  GroupsFormRoute: typeof GroupsFormRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,8 +326,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups_/form': {
+      id: '/groups_/form'
+      path: '/groups/form'
+      fullPath: '/groups/form'
+      preLoaderRoute: typeof GroupsFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups_/$groupId': {
+      id: '/groups_/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof GroupsGroupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups_/$groupId/transfer': {
+      id: '/groups_/$groupId/transfer'
+      path: '/transfer'
+      fullPath: '/groups/$groupId/transfer'
+      preLoaderRoute: typeof GroupsGroupIdTransferRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
+    }
+    '/groups_/$groupId/split': {
+      id: '/groups_/$groupId/split'
+      path: '/split'
+      fullPath: '/groups/$groupId/split'
+      preLoaderRoute: typeof GroupsGroupIdSplitRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
+    }
+    '/groups_/$groupId/merge': {
+      id: '/groups_/$groupId/merge'
+      path: '/merge'
+      fullPath: '/groups/$groupId/merge'
+      preLoaderRoute: typeof GroupsGroupIdMergeRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
+    }
+    '/groups_/$groupId/add-member': {
+      id: '/groups_/$groupId/add-member'
+      path: '/add-member'
+      fullPath: '/groups/$groupId/add-member'
+      preLoaderRoute: typeof GroupsGroupIdAddMemberRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
+    }
   }
 }
+
+interface GroupsGroupIdRouteChildren {
+  GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
+  GroupsGroupIdMergeRoute: typeof GroupsGroupIdMergeRoute
+  GroupsGroupIdSplitRoute: typeof GroupsGroupIdSplitRoute
+  GroupsGroupIdTransferRoute: typeof GroupsGroupIdTransferRoute
+}
+
+const GroupsGroupIdRouteChildren: GroupsGroupIdRouteChildren = {
+  GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,
+  GroupsGroupIdMergeRoute: GroupsGroupIdMergeRoute,
+  GroupsGroupIdSplitRoute: GroupsGroupIdSplitRoute,
+  GroupsGroupIdTransferRoute: GroupsGroupIdTransferRoute,
+}
+
+const GroupsGroupIdRouteWithChildren = GroupsGroupIdRoute._addFileChildren(
+  GroupsGroupIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -267,6 +401,8 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   SummaryRoute: SummaryRoute,
   TasksRoute: TasksRoute,
+  GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
+  GroupsFormRoute: GroupsFormRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

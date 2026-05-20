@@ -19,6 +19,7 @@ import static org.springframework.data.neo4j.core.schema.Relationship.Direction.
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@com.fasterxml.jackson.annotation.JsonIdentityInfo(generator = com.fasterxml.jackson.annotation.ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PersonNode {
 
     @Id
@@ -32,7 +33,13 @@ public class PersonNode {
 
     @Relationship(type = "COLLABORATED_WITH", direction = OUTGOING)
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<CollaboratedWith> collaborations = new ArrayList<>();
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public List<CollaboratedWith> getCollaborations() {
+        return collaborations;
+    }
 
     // Helper to add or update a collaboration edge
     public void addOrUpdateCollaboration(CollaboratedWith collaboration) {

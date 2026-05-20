@@ -1,5 +1,6 @@
 package com.meetup.tweeningservice.domain.relationship;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.meetup.tweeningservice.domain.node.GroupNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,5 +25,6 @@ public class SiblingGroup {
     private LocalDateTime splitAt;
 
     @TargetNode
+    @JsonIgnoreProperties({"siblings", "members", "leads", "task", "meeting"})
     private GroupNode sibling;
 }

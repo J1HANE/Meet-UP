@@ -28,9 +28,11 @@ function GroupsPage() {
       </div>
 
       <div className="flex justify-end">
-        <Button variant="default" className="gap-2">
-          <Plus className="w-4 h-4" /> Form New Group
-        </Button>
+        <Link to="/groups/form">
+          <Button variant="default" className="gap-2">
+            <Plus className="w-4 h-4" /> Form New Group
+          </Button>
+        </Link>
       </div>
 
       {isLoading ? (

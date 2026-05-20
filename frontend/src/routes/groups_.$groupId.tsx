@@ -4,7 +4,7 @@ import { groupsApi } from "@/lib/api/groups";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Users, UserMinus, UserPlus, ShieldAlert, GitFork, GitMerge, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/groups/$groupId")({
+export const Route = createFileRoute("/groups_/$groupId")({
   component: GroupDetailsPage,
 });
 
@@ -57,9 +57,11 @@ function GroupDetailsPage() {
               <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" /> Members
               </h2>
-              <Button variant="outline" size="sm" className="gap-2">
-                <UserPlus className="w-4 h-4" /> Add
-              </Button>
+              <Link to={`/groups/${groupId}/add-member`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <UserPlus className="w-4 h-4" /> Add
+                </Button>
+              </Link>
             </div>
             
             <div className="space-y-4">
@@ -87,15 +89,21 @@ function GroupDetailsPage() {
               <ShieldAlert className="w-5 h-5 text-primary" /> Actions
             </h2>
             <div className="space-y-3">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Users className="w-4 h-4" /> Transfer Lead
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <GitFork className="w-4 h-4" /> Split Group
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <GitMerge className="w-4 h-4" /> Merge Group
-              </Button>
+              <Link to={`/groups/${groupId}/transfer`} className="block w-full">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <Users className="w-4 h-4" /> Transfer Lead
+                </Button>
+              </Link>
+              <Link to={`/groups/${groupId}/split`} className="block w-full">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <GitFork className="w-4 h-4" /> Split Group
+                </Button>
+              </Link>
+              <Link to={`/groups/${groupId}/merge`} className="block w-full">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <GitMerge className="w-4 h-4" /> Merge Group
+                </Button>
+              </Link>
               <div className="pt-4 border-t border-border">
                 <Button variant="destructive" className="w-full justify-start gap-2" onClick={() => dissolveMutation.mutate()}>
                   <Trash2 className="w-4 h-4" /> Dissolve Group
