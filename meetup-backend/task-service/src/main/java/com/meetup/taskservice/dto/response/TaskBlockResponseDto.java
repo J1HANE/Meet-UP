@@ -15,10 +15,9 @@ import java.util.UUID;
 public class TaskBlockResponseDto {
     private UUID blockId;
     private UUID           taskId;
-    private String         blockedBy;
     private String         reason;
     private boolean        isActive;            // derived: unblockedAt == null
     private OffsetDateTime blockedAt;
     private OffsetDateTime unblockedAt;
-    private String         resolvedBy;
+
 }
