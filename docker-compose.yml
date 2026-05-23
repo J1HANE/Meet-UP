@@ -1,3 +1,7 @@
+networks:
+  meet-up:
+    driver: bridge
+
 services:
   # MongoDB for Context Service
   mongodb:
@@ -7,6 +11,13 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis for Caching
   redis:
@@ -14,6 +25,13 @@ services:
     container_name: meetup-redis
     ports:
       - "6379:6379"
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # RabbitMQ for Event Bus
   rabbitmq:
@@ -25,6 +43,13 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # PostgreSQL for Auth Service
   postgres:
@@ -38,7 +63,145 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./meetup-backend/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_auth
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - JWT_SECRET=defaultSecretKeyForDevelopmentOnly123456789
+      - JWT_PRIVATE_KEY_LOCATION=/keys/private.pem
+    volumes:
+      - jwt_keys:/keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Context Service
+  context-service:
+    build:
+      context: ./meetup-backend/context-service
+      dockerfile: Dockerfile
+    container_name: context-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/meetup_context
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - TASK_SERVICE_URL=http://task-service:8091
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Task Service
+  task-service:
+    build:
+      context: ./meetup-backend/task-service
+      dockerfile: Dockerfile
+    container_name: task-service
+    ports:
+      - "8091:8091"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_tasks
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./meetup-backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8085:8085"
+    environment:
+      - JWT_SECRET=defaultSecretKeyForDevelopmentOnly123456789
+      - GATEWAY_JWT_ENABLED=true
+      - JWT_PUBLIC_KEY_LOCATION=/keys/public.pem
+      - SPRING_CLOUD_GATEWAY_ROUTES[0]_URI=http://auth-service:8081
+      - SPRING_CLOUD_GATEWAY_ROUTES[1]_URI=http://context-service:8084
+      - SPRING_CLOUD_GATEWAY_ROUTES[2]_URI=http://task-service:8091
+    volumes:
+      - jwt_keys:/keys
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      context-service:
+        condition: service_healthy
+      task-service:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   mongodb_data:
   postgres_data:
+  jwt_keys:
