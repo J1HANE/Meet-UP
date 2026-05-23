@@ -36,6 +36,10 @@ app:
       group-formed: group.formed
       group-dissolved: group.dissolved
 
+task:
+  service:
+    url: http://localhost:8091
+
 logging:
   level:
     com.meetup.contextservice: DEBUG

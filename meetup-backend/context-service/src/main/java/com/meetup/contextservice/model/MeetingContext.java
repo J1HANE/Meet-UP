@@ -1,5 +1,7 @@
 package com.meetup.contextservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.meetup.contextservice.dto.TaskSnapshot;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,6 +51,10 @@ public class MeetingContext implements Serializable {
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @JsonIgnore
+    @Builder.Default
+    private List<TaskSnapshot> tasks = new ArrayList<>();
 
     @Data
     @Builder

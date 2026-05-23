@@ -20,17 +20,22 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
+    public GatewayHeaderAuthenticationFilter gatewayHeaderAuthenticationFilter() {
+        return new GatewayHeaderAuthenticationFilter();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(gatewayHeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/context/**").authenticated()
                         .anyRequest().permitAll()
-            )
-            .addFilterBefore(new GatewayHeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        
+            );
+
         return http.build();
     }
 
