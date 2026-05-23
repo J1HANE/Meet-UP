@@ -45,7 +45,7 @@ function RegisterPage() {
     try {
       await register(email, password, displayName);
       toast.success("Account created successfully!");
-      navigate({ to: "/" });
+      navigate({ to: "/groups" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed");
     }
@@ -85,7 +85,7 @@ function RegisterPage() {
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="John Doe"
+                placeholder="Your name"
                 disabled={isLoading}
                 className="w-full h-10 px-4 rounded-xl bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-50"
               />

@@ -71,7 +71,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login" || location.pathname === "/register";
+  const publicPaths = ["/login", "/register", "/verify-email", "/forgot-password", "/reset-password"];
+  const isLoginPage = publicPaths.some(p => location.pathname === p || location.pathname.startsWith(p));
 
   return (
     <QueryClientProvider client={queryClient}>

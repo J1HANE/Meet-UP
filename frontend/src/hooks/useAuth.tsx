@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { api, type AuthResponse, type UserResponse } from "@/lib/api";
 
 interface AuthContextType {
@@ -11,6 +11,14 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   updateProfile: (data: import("@/lib/api").UpdateProfileRequest) => Promise<void>;
   changePassword: (data: import("@/lib/api").ChangePasswordRequest) => Promise<void>;
+  sendEmailVerification: () => Promise<string>;
+  verifyEmail: (token: string) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<string>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  setup2FA: () => Promise<import("@/lib/api").Setup2FAResponse>;
+  enable2FA: (code: string) => Promise<void>;
+  disable2FA: (code: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,6 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     }
   }, [getAccessToken, clearTokens]);
+
+  useEffect(() => {
+    refreshUser();
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
@@ -110,6 +122,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.changePassword(token, data);
   }, [getAccessToken]);
 
+  const sendEmailVerification = useCallback(async () => {
+    const token = getAccessToken();
+    if (!token) throw new Error("Not authenticated");
+
+    const response = await api.sendEmailVerification(token);
+    return response.token;
+  }, [getAccessToken]);
+
+  const verifyEmail = useCallback(async (token: string) => {
+    await api.verifyEmail({ token });
+  }, []);
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    const response = await api.requestPasswordReset({ email });
+    return response.token;
+  }, []);
+
+  const resetPassword = useCallback(async (token: string, newPassword: string) => {
+    await api.resetPassword({ token, newPassword });
+  }, []);
+
+  const setup2FA = useCallback(async () => {
+    const token = getAccessToken();
+    if (!token) throw new Error("Not authenticated");
+
+    return await api.setup2FA(token);
+  }, [getAccessToken]);
+
+  const enable2FA = useCallback(async (code: string) => {
+    const token = getAccessToken();
+    if (!token) throw new Error("Not authenticated");
+
+    await api.enable2FA(token, { verificationCode: code });
+  }, [getAccessToken]);
+
+  const disable2FA = useCallback(async (code: string) => {
+    const token = getAccessToken();
+    if (!token) throw new Error("Not authenticated");
+
+    await api.disable2FA(token, { verificationCode: code });
+  }, [getAccessToken]);
+
+  const deleteAccount = useCallback(async () => {
+    const token = getAccessToken();
+    if (!token) throw new Error("Not authenticated");
+
+    await api.deleteAccount(token);
+    clearTokens();
+    setUser(null);
+  }, [getAccessToken, clearTokens]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -122,6 +185,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUser,
         updateProfile,
         changePassword,
+        sendEmailVerification,
+        verifyEmail,
+        requestPasswordReset,
+        resetPassword,
+        setup2FA,
+        enable2FA,
+        disable2FA,
+        deleteAccount,
       }}
     >
       {children}
