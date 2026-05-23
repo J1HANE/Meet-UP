@@ -21,14 +21,12 @@ public class ModelRouter {
     private final boolean geminiAvailable;
 
     public ModelRouter(
-            ChatClient.Builder ollamaBuilder,
-            //@Qualifier("googleGenAiChatClientBuilder")
-            ChatClient.Builder geminiBuilder,
+            @Qualifier("ollamaChatClient") ChatClient.Builder ollamaBuilder,
+            @Qualifier("googleGenAiChatClient") ChatClient.Builder geminiBuilder,
             Environment env) {
-
         this.ollamaClient = ollamaBuilder.build();
 
-        // Gemini is optional — only initialise if API key is set
+
         String apiKey = env.getProperty("spring.ai.google.genai.api-key", "not-set");
         if (!"not-set".equals(apiKey)) {
             this.geminiClient = geminiBuilder.build();
