@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    # Pull llama3 on first start
+    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 5 && ollama pull llama3 && wait"]
+
+  ai-service:
+    build: .
+    ports:
+      - "8086:8086"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      OLLAMA_BASE_URL: http://ollama:11434
+      AI_PROVIDER: ollama
+      CONTEXT_SERVICE_URL: http://host.docker.internal:8083
+      TASK_SERVICE_URL: http://host.docker.internal:8084
+    depends_on:
+      - redis
+      - ollama
+
+volumes:
+  redis-data:
+  ollama-data:

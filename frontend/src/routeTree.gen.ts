@@ -9,10 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VerifyEmailRouteImport } from './routes/verify-email'
-import { Route as TranscriptRouteImport } from './routes/transcript'
-import { Route as TasksRefRouteImport } from './routes/tasks-ref'
-import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -28,6 +24,12 @@ import { Route as DecisionsRouteImport } from './routes/decisions'
 import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as R2faSetupRouteImport } from './routes/2fa-setup'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TasksTagsRouteImport } from './routes/tasks/tags'
+import { Route as TasksStatisticsRouteImport } from './routes/tasks/statistics'
+import { Route as TasksGanttRouteImport } from './routes/tasks/gantt'
+import { Route as TasksCategoriesRouteImport } from './routes/tasks/categories'
+import { Route as TasksBoardRouteImport } from './routes/tasks/board'
+import { Route as TasksBacklogRouteImport } from './routes/tasks/backlog'
 import { Route as GroupsFormRouteImport } from './routes/groups_/form'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups_.$groupId'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -36,26 +38,6 @@ import { Route as GroupsGroupIdSplitRouteImport } from './routes/groups_.$groupI
 import { Route as GroupsGroupIdMergeRouteImport } from './routes/groups_.$groupId.merge'
 import { Route as GroupsGroupIdAddMemberRouteImport } from './routes/groups_.$groupId.add-member'
 
-const VerifyEmailRoute = VerifyEmailRouteImport.update({
-  id: '/verify-email',
-  path: '/verify-email',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TranscriptRoute = TranscriptRouteImport.update({
-  id: '/transcript',
-  path: '/transcript',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TasksRefRoute = TasksRefRouteImport.update({
-  id: '/tasks-ref',
-  path: '/tasks-ref',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TasksRoute = TasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SummaryRoute = SummaryRouteImport.update({
   id: '/summary',
   path: '/summary',
@@ -131,6 +113,36 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TasksTagsRoute = TasksTagsRouteImport.update({
+  id: '/tasks/tags',
+  path: '/tasks/tags',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksStatisticsRoute = TasksStatisticsRouteImport.update({
+  id: '/tasks/statistics',
+  path: '/tasks/statistics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksGanttRoute = TasksGanttRouteImport.update({
+  id: '/tasks/gantt',
+  path: '/tasks/gantt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksCategoriesRoute = TasksCategoriesRouteImport.update({
+  id: '/tasks/categories',
+  path: '/tasks/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksBoardRoute = TasksBoardRouteImport.update({
+  id: '/tasks/board',
+  path: '/tasks/board',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksBacklogRoute = TasksBacklogRouteImport.update({
+  id: '/tasks/backlog',
+  path: '/tasks/backlog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsFormRoute = GroupsFormRouteImport.update({
   id: '/groups_/form',
   path: '/groups/form',
@@ -183,13 +195,14 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
-  '/tasks': typeof TasksRoute
-  '/tasks-ref': typeof TasksRefRoute
-  '/transcript': typeof TranscriptRoute
-  '/verify-email': typeof VerifyEmailRoute
-  '/admin/users': typeof AdminUsersRoute
   '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
+  '/tasks/backlog': typeof TasksBacklogRoute
+  '/tasks/board': typeof TasksBoardRoute
+  '/tasks/categories': typeof TasksCategoriesRoute
+  '/tasks/gantt': typeof TasksGanttRoute
+  '/tasks/statistics': typeof TasksStatisticsRoute
+  '/tasks/tags': typeof TasksTagsRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
@@ -211,13 +224,14 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
-  '/tasks': typeof TasksRoute
-  '/tasks-ref': typeof TasksRefRoute
-  '/transcript': typeof TranscriptRoute
-  '/verify-email': typeof VerifyEmailRoute
-  '/admin/users': typeof AdminUsersRoute
   '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
+  '/tasks/backlog': typeof TasksBacklogRoute
+  '/tasks/board': typeof TasksBoardRoute
+  '/tasks/categories': typeof TasksCategoriesRoute
+  '/tasks/gantt': typeof TasksGanttRoute
+  '/tasks/statistics': typeof TasksStatisticsRoute
+  '/tasks/tags': typeof TasksTagsRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
@@ -240,13 +254,14 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
-  '/tasks': typeof TasksRoute
-  '/tasks-ref': typeof TasksRefRoute
-  '/transcript': typeof TranscriptRoute
-  '/verify-email': typeof VerifyEmailRoute
-  '/admin/users': typeof AdminUsersRoute
   '/groups_/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups_/form': typeof GroupsFormRoute
+  '/tasks/backlog': typeof TasksBacklogRoute
+  '/tasks/board': typeof TasksBoardRoute
+  '/tasks/categories': typeof TasksCategoriesRoute
+  '/tasks/gantt': typeof TasksGanttRoute
+  '/tasks/statistics': typeof TasksStatisticsRoute
+  '/tasks/tags': typeof TasksTagsRoute
   '/groups_/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
   '/groups_/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups_/$groupId/split': typeof GroupsGroupIdSplitRoute
@@ -270,13 +285,14 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/summary'
-    | '/tasks'
-    | '/tasks-ref'
-    | '/transcript'
-    | '/verify-email'
-    | '/admin/users'
     | '/groups/$groupId'
     | '/groups/form'
+    | '/tasks/backlog'
+    | '/tasks/board'
+    | '/tasks/categories'
+    | '/tasks/gantt'
+    | '/tasks/statistics'
+    | '/tasks/tags'
     | '/groups/$groupId/add-member'
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
@@ -298,13 +314,14 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/summary'
-    | '/tasks'
-    | '/tasks-ref'
-    | '/transcript'
-    | '/verify-email'
-    | '/admin/users'
     | '/groups/$groupId'
     | '/groups/form'
+    | '/tasks/backlog'
+    | '/tasks/board'
+    | '/tasks/categories'
+    | '/tasks/gantt'
+    | '/tasks/statistics'
+    | '/tasks/tags'
     | '/groups/$groupId/add-member'
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
@@ -326,13 +343,14 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/summary'
-    | '/tasks'
-    | '/tasks-ref'
-    | '/transcript'
-    | '/verify-email'
-    | '/admin/users'
     | '/groups_/$groupId'
     | '/groups_/form'
+    | '/tasks/backlog'
+    | '/tasks/board'
+    | '/tasks/categories'
+    | '/tasks/gantt'
+    | '/tasks/statistics'
+    | '/tasks/tags'
     | '/groups_/$groupId/add-member'
     | '/groups_/$groupId/merge'
     | '/groups_/$groupId/split'
@@ -355,45 +373,18 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SummaryRoute: typeof SummaryRoute
-  TasksRoute: typeof TasksRoute
-  TasksRefRoute: typeof TasksRefRoute
-  TranscriptRoute: typeof TranscriptRoute
-  VerifyEmailRoute: typeof VerifyEmailRoute
-  AdminUsersRoute: typeof AdminUsersRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
   GroupsFormRoute: typeof GroupsFormRoute
+  TasksBacklogRoute: typeof TasksBacklogRoute
+  TasksBoardRoute: typeof TasksBoardRoute
+  TasksCategoriesRoute: typeof TasksCategoriesRoute
+  TasksGanttRoute: typeof TasksGanttRoute
+  TasksStatisticsRoute: typeof TasksStatisticsRoute
+  TasksTagsRoute: typeof TasksTagsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/verify-email': {
-      id: '/verify-email'
-      path: '/verify-email'
-      fullPath: '/verify-email'
-      preLoaderRoute: typeof VerifyEmailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/transcript': {
-      id: '/transcript'
-      path: '/transcript'
-      fullPath: '/transcript'
-      preLoaderRoute: typeof TranscriptRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tasks-ref': {
-      id: '/tasks-ref'
-      path: '/tasks-ref'
-      fullPath: '/tasks-ref'
-      preLoaderRoute: typeof TasksRefRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tasks': {
-      id: '/tasks'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof TasksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/summary': {
       id: '/summary'
       path: '/summary'
@@ -499,6 +490,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tasks/tags': {
+      id: '/tasks/tags'
+      path: '/tasks/tags'
+      fullPath: '/tasks/tags'
+      preLoaderRoute: typeof TasksTagsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks/statistics': {
+      id: '/tasks/statistics'
+      path: '/tasks/statistics'
+      fullPath: '/tasks/statistics'
+      preLoaderRoute: typeof TasksStatisticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks/gantt': {
+      id: '/tasks/gantt'
+      path: '/tasks/gantt'
+      fullPath: '/tasks/gantt'
+      preLoaderRoute: typeof TasksGanttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks/categories': {
+      id: '/tasks/categories'
+      path: '/tasks/categories'
+      fullPath: '/tasks/categories'
+      preLoaderRoute: typeof TasksCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks/board': {
+      id: '/tasks/board'
+      path: '/tasks/board'
+      fullPath: '/tasks/board'
+      preLoaderRoute: typeof TasksBoardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks/backlog': {
+      id: '/tasks/backlog'
+      path: '/tasks/backlog'
+      fullPath: '/tasks/backlog'
+      preLoaderRoute: typeof TasksBacklogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups_/form': {
       id: '/groups_/form'
       path: '/groups/form'
@@ -585,13 +618,14 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SummaryRoute: SummaryRoute,
-  TasksRoute: TasksRoute,
-  TasksRefRoute: TasksRefRoute,
-  TranscriptRoute: TranscriptRoute,
-  VerifyEmailRoute: VerifyEmailRoute,
-  AdminUsersRoute: AdminUsersRoute,
   GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
   GroupsFormRoute: GroupsFormRoute,
+  TasksBacklogRoute: TasksBacklogRoute,
+  TasksBoardRoute: TasksBoardRoute,
+  TasksCategoriesRoute: TasksCategoriesRoute,
+  TasksGanttRoute: TasksGanttRoute,
+  TasksStatisticsRoute: TasksStatisticsRoute,
+  TasksTagsRoute: TasksTagsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

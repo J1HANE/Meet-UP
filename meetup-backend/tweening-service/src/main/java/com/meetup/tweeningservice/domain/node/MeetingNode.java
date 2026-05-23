@@ -24,4 +24,8 @@ public class MeetingNode {
     private String type;
 
     private LocalDateTime startedAt;
+
+    private LocalDateTime endedAt;
+
+    private String parentMeetingId;
 }

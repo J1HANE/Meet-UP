@@ -25,18 +25,18 @@ public interface TaskBlockMapper {
     @Mapping(target = "task",        ignore = true)   // resolved in service
     @Mapping(target = "blockedAt",   expression = "java(java.time.OffsetDateTime.now())")
     @Mapping(target = "unblockedAt", ignore = true)
-    @Mapping(target = "resolvedBy",  ignore = true)
+    @Mapping(target = "blockedByTask", ignore = true)
+    @Mapping(target = "dependencyType", ignore = true)
     TaskBlock toEntity(TaskBlockCreateDto dto);
 
     // ─── Resolve (unblock) ────────────────────────────────────────────────────
 
-    @Mapping(target = "blockId",    ignore = true)
-    @Mapping(target = "task",       ignore = true)
-    @Mapping(target = "blockedBy",  ignore = true)
-    @Mapping(target = "reason",     ignore = true)
-    @Mapping(target = "blockedAt",  ignore = true)
-    @Mapping(target = "unblockedAt", expression = "java(java.time.OffsetDateTime.now())")
-    void resolveBlock(TaskBlockResolveDto dto, @MappingTarget TaskBlock block);
+//    @Mapping(target = "blockId",    ignore = true)
+//    @Mapping(target = "task",       ignore = true)
+//    @Mapping(target = "reason",     ignore = true)
+//    @Mapping(target = "blockedAt",  ignore = true)
+//    @Mapping(target = "unblockedAt", expression = "java(java.time.OffsetDateTime.now())")
+//    void resolveBlock(TaskBlockResolveDto dto, @MappingTarget TaskBlock block);
 
     // ─── List mapping ─────────────────────────────────────────────────────────
 

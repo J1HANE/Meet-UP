@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -83,5 +84,20 @@ public class GroupController {
     public ResponseEntity<List<PersonNode>> suggestMembers(@RequestParam String taskId, 
                                                            @RequestParam String creatorId) {
         return ResponseEntity.ok(membershipResolverService.suggestMembersForTask(taskId, creatorId));
+    }
+
+    @GetMapping("/workload")
+    public ResponseEntity<List<Map<String, Object>>> getActiveWorkloads() {
+        return ResponseEntity.ok(groupService.getActiveWorkloads());
+    }
+
+    @GetMapping("/meeting/{meetingId}")
+    public ResponseEntity<List<GroupNode>> getGroupsByMeetingId(@PathVariable String meetingId) {
+        return ResponseEntity.ok(groupService.getGroupsByMeetingId(meetingId));
+    }
+
+    @GetMapping("/{groupId}/context")
+    public ResponseEntity<Map<String, Object>> getContextData(@PathVariable String groupId) {
+        return ResponseEntity.ok(groupService.getContextData(groupId));
     }
 }

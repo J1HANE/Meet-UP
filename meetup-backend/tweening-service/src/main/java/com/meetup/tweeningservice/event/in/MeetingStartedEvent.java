@@ -6,5 +6,6 @@ public record MeetingStartedEvent(
         String meetingId,
         String title,
         String type,
-        LocalDateTime startedAt
+        LocalDateTime startedAt,
+        String parentMeetingId
 ) {}

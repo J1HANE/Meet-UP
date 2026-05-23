@@ -1,5 +1,6 @@
 package com.meetup.taskservice.domain.entity;
 
+import com.meetup.taskservice.domain.enums.DependencyType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,6 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "task_blocks")
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -23,18 +25,20 @@ public class TaskBlock {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blocked_by_task_id")
+    private Task blockedByTask;
 
-    private String blockedBy;
+    @Enumerated(EnumType.STRING)
+    private DependencyType dependencyType;
 
     private String reason;
 
     @Column(nullable = false)
-    private OffsetDateTime blockedAt = OffsetDateTime.now();
+    private OffsetDateTime blockedAt;
 
     private OffsetDateTime unblockedAt;
 
-
-    private String resolvedBy;
 
 
     @Override
