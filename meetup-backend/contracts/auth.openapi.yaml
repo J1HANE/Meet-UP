@@ -135,6 +135,328 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update current user profile
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/change-password:
+    post:
+      summary: Change current user password
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          description: Validation error or incorrect current password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/send-verification-email:
+    post:
+      summary: Send email verification token
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Verification email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Verification token (for testing purposes)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/verify-email:
+    post:
+      summary: Verify email address
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '200':
+          description: Email verified successfully
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/request-password-reset:
+    post:
+      summary: Request password reset
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordResetRequest'
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Reset token (for testing purposes)
+        '400':
+          description: Invalid email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/reset-password:
+    post:
+      summary: Reset password with token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/2fa/setup:
+    post:
+      summary: Setup two-factor authentication
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 2FA setup initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setup2FAResponse'
+        '400':
+          description: 2FA already enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/2fa/enable:
+    post:
+      summary: Enable two-factor authentication
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Enable2FARequest'
+      responses:
+        '200':
+          description: 2FA enabled successfully
+        '400':
+          description: Invalid verification code or 2FA not setup
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/2fa/disable:
+    post:
+      summary: Disable two-factor authentication
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Disable2FARequest'
+      responses:
+        '200':
+          description: 2FA disabled successfully
+        '400':
+          description: Invalid verification code or 2FA not enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/users:
+    get:
+      summary: Get all users (admin only)
+      tags:
+        - User Management
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/users/{userId}/roles:
+    patch:
+      summary: Update user roles (admin only)
+      tags:
+        - User Management
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRolesRequest'
+      responses:
+        '200':
+          description: User roles updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
@@ -263,6 +585,177 @@ components:
           type: string
           format: date-time
           example: "2024-04-29T10:30:00Z"
+        bio:
+          type: string
+          example: "Software engineer interested in AI"
+        location:
+          type: string
+          example: "San Francisco, CA"
+        recoveryEmail:
+          type: string
+          format: email
+          example: "recovery@example.com"
+        avatarUrl:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+        phone:
+          type: string
+          example: "+1234567890"
+        topics:
+          type: array
+          items:
+            type: string
+          example: ["AI", "Machine Learning", "Web Development"]
+        meetingReminders:
+          type: boolean
+          example: true
+        taskDigest:
+          type: boolean
+          example: true
+        profileVisibility:
+          type: boolean
+          example: false
+        twoFactorEnabled:
+          type: boolean
+          example: false
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "Jane Doe"
+        bio:
+          type: string
+          maxLength: 1000
+          example: "Software engineer interested in AI"
+        location:
+          type: string
+          example: "San Francisco, CA"
+        recoveryEmail:
+          type: string
+          format: email
+          example: "recovery@example.com"
+        avatarUrl:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+        phone:
+          type: string
+          example: "+1234567890"
+        topics:
+          type: array
+          items:
+            type: string
+          example: ["AI", "Machine Learning"]
+        meetingReminders:
+          type: boolean
+          example: true
+        taskDigest:
+          type: boolean
+          example: true
+        profileVisibility:
+          type: boolean
+          example: false
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          example: "oldPassword123"
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          example: "newSecurePassword123"
+
+    UpdateRolesRequest:
+      type: object
+      required:
+        - roles
+      properties:
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["admin", "member"]
+
+    VerifyEmailRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    RequestPasswordResetRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - token
+        - newPassword
+      properties:
+        token:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          example: "newSecurePassword123"
+
+    Setup2FAResponse:
+      type: object
+      properties:
+        secret:
+          type: string
+          example: "JBSWY3DPEHPK3PXP"
+        qrCodeUrl:
+          type: string
+          format: uri
+          example: "otpauth://totp/Meet-Up:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Meet-Up"
+
+    Enable2FARequest:
+      type: object
+      required:
+        - verificationCode
+      properties:
+        verificationCode:
+          type: string
+          minLength: 6
+          maxLength: 6
+          pattern: "^\\d{6}$"
+          example: "123456"
+
+    Disable2FARequest:
+      type: object
+      required:
+        - verificationCode
+      properties:
+        verificationCode:
+          type: string
+          minLength: 6
+          maxLength: 6
+          pattern: "^\\d{6}$"
+          example: "123456"
 
     ErrorResponse:
       type: object

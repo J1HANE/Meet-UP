@@ -1,0 +1,678 @@
+openapi: 3.0.3
+info:
+  title: Meet-Up Context Service API
+  description: Meeting context and decision tracking API for Meet-Up
+  version: 1.0.0
+  contact:
+    name: Meet-Up Team
+
+servers:
+  - url: http://localhost:8082/api
+    description: Local development server
+
+paths:
+  /context/briefing:
+    get:
+      summary: Get meeting briefing
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Meeting briefing retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/decisions:
+    get:
+      summary: Get decisions for a group
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Decisions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Decision'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/{meetingId}/summary:
+    patch:
+      summary: Update meeting summary
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - summary
+              properties:
+                summary:
+                  type: string
+                  example: "Meeting concluded with action items assigned"
+      responses:
+        '204':
+          description: Summary updated successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context:
+    post:
+      summary: Create a new meeting context
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMeetingContextRequest'
+      responses:
+        '201':
+          description: Meeting context created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/{meetingId}:
+    get:
+      summary: Get meeting context by ID
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Meeting context retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete meeting context
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Meeting context deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/{meetingId}/transcript:
+    post:
+      summary: Add transcript chunk to meeting
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranscriptChunk'
+      responses:
+        '201':
+          description: Transcript chunk added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/{meetingId}/decisions:
+    post:
+      summary: Add decision to meeting
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDecisionRequest'
+      responses:
+        '201':
+          description: Decision added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/{meetingId}/tasks:
+    post:
+      summary: Add task reference to meeting
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - taskId
+              properties:
+                taskId:
+                  type: string
+                  format: uuid
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '201':
+          description: Task reference added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/{meetingId}/status:
+    patch:
+      summary: Update meeting status
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [LIVE, COMPLETED, CANCELLED]
+                  example: "COMPLETED"
+      responses:
+        '200':
+          description: Meeting status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingContext'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Meeting context not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /context/search:
+    get:
+      summary: Search meeting contexts
+      tags:
+        - Meeting Context
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "AI meeting"
+        - name: groupId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [LIVE, COMPLETED, CANCELLED]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeetingContext'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    MeetingContext:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        meetingId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        participantIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"]
+        tweenGroupIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440003"]
+        transcript:
+          type: array
+          items:
+            $ref: '#/components/schemas/TranscriptChunk'
+        decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Decision'
+        tasksRef:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440004"]
+        topics:
+          type: array
+          items:
+            type: string
+          example: ["AI", "Machine Learning", "Architecture"]
+        summary:
+          type: string
+          example: "Meeting concluded with action items assigned"
+        status:
+          type: string
+          enum: [LIVE, COMPLETED, CANCELLED]
+          example: "LIVE"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:30:00Z"
+
+    TranscriptChunk:
+      type: object
+      properties:
+        speakerId:
+          type: string
+          example: "user123"
+        text:
+          type: string
+          example: "I think we should implement this feature"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:15:00Z"
+
+    Decision:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "We will proceed with the microservices architecture"
+        attributedSpeakerId:
+          type: string
+          example: "user123"
+        meetingId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:20:00Z"
+
+    CreateMeetingContextRequest:
+      type: object
+      required:
+        - meetingId
+        - participantIds
+        - tweenGroupIds
+      properties:
+        meetingId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        participantIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"]
+        tweenGroupIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440003"]
+        status:
+          type: string
+          enum: [LIVE, COMPLETED, CANCELLED]
+          default: LIVE
+          example: "LIVE"
+
+    CreateDecisionRequest:
+      type: object
+      required:
+        - text
+        - attributedSpeakerId
+      properties:
+        text:
+          type: string
+          example: "We will proceed with the microservices architecture"
+        attributedSpeakerId:
+          type: string
+          example: "user123"
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "CONTEXT_NOT_FOUND"
+        message:
+          type: string
+          example: "Meeting context not found"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-04-29T10:00:00Z"
+        path:
+          type: string
+          example: "/api/context/briefing"
