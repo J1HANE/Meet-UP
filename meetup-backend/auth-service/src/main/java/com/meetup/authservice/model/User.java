@@ -100,4 +100,12 @@ public class User {
 
     @Column
     private String twoFactorSecret;
+
+    // Email Verification
+    @Builder.Default
+    @Column
+    private boolean emailVerified = false;
+
+    @Column
+    private LocalDateTime emailVerifiedAt;
 }

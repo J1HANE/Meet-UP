@@ -2,16 +2,24 @@ package com.meetup.authservice.controller;
 
 import com.meetup.authservice.dto.AuthResponse;
 import com.meetup.authservice.dto.ChangePasswordRequest;
+import com.meetup.authservice.dto.Disable2FARequest;
+import com.meetup.authservice.dto.Enable2FARequest;
 import com.meetup.authservice.dto.LoginRequest;
 import com.meetup.authservice.dto.RefreshRequest;
 import com.meetup.authservice.dto.RegisterRequest;
+import com.meetup.authservice.dto.RequestPasswordResetRequest;
+import com.meetup.authservice.dto.ResetPasswordRequest;
+import com.meetup.authservice.dto.Setup2FAResponse;
 import com.meetup.authservice.dto.UpdateProfileRequest;
 import com.meetup.authservice.dto.UpdateRolesRequest;
 import com.meetup.authservice.dto.UserResponse;
+import com.meetup.authservice.dto.VerifyEmailRequest;
 import com.meetup.authservice.security.UserDetailsImpl;
 import com.meetup.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -83,5 +91,71 @@ public class AuthController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         authService.changePassword(userDetails.getEmail(), request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/send-verification-email")
+    public ResponseEntity<Map<String, String>> sendVerificationEmail(
+            Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String token = authService.sendEmailVerification(userDetails.getEmail());
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<Map<String, String>> requestPasswordReset(@Valid @RequestBody RequestPasswordResetRequest request) {
+        String token = authService.requestPasswordReset(request);
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/2fa/setup")
+    public ResponseEntity<Setup2FAResponse> setup2FA(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return ResponseEntity.ok(authService.setup2FA(userDetails.getEmail()));
+    }
+
+    @PostMapping("/2fa/enable")
+    public ResponseEntity<Void> enable2FA(
+            Authentication authentication,
+            @Valid @RequestBody Enable2FARequest request) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        authService.enable2FA(userDetails.getEmail(), request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/2fa/disable")
+    public ResponseEntity<Void> disable2FA(
+            Authentication authentication,
+            @Valid @RequestBody Disable2FARequest request) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        authService.disable2FA(userDetails.getEmail(), request);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteAccount(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        authService.deleteAccount(userDetails.getEmail());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/search")
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<List<UserResponse>> searchUsers(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int offset) {
+        return ResponseEntity.ok(authService.searchUsers(query, limit, offset));
     }
 }

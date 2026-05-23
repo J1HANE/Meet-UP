@@ -2,20 +2,33 @@ package com.meetup.authservice.service;
 
 import com.meetup.authservice.dto.*;
 import com.meetup.authservice.exception.*;
+import com.meetup.authservice.model.EmailVerificationToken;
+import com.meetup.authservice.model.PasswordResetToken;
 import com.meetup.authservice.model.RefreshToken;
 import com.meetup.authservice.model.User;
+import com.meetup.authservice.repository.EmailVerificationTokenRepository;
+import com.meetup.authservice.repository.PasswordResetTokenRepository;
 import com.meetup.authservice.repository.RefreshTokenRepository;
 import com.meetup.authservice.repository.UserRepository;
 import com.meetup.authservice.security.JwtUtil;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.binary.Base32;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -26,9 +39,18 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final JavaMailSender mailSender;
+
+    @Value("${app.email.frontend-url}")
+    private String frontendUrl;
+
+    @Value("${app.email.from}")
+    private String emailFrom;
 
     @Override
     @Transactional
@@ -60,6 +82,8 @@ public class AuthServiceImpl implements AuthService {
         );
 
         String refreshToken = createRefreshToken(user.getId());
+
+        sendEmailVerification(user.getEmail());
 
         return buildAuthResponse(user, accessToken, refreshToken);
     }
@@ -270,6 +294,291 @@ public class AuthServiceImpl implements AuthService {
                 .taskDigest(user.isTaskDigest())
                 .profileVisibility(user.isProfileVisibility())
                 .twoFactorEnabled(user.isTwoFactorEnabled())
+                .emailVerified(user.isEmailVerified())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public String sendEmailVerification(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        // Delete existing unverified tokens for this email
+        emailVerificationTokenRepository.deleteByEmail(email);
+
+        // Generate new verification token
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = EmailVerificationToken.builder()
+                .token(token)
+                .email(email)
+                .expiryDate(LocalDateTime.now().plus(24, java.time.temporal.ChronoUnit.HOURS))
+                .verified(false)
+                .usedAt(null)
+                .build();
+
+        emailVerificationTokenRepository.save(verificationToken);
+
+        // Send email with verification link
+        try {
+            String verificationUrl = frontendUrl + "/verify-email?token=" + token;
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(emailFrom);
+            helper.setTo(email);
+            helper.setSubject("Verify your Meet-Up account");
+            helper.setText(
+                "<html><body>" +
+                "<h2>Welcome to Meet-Up!</h2>" +
+                "<p>Please verify your email address by clicking the link below:</p>" +
+                "<p><a href=\"" + verificationUrl + "\">Verify Email</a></p>" +
+                "<p>Or copy and paste this link into your browser:</p>" +
+                "<p>" + verificationUrl + "</p>" +
+                "<p>This link will expire in 24 hours.</p>" +
+                "</body></html>",
+                true
+            );
+            mailSender.send(message);
+        } catch (Exception e) {
+            // Log error but don't fail - token is still valid for testing
+            System.err.println("Failed to send email: " + e.getMessage());
+        }
+
+        // Return token for testing purposes
+        return token;
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(VerifyEmailRequest request) {
+        try {
+            EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(request.getToken())
+                    .orElseThrow(() -> new RuntimeException("Invalid verification token"));
+
+            if (verificationToken.isVerified()) {
+                throw new RuntimeException("Email already verified");
+            }
+
+            if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Verification token has expired");
+            }
+
+            // Mark token as verified
+            verificationToken.setVerified(true);
+            verificationToken.setUsedAt(LocalDateTime.now());
+            emailVerificationTokenRepository.save(verificationToken);
+
+            // Update user email verification status
+            User user = userRepository.findByEmail(verificationToken.getEmail())
+                    .orElseThrow(() -> new UserNotFoundException(verificationToken.getEmail()));
+
+            user.setEmailVerified(true);
+            user.setEmailVerifiedAt(LocalDateTime.now());
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Email verification failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public String requestPasswordReset(RequestPasswordResetRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(request.getEmail()));
+
+        // Delete existing unused tokens for this email
+        passwordResetTokenRepository.deleteByEmail(request.getEmail());
+
+        // Generate new reset token
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .email(request.getEmail())
+                .expiryDate(LocalDateTime.now().plus(1, java.time.temporal.ChronoUnit.HOURS))
+                .used(false)
+                .usedAt(null)
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        // Send email with reset link
+        try {
+            String resetUrl = frontendUrl + "/reset-password?token=" + token;
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(emailFrom);
+            helper.setTo(request.getEmail());
+            helper.setSubject("Reset your Meet-Up password");
+            helper.setText(
+                "<html><body>" +
+                "<h2>Password Reset Request</h2>" +
+                "<p>You requested a password reset for your Meet-Up account.</p>" +
+                "<p>Click the link below to reset your password:</p>" +
+                "<p><a href=\"" + resetUrl + "\">Reset Password</a></p>" +
+                "<p>Or copy and paste this link into your browser:</p>" +
+                "<p>" + resetUrl + "</p>" +
+                "<p>This link will expire in 1 hour.</p>" +
+                "<p>If you didn't request this, please ignore this email.</p>" +
+                "</body></html>",
+                true
+            );
+            mailSender.send(message);
+        } catch (Exception e) {
+            // Log error but don't fail - token is still valid for testing
+            System.err.println("Failed to send email: " + e.getMessage());
+        }
+
+        // Return token for testing purposes
+        return token;
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        if (resetToken.isUsed()) {
+            throw new RuntimeException("Reset token already used");
+        }
+
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        // Mark token as used
+        resetToken.setUsed(true);
+        resetToken.setUsedAt(LocalDateTime.now());
+        passwordResetTokenRepository.save(resetToken);
+
+        // Update user password
+        User user = userRepository.findByEmail(resetToken.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(resetToken.getEmail()));
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public Setup2FAResponse setup2FA(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        if (user.isTwoFactorEnabled()) {
+            throw new RuntimeException("2FA is already enabled for this account");
+        }
+
+        // Generate a random secret key using Google Authenticator
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+        GoogleAuthenticatorKey key = gAuth.createCredentials();
+        String secret = key.getKey();
+
+        // Store the secret temporarily (not enabled yet)
+        user.setTwoFactorSecret(secret);
+        userRepository.save(user);
+
+        // Generate QR code URL
+        String qrCodeUrl = String.format(
+            "otpauth://totp/Meet-Up:%s?secret=%s&issuer=Meet-Up",
+            email,
+            secret
+        );
+
+        return Setup2FAResponse.builder()
+                .secret(secret)
+                .qrCodeUrl(qrCodeUrl)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void enable2FA(String email, Enable2FARequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        if (user.isTwoFactorEnabled()) {
+            throw new RuntimeException("2FA is already enabled for this account");
+        }
+
+        if (user.getTwoFactorSecret() == null) {
+            throw new RuntimeException("2FA setup not initiated. Please call setup2FA first.");
+        }
+
+        // Verify the code (simplified - in production, use a proper TOTP library)
+        if (!verifyTOTP(user.getTwoFactorSecret(), request.getVerificationCode())) {
+            throw new RuntimeException("Invalid verification code");
+        }
+
+        // Enable 2FA
+        user.setTwoFactorEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void disable2FA(String email, Disable2FARequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        if (!user.isTwoFactorEnabled()) {
+            throw new RuntimeException("2FA is not enabled for this account");
+        }
+
+        // Verify the code before disabling
+        if (!verifyTOTP(user.getTwoFactorSecret(), request.getVerificationCode())) {
+            throw new RuntimeException("Invalid verification code");
+        }
+
+        // Disable 2FA
+        user.setTwoFactorEnabled(false);
+        user.setTwoFactorSecret(null);
+        userRepository.save(user);
+    }
+
+    private boolean verifyTOTP(String secret, String code) {
+        try {
+            GoogleAuthenticator gAuth = new GoogleAuthenticator();
+            int codeInt = Integer.parseInt(code);
+            return gAuth.authorize(secret, codeInt);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        // Delete all refresh tokens for this user
+        refreshTokenRepository.deleteByUserId(user.getId());
+
+        // Delete email verification tokens
+        emailVerificationTokenRepository.deleteByEmail(email);
+
+        // Delete password reset tokens
+        passwordResetTokenRepository.deleteByEmail(email);
+
+        // Delete the user
+        userRepository.delete(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> searchUsers(String query, int limit, int offset) {
+        return userRepository.findAll().stream()
+                .filter(user -> {
+                    String lowerQuery = query.toLowerCase();
+                    return user.getEmail().toLowerCase().contains(lowerQuery)
+                            || user.getDisplayName().toLowerCase().contains(lowerQuery)
+                            || (user.getBio() != null && user.getBio().toLowerCase().contains(lowerQuery))
+                            || (user.getLocation() != null && user.getLocation().toLowerCase().contains(lowerQuery));
+                })
+                .skip(offset)
+                .limit(limit)
+                .map(this::mapToUserResponse)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

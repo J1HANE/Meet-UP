@@ -38,4 +38,7 @@ public class UserResponse {
 
     // 2FA
     private boolean twoFactorEnabled;
+
+    // Email verification
+    private boolean emailVerified;
 }
