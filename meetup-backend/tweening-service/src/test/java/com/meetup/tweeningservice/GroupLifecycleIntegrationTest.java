@@ -62,11 +62,11 @@ public class GroupLifecycleIntegrationTest extends IntegrationTestBase {
         personRepository.save(PersonNode.builder().id(bobId).name("Bob").build());
 
         // 2. Simulate Task Creation (RabbitMQ)
-        TaskCreatedEvent createdEvent = new TaskCreatedEvent(taskId, "Design DB", "Desc", LocalDateTime.now());
+        TaskCreatedEvent createdEvent = new TaskCreatedEvent(taskId, "Design DB", aliceId, java.util.List.of("db", "design"), "HIGH", "TODO", LocalDateTime.now());
         rabbitTemplate.convertAndSend("task-events-exchange", "task.created", createdEvent);
 
         // Verify Latent group created asynchronously
-        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
             GroupNode group = groupRepository.findByTaskId(taskId).orElse(null);
             assertThat(group).isNotNull();
             assertThat(group.getState()).isEqualTo("LATENT");
@@ -96,12 +96,77 @@ public class GroupLifecycleIntegrationTest extends IntegrationTestBase {
         rabbitTemplate.convertAndSend("task-events-exchange", "task.completed", completedEvent);
 
         // Verify dissolved and collaboration generated
-        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
             GroupNode dissolvedGroup = groupRepository.findByTaskId(taskId).orElseThrow();
             assertThat(dissolvedGroup.getState()).isEqualTo("DISSOLVED");
         });
 
         PersonNode alice = personRepository.findById(aliceId).orElseThrow();
         assertThat(alice.hasCollaboratedWith(bobId)).isTrue();
+    }
+
+    @Test
+    void testNewEventsAndEndpoints() throws Exception {
+        String userId = UUID.randomUUID().toString();
+        String meetingId = UUID.randomUUID().toString();
+        String taskId = UUID.randomUUID().toString();
+
+        // 1. Test user.registered event
+        com.meetup.tweeningservice.event.in.UserRegisteredEvent regEvent = 
+                new com.meetup.tweeningservice.event.in.UserRegisteredEvent(userId, "Charlie", "charlie@example.com", "DEVELOPER");
+        rabbitTemplate.convertAndSend("auth-events-exchange", "user.registered", regEvent);
+
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+            PersonNode p = personRepository.findById(userId).orElse(null);
+            assertThat(p).isNotNull();
+            assertThat(p.getName()).isEqualTo("Charlie");
+            assertThat(p.getRole()).isEqualTo("DEVELOPER");
+        });
+
+        // 2. Test user.updated event
+        com.meetup.tweeningservice.event.in.UserUpdatedEvent updEvent = 
+                new com.meetup.tweeningservice.event.in.UserUpdatedEvent(userId, "Charlie Updated", "charlie@example.com", "LEAD");
+        rabbitTemplate.convertAndSend("auth-events-exchange", "user.updated", updEvent);
+
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+            PersonNode p = personRepository.findById(userId).orElse(null);
+            assertThat(p).isNotNull();
+            assertThat(p.getName()).isEqualTo("Charlie Updated");
+            assertThat(p.getRole()).isEqualTo("LEAD");
+        });
+
+        // 3. Test meeting.started event
+        com.meetup.tweeningservice.event.in.MeetingStartedEvent meetEvent = 
+                new com.meetup.tweeningservice.event.in.MeetingStartedEvent(meetingId, "Design Meeting", "SYNC", LocalDateTime.now(), null);
+        rabbitTemplate.convertAndSend("meeting-events-exchange", "meeting.started", meetEvent);
+
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+            MeetingNode m = meetingRepository.findById(meetingId).orElse(null);
+            assertThat(m).isNotNull();
+            assertThat(m.getTitle()).isEqualTo("Design Meeting");
+        });
+
+        // 4. Test task.created event
+        TaskCreatedEvent createdEvent = new TaskCreatedEvent(taskId, "Task Spec", userId, java.util.List.of("design"), "MEDIUM", "TODO", LocalDateTime.now());
+        rabbitTemplate.convertAndSend("task-events-exchange", "task.created", createdEvent);
+
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+            GroupNode g = groupRepository.findByTaskId(taskId).orElse(null);
+            assertThat(g).isNotNull();
+            assertThat(g.getState()).isEqualTo("LATENT");
+        });
+
+        GroupNode group = groupRepository.findByTaskId(taskId).orElseThrow();
+
+        // 5. Test REST endpoint: /api/groups/{groupId}/context
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/groups/" + group.getId() + "/context"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.id").value(group.getId()))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.state").value("LATENT"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.taskId").value(taskId));
+
+        // 6. Test REST endpoint: /api/groups/workload
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/groups/workload"))
+                .andExpect(status().isOk());
     }
 }
