@@ -6,8 +6,13 @@ import { taskApi } from "@/lib/api/taskApi";
 import { Loader2, GanttChartSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const GanttPage: React.FC = () => {
+export const Route = createFileRoute("/tasks/gantt")({
+  component: GanttPage,
+});
+
+function GanttPage() {
   const [ganttData, setGanttData] = useState<GanttData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,4 +97,4 @@ export const GanttPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}

@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 
 interface HeaderProps {
   contextName?: string;
@@ -23,35 +23,42 @@ export const TaskHeader = ({ contextName }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get current page from URL pathname
-  const currentPage = location.pathname.slice(1) || "backlog";
-
   const navItems = [
-    { id: "backlog", label: "Backlog", icon: ListTodo, path: "/backlog" },
-    { id: "board", label: "Task Board", icon: LayoutDashboard, path: "/board" },
     {
-      id: "gantt",
+      id: "tasks/backlog",
+      label: "Backlog",
+      icon: ListTodo,
+      path: "/tasks/backlog",
+    },
+    {
+      id: "tasks/board",
+      label: "Task Board",
+      icon: LayoutDashboard,
+      path: "/tasks/board",
+    },
+    {
+      id: "tasks/gantt",
       label: "Gantt Chart",
       icon: GanttChartSquare,
-      path: "/gantt",
+      path: "/tasks/gantt",
     },
     {
-      id: "statistics",
+      id: "tasks/statistics",
       label: "Statistics",
       icon: BarChart3,
-      path: "/statistics",
+      path: "/tasks/statistics",
     },
-    { id: "tags", label: "Tags", icon: Tag, path: "/tags" },
+    { id: "tasks/tags", label: "Tags", icon: Tag, path: "/tasks/tags" },
     {
-      id: "categories",
+      id: "tasks/categories",
       label: "Categories",
       icon: Layers,
-      path: "/categories",
+      path: "/tasks/categories",
     },
   ];
 
   const handleNav = (path: string) => {
-    navigate(`/${path}`);
+    navigate({ to: path });
     setMobileMenuOpen(false);
   };
 
@@ -74,13 +81,13 @@ export const TaskHeader = ({ contextName }: HeaderProps) => {
           {/* Desktop Nav */}
           <nav className='hidden lg:flex items-center gap-0.5'>
             {navItems.map((item) => {
-              const active = currentPage === item.id;
+              const active = location.pathname === item.path;
               return (
                 <Button
                   key={item.id}
                   variant='ghost'
                   size='sm'
-                  onClick={() => handleNav(item.id)}
+                  onClick={() => handleNav(item.path)}
                   className={`gap-1.5 h-8 px-3 text-xs font-medium rounded-full transition-all ${
                     active
                       ? "bg-primary/15 text-primary hover:bg-primary/20"
@@ -97,13 +104,13 @@ export const TaskHeader = ({ contextName }: HeaderProps) => {
           {/* Tablet: icon-only nav */}
           <nav className='hidden md:flex lg:hidden items-center gap-0.5'>
             {navItems.map((item) => {
-              const active = currentPage === item.id;
+              const active = location.pathname === item.path;
               return (
                 <Button
                   key={item.id}
                   variant='ghost'
                   size='icon'
-                  onClick={() => handleNav(item.id)}
+                  onClick={() => handleNav(item.path)}
                   title={item.label}
                   className={`h-9 w-9 rounded-full transition-all ${
                     active
@@ -156,11 +163,11 @@ export const TaskHeader = ({ contextName }: HeaderProps) => {
                 </div>
               )}
               {navItems.map((item) => {
-                const active = currentPage === item.id;
+                const active = location.pathname === item.path;
                 return (
                   <button
                     key={item.id}
-                    onClick={() => handleNav(item.id)}
+                    onClick={() => handleNav(item.path)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                       active
                         ? "bg-primary/15 text-primary"

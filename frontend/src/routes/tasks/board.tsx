@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
 import { DroppableColumn } from "@/components/tasks-service/DroppableColumn";
 import { useTaskContextData } from "@/hooks/task-service/useTaskContextData";
+import { createFileRoute } from "@tanstack/react-router";
 
 // Status → primary color used for the column accent dot
 const COLUMN_ACCENT: Record<string, string> = {
@@ -22,7 +23,11 @@ const COLUMN_ACCENT: Record<string, string> = {
   CANCELLED: "bg-muted-foreground/40",
 };
 
-export const TaskBoardPage: React.FC = () => {
+export const Route = createFileRoute("/tasks/board")({
+  component: TaskBoardPage,
+});
+
+function TaskBoardPage() {
   const { tasks, updateTaskStatus } = useTaskStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
@@ -134,4 +139,4 @@ export const TaskBoardPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTaskStore } from "@/store/taskStore";
 import { TaskRowComponent } from "@/components/tasks-service/TaskRowComponent";
 import { TaskForm } from "@/forms/task-service/TaskForm";
@@ -11,8 +11,13 @@ import { motion } from "framer-motion";
 import { useTaskActions } from "@/hooks/task-service/useTaskActions";
 import { useTaskContextData } from "@/hooks/task-service/useTaskContextData";
 import { ToastManager } from "@/lib/toastUtils";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const BacklogPage: React.FC = () => {
+export const Route = createFileRoute("/tasks/backlog")({
+  component: BacklogPage,
+});
+
+function BacklogPage() {
   const {
     tasks,
 
@@ -150,4 +155,4 @@ export const BacklogPage: React.FC = () => {
       )}
     </div>
   );
-};
+}
