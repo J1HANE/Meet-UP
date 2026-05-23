@@ -35,10 +35,15 @@ import { tagApi } from "@/lib/api/taskApi";
 import type { Tag } from "@/types/task-service";
 import { motion, AnimatePresence } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/tasks/tags")({
+  component: TagManagementPage,
+});
 
 const contextId = "project-123"; // This would come from context/route params
 
-export const TagManagementPage: React.FC = () => {
+function TagManagementPage() {
   const { tags, fetchTags } = useTaskStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
@@ -484,4 +489,4 @@ export const TagManagementPage: React.FC = () => {
       </Dialog>
     </div>
   );
-};
+}

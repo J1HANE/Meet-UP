@@ -1,4 +1,3 @@
-// src/pages/StatisticsPage.tsx
 import React from "react";
 import { useTaskStore } from "@/store/taskStore";
 import {
@@ -15,6 +14,7 @@ import {
 } from "recharts";
 import { motion } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
+import { createFileRoute } from "@tanstack/react-router";
 
 // CSS-variable-aware tooltip so it matches the card theme
 const ChartTooltip = ({ active, payload, label }: any) => {
@@ -47,7 +47,11 @@ const STATUS_COLORS = [
 ];
 const PRIORITY_COLORS = ["#3B82F6", "#1D9E75", "#F59E0B", "#E24B4A"];
 
-export const StatisticsPage: React.FC = () => {
+export const Route = createFileRoute("/tasks/statistics")({
+  component: StatisticsPage,
+});
+
+function StatisticsPage() {
   const { tasks } = useTaskStore();
   const meetingName = "Project Alpha";
 
@@ -348,4 +352,4 @@ export const StatisticsPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}

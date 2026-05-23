@@ -35,8 +35,13 @@ import { categoryApi } from "@/lib/api/taskApi";
 import type { Category } from "@/types/task-service";
 import { motion, AnimatePresence } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const CategoryManagementPage: React.FC = () => {
+export const Route = createFileRoute("/tasks/categories")({
+  component: CategoryManagementPage,
+});
+
+function CategoryManagementPage() {
   const { categories, fetchCategories } = useTaskStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -521,4 +526,4 @@ export const CategoryManagementPage: React.FC = () => {
       </Dialog>
     </div>
   );
-};
+}
