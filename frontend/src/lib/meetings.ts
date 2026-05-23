@@ -55,8 +55,7 @@ export const meetings: MeetingRecord[] = [
     summary:
       "The team aligned on the API migration path, split ownership across auth, adapters, and deployment, and agreed to use feature flags for rollout safety.",
     participants: [
-      { name: "John Doe", initials: "JD", role: "Product Engineer", speaking: true },
-      { name: "Sarah Kim", initials: "SK", role: "Backend Lead" },
+      { name: "Sarah Kim", initials: "SK", role: "Backend Lead", speaking: true },
       { name: "Alex Johnson", initials: "AJ", role: "Platform Engineer" },
       { name: "Emma Chen", initials: "EC", role: "Frontend Engineer" },
     ],
@@ -75,10 +74,10 @@ export const meetings: MeetingRecord[] = [
       { title: "Complete API v2 auth migration", assignee: "Alex J.", suggested: true },
       { title: "Update frontend adapters for new endpoints", assignee: "Emma C.", suggested: true },
       { title: "Prepare staging deployment plan", assignee: "Sarah K.", suggested: true },
-      { title: "Book security sign-off review", assignee: "John D.", suggested: false },
+      { title: "Book security sign-off review", assignee: "Sarah K.", suggested: false },
     ],
     transcriptLines: [
-      { speaker: "John", text: "Let's start by locking the API migration owners for this week.", time: "10:01" },
+      { speaker: "Sarah", text: "Let's start by locking the API migration owners for this week.", time: "10:01" },
       { speaker: "Sarah", text: "The v2 endpoints are mostly ready, but auth still needs a final pass.", time: "10:02" },
       { speaker: "Alex", text: "I can own the auth migration and pair with Sarah on rollout checks.", time: "10:03" },
       { speaker: "Emma", text: "Frontend adapters are queued and can move once the auth contract is stable.", time: "10:04" },
@@ -100,7 +99,6 @@ export const meetings: MeetingRecord[] = [
     participants: [
       { name: "Emma Chen", initials: "EC", role: "Frontend Engineer", speaking: true },
       { name: "Alicia Reed", initials: "AR", role: "Product Designer" },
-      { name: "John Doe", initials: "JD", role: "Product Engineer" },
     ],
     openTasks: [
       { title: "Confirm final empty-state copy", done: false },
@@ -115,12 +113,12 @@ export const meetings: MeetingRecord[] = [
     actionItems: [
       { title: "Build onboarding shell screens", assignee: "Emma C.", suggested: true },
       { title: "Finalize copy deck for onboarding", assignee: "Alicia R.", suggested: false },
-      { title: "Instrument analytics events", assignee: "John D.", suggested: true },
+      { title: "Instrument analytics events", assignee: "Emma C.", suggested: true },
     ],
     transcriptLines: [
       { speaker: "Emma", text: "We can ship the simplified onboarding structure this week.", time: "14:01" },
       { speaker: "Alicia", text: "The only unresolved item is the copy tone for the welcome state.", time: "14:02" },
-      { speaker: "John", text: "Let's keep the first rollout small and measure completion before adding steps.", time: "14:03" },
+      { speaker: "Emma", text: "Let's keep the first rollout small and measure completion before adding steps.", time: "14:03" },
     ],
   },
   {
@@ -139,7 +137,6 @@ export const meetings: MeetingRecord[] = [
     participants: [
       { name: "Lina K.", initials: "LK", role: "Customer Success", speaking: true },
       { name: "Chris Moore", initials: "CM", role: "Support Lead" },
-      { name: "John Doe", initials: "JD", role: "Product Engineer" },
     ],
     openTasks: [
       { title: "Finalize customer checklist handoff", done: false },
@@ -154,12 +151,12 @@ export const meetings: MeetingRecord[] = [
     actionItems: [
       { title: "Publish onboarding checklist", assignee: "Lina K.", suggested: true },
       { title: "Refresh support macros", assignee: "Chris M.", suggested: false },
-      { title: "Update docs screenshots", assignee: "John D.", suggested: true },
+      { title: "Update docs screenshots", assignee: "Lina K.", suggested: true },
     ],
     transcriptLines: [
       { speaker: "Lina", text: "The onboarding checklist is nearly done, but docs still need the latest screenshots.", time: "16:31" },
       { speaker: "Chris", text: "Support macros are ready once the final product language is approved.", time: "16:32" },
-      { speaker: "John", text: "I'll update the docs today so the rollout stays on schedule.", time: "16:33" },
+      { speaker: "Lina", text: "I'll update the docs today so the rollout stays on schedule.", time: "16:33" },
     ],
   },
 ];

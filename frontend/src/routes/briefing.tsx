@@ -4,6 +4,9 @@ import { z } from "zod";
 import { ArrowLeft, ArrowRight, CalendarClock, CheckCircle2, Circle, Clock3, FileText, Layers3, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMeetingById, meetings } from "@/lib/meetings";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
 
 const meetingSearchSchema = z.object({
   meetingId: z.string().optional(),
@@ -23,10 +26,40 @@ export const Route = createFileRoute("/briefing")({
 function BriefingPage() {
   const { meetingId } = Route.useSearch();
   const meeting = getMeetingById(meetingId);
+  const { user } = useAuth();
+  
+  const [liveContext, setLiveContext] = useState<any>(null);
+  const [isLoadingContext, setIsLoadingContext] = useState(false);
+
+  useEffect(() => {
+    if (user && meetingId) {
+      setIsLoadingContext(true);
+      api.getBriefing(user, meetingId)
+        .then(context => {
+          setLiveContext(context);
+        })
+        .catch(err => {
+          console.warn("Could not fetch live context from backend, falling back to mock details:", err);
+          setLiveContext(null);
+        })
+        .finally(() => {
+          setIsLoadingContext(false);
+        });
+    } else {
+      setLiveContext(null);
+    }
+  }, [user, meetingId]);
 
   if (!meeting) {
     return <MeetingPlanningSelector />;
   }
+
+  // Merge live context details from backend if available, fallback to mock
+  const displayBriefing = liveContext?.summary || liveContext?.topics?.join(", ") || meeting.briefing;
+  const displayDecisions = liveContext?.decisions?.length 
+    ? liveContext.decisions.map((d: any) => d.text) 
+    : meeting.decisions;
+  const displayStatus = liveContext?.status || meeting.status;
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-5xl space-y-6">
@@ -48,7 +81,7 @@ function BriefingPage() {
 
         <div className="rounded-2xl border border-primary/20 bg-card/70 px-4 py-3 text-sm text-muted-foreground shadow-[0_16px_40px_oklch(0.08_0.03_280/0.35)]">
           <div className="font-medium text-foreground">{meeting.roomLabel}</div>
-          <div>{meeting.status}</div>
+          <div>{displayStatus}</div>
         </div>
       </div>
 
@@ -59,7 +92,7 @@ function BriefingPage() {
               <FileText className="w-4 h-4 text-primary" />
               <h3 className="font-heading text-lg font-semibold text-foreground">Task Context</h3>
             </div>
-            <p className="leading-relaxed text-muted-foreground">{meeting.briefing}</p>
+            <p className="leading-relaxed text-muted-foreground">{displayBriefing}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -69,7 +102,7 @@ function BriefingPage() {
                 <h3 className="font-heading text-sm font-semibold text-foreground">Focus Decisions</h3>
               </div>
               <div className="space-y-2">
-                {meeting.decisions.map((decision) => (
+                {displayDecisions.map((decision: string) => (
                   <div key={decision} className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-primary" />
                     <span className="text-sm text-muted-foreground">{decision}</span>

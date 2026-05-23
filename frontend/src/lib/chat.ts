@@ -74,7 +74,7 @@ class ChatClient {
       {
         id: '2',
         userId: 'user1',
-        username: 'John Doe',
+        username: 'Sarah Kim',
         message: 'Hello everyone! Ready to start the meeting.',
         timestamp: new Date().toISOString(),
       },

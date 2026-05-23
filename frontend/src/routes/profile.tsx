@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate, Navigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { BadgeCheck, Bell, KeyRound, Lock, LogOut, Mail, MapPin, ShieldCheck, Tag } from "lucide-react";
+import { BadgeCheck, Bell, KeyRound, Lock, LogOut, Mail, MapPin, ShieldCheck, Tag, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -31,10 +31,14 @@ const availableTopics = [
 ];
 
 function ProfilePage() {
-  const { user, isAuthenticated, logout, updateProfile, changePassword } = useAuth();
+  const { user, isAuthenticated, logout, updateProfile, changePassword, deleteAccount, sendEmailVerification } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [verificationToken, setVerificationToken] = useState("");
+  const [showVerificationToken, setShowVerificationToken] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -75,8 +79,8 @@ function ProfilePage() {
     }
   }, [user]);
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" />;
+  if (!user) {
+    return <div>Loading...</div>;
   }
 
   const initials = user.displayName
@@ -97,6 +101,31 @@ function ProfilePage() {
       navigate({ to: "/login" });
     } catch {
       toast.error("Logout failed");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAccount();
+      toast.success("Account deleted successfully");
+      navigate({ to: "/login" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const handleSendEmailVerification = async () => {
+    try {
+      const token = await sendEmailVerification();
+      setVerificationToken(token);
+      setShowVerificationToken(true);
+      toast.success("Verification token generated!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to send verification email");
     }
   };
 
@@ -348,17 +377,50 @@ function ProfilePage() {
                     </div>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" disabled>{user.twoFactorEnabled ? "Manage" : "Setup"}</Button>
+                <a href="/2fa-setup">
+                  <Button variant="outline" size="sm">{user.twoFactorEnabled ? "Manage" : "Setup"}</Button>
+                </a>
               </div>
 
               <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-muted/10 px-4 py-4">
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <div className="font-medium text-foreground">Recovery email</div>
-                    <div className="text-sm text-muted-foreground">{user.recoveryEmail || user.email}</div>
+                    <div className="font-medium text-foreground">Email verification</div>
+                    <div className="text-sm text-muted-foreground">
+                      {user.emailVerified ? "Email verified" : "Email not verified"}
+                    </div>
                   </div>
                 </div>
+                {!user.emailVerified && (
+                  <Button variant="outline" size="sm" onClick={handleSendEmailVerification}>Verify</Button>
+                )}
+              </div>
+
+              {showVerificationToken && (
+                <div className="rounded-2xl border border-green-200/50 bg-green-50/50 px-4 py-4">
+                  <div className="mb-2">
+                    <div className="font-medium text-green-900">Verification token generated!</div>
+                    <div className="text-sm text-green-700">Copy this token and use it on the verify email page:</div>
+                  </div>
+                  <div className="bg-white p-3 rounded border border-green-300 font-mono text-sm break-all">
+                    {verificationToken}
+                  </div>
+                  <a href="/verify-email" className="block text-center text-blue-600 hover:underline mt-2">
+                    Go to verify email page
+                  </a>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between rounded-2xl border border-red-200/50 bg-red-50/50 px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                  <div>
+                    <div className="font-medium text-red-900">Delete account</div>
+                    <div className="text-sm text-red-700">Permanently delete your account and all data</div>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="border-red-300 text-red-700 hover:bg-red-100" onClick={() => setShowDeleteDialog(true)}>Delete</Button>
               </div>
             </div>
           </div>
@@ -432,6 +494,35 @@ function ProfilePage() {
                 className="flex-1 bg-orange-500 text-slate-950 hover:bg-orange-400"
               >
                 {isChangingPassword ? "Changing..." : "Change Password"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 rounded-full">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Delete Account</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+              >
+                {isDeleting ? "Deleting..." : "Delete Account"}
               </Button>
             </div>
           </div>

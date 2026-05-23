@@ -9,24 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as TranscriptRouteImport } from './routes/transcript'
+import { Route as TasksRefRouteImport } from './routes/tasks-ref'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SummaryRouteImport } from './routes/summary'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MemoryRouteImport } from './routes/memory'
+import { Route as MeetingContextRouteImport } from './routes/meeting-context'
 import { Route as MeetingRouteImport } from './routes/meeting'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as DecisionsRouteImport } from './routes/decisions'
 import { Route as BriefingRouteImport } from './routes/briefing'
+import { Route as R2faSetupRouteImport } from './routes/2fa-setup'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsFormRouteImport } from './routes/groups_/form'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups_.$groupId'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as GroupsGroupIdTransferRouteImport } from './routes/groups_.$groupId.transfer'
 import { Route as GroupsGroupIdSplitRouteImport } from './routes/groups_.$groupId.split'
 import { Route as GroupsGroupIdMergeRouteImport } from './routes/groups_.$groupId.merge'
 import { Route as GroupsGroupIdAddMemberRouteImport } from './routes/groups_.$groupId.add-member'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TranscriptRoute = TranscriptRouteImport.update({
+  id: '/transcript',
+  path: '/transcript',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRefRoute = TasksRefRouteImport.update({
+  id: '/tasks-ref',
+  path: '/tasks-ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -35,6 +59,11 @@ const TasksRoute = TasksRouteImport.update({
 const SummaryRoute = SummaryRouteImport.update({
   id: '/summary',
   path: '/summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -50,6 +79,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const MemoryRoute = MemoryRouteImport.update({
   id: '/memory',
   path: '/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingContextRoute = MeetingContextRouteImport.update({
+  id: '/meeting-context',
+  path: '/meeting-context',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MeetingRoute = MeetingRouteImport.update({
@@ -72,9 +106,24 @@ const GraphRoute = GraphRouteImport.update({
   path: '/graph',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DecisionsRoute = DecisionsRouteImport.update({
+  id: '/decisions',
+  path: '/decisions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BriefingRoute = BriefingRouteImport.update({
   id: '/briefing',
   path: '/briefing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R2faSetupRoute = R2faSetupRouteImport.update({
+  id: '/2fa-setup',
+  path: '/2fa-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -90,6 +139,11 @@ const GroupsFormRoute = GroupsFormRouteImport.update({
 const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   id: '/groups_/$groupId',
   path: '/groups/$groupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdTransferRoute = GroupsGroupIdTransferRouteImport.update({
@@ -115,16 +169,25 @@ const GroupsGroupIdAddMemberRoute = GroupsGroupIdAddMemberRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/2fa-setup': typeof R2faSetupRoute
   '/briefing': typeof BriefingRoute
+  '/decisions': typeof DecisionsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
   '/meeting': typeof MeetingRoute
+  '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
@@ -134,16 +197,25 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/2fa-setup': typeof R2faSetupRoute
   '/briefing': typeof BriefingRoute
+  '/decisions': typeof DecisionsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
   '/meeting': typeof MeetingRoute
+  '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
@@ -154,16 +226,25 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/2fa-setup': typeof R2faSetupRoute
   '/briefing': typeof BriefingRoute
+  '/decisions': typeof DecisionsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
   '/meeting': typeof MeetingRoute
+  '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
   '/tasks': typeof TasksRoute
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups_/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups_/form': typeof GroupsFormRoute
   '/groups_/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
@@ -175,16 +256,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/2fa-setup'
     | '/briefing'
+    | '/decisions'
+    | '/forgot-password'
     | '/graph'
     | '/groups'
     | '/login'
     | '/meeting'
+    | '/meeting-context'
     | '/memory'
     | '/profile'
     | '/register'
+    | '/reset-password'
     | '/summary'
     | '/tasks'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups/$groupId'
     | '/groups/form'
     | '/groups/$groupId/add-member'
@@ -194,16 +284,25 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/2fa-setup'
     | '/briefing'
+    | '/decisions'
+    | '/forgot-password'
     | '/graph'
     | '/groups'
     | '/login'
     | '/meeting'
+    | '/meeting-context'
     | '/memory'
     | '/profile'
     | '/register'
+    | '/reset-password'
     | '/summary'
     | '/tasks'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups/$groupId'
     | '/groups/form'
     | '/groups/$groupId/add-member'
@@ -213,16 +312,25 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/2fa-setup'
     | '/briefing'
+    | '/decisions'
+    | '/forgot-password'
     | '/graph'
     | '/groups'
     | '/login'
     | '/meeting'
+    | '/meeting-context'
     | '/memory'
     | '/profile'
     | '/register'
+    | '/reset-password'
     | '/summary'
     | '/tasks'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups_/$groupId'
     | '/groups_/form'
     | '/groups_/$groupId/add-member'
@@ -233,22 +341,52 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  R2faSetupRoute: typeof R2faSetupRoute
   BriefingRoute: typeof BriefingRoute
+  DecisionsRoute: typeof DecisionsRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   GraphRoute: typeof GraphRoute
   GroupsRoute: typeof GroupsRoute
   LoginRoute: typeof LoginRoute
   MeetingRoute: typeof MeetingRoute
+  MeetingContextRoute: typeof MeetingContextRoute
   MemoryRoute: typeof MemoryRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SummaryRoute: typeof SummaryRoute
   TasksRoute: typeof TasksRoute
+  TasksRefRoute: typeof TasksRefRoute
+  TranscriptRoute: typeof TranscriptRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
   GroupsFormRoute: typeof GroupsFormRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transcript': {
+      id: '/transcript'
+      path: '/transcript'
+      fullPath: '/transcript'
+      preLoaderRoute: typeof TranscriptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks-ref': {
+      id: '/tasks-ref'
+      path: '/tasks-ref'
+      fullPath: '/tasks-ref'
+      preLoaderRoute: typeof TasksRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tasks': {
       id: '/tasks'
       path: '/tasks'
@@ -261,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/summary'
       fullPath: '/summary'
       preLoaderRoute: typeof SummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -282,6 +427,13 @@ declare module '@tanstack/react-router' {
       path: '/memory'
       fullPath: '/memory'
       preLoaderRoute: typeof MemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meeting-context': {
+      id: '/meeting-context'
+      path: '/meeting-context'
+      fullPath: '/meeting-context'
+      preLoaderRoute: typeof MeetingContextRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/meeting': {
@@ -312,11 +464,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GraphRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/decisions': {
+      id: '/decisions'
+      path: '/decisions'
+      fullPath: '/decisions'
+      preLoaderRoute: typeof DecisionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/briefing': {
       id: '/briefing'
       path: '/briefing'
       fullPath: '/briefing'
       preLoaderRoute: typeof BriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/2fa-setup': {
+      id: '/2fa-setup'
+      path: '/2fa-setup'
+      fullPath: '/2fa-setup'
+      preLoaderRoute: typeof R2faSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -338,6 +511,13 @@ declare module '@tanstack/react-router' {
       path: '/groups/$groupId'
       fullPath: '/groups/$groupId'
       preLoaderRoute: typeof GroupsGroupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/transfer': {
@@ -391,16 +571,25 @@ const GroupsGroupIdRouteWithChildren = GroupsGroupIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  R2faSetupRoute: R2faSetupRoute,
   BriefingRoute: BriefingRoute,
+  DecisionsRoute: DecisionsRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   GraphRoute: GraphRoute,
   GroupsRoute: GroupsRoute,
   LoginRoute: LoginRoute,
   MeetingRoute: MeetingRoute,
+  MeetingContextRoute: MeetingContextRoute,
   MemoryRoute: MemoryRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SummaryRoute: SummaryRoute,
   TasksRoute: TasksRoute,
+  TasksRefRoute: TasksRefRoute,
+  TranscriptRoute: TranscriptRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
+  AdminUsersRoute: AdminUsersRoute,
   GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
   GroupsFormRoute: GroupsFormRoute,
 }

@@ -4,6 +4,9 @@ import { z } from "zod";
 import { ArrowLeft, ArrowRight, CheckCircle2, FileText, Sparkles, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMeetingById, meetings } from "@/lib/meetings";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
 
 const meetingSearchSchema = z.object({
   meetingId: z.string().optional(),
@@ -23,10 +26,39 @@ export const Route = createFileRoute("/summary")({
 function SummaryPage() {
   const { meetingId } = Route.useSearch();
   const meeting = getMeetingById(meetingId);
+  const { user } = useAuth();
+
+  const [liveContext, setLiveContext] = useState<any>(null);
+  const [isLoadingContext, setIsLoadingContext] = useState(false);
+
+  useEffect(() => {
+    if (user && meetingId) {
+      setIsLoadingContext(true);
+      api.getBriefing(user, meetingId)
+        .then(context => {
+          setLiveContext(context);
+        })
+        .catch(err => {
+          console.warn("Could not fetch live context from backend, falling back to mock details:", err);
+          setLiveContext(null);
+        })
+        .finally(() => {
+          setIsLoadingContext(false);
+        });
+    } else {
+      setLiveContext(null);
+    }
+  }, [user, meetingId]);
 
   if (!meeting) {
     return <MeetingSummarySelector />;
   }
+
+  // Merge live context details from backend if available, fallback to mock
+  const displaySummary = liveContext?.summary || meeting.summary;
+  const displayDecisions = liveContext?.decisions?.length 
+    ? liveContext.decisions.map((d: any) => d.text) 
+    : meeting.decisions;
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-5xl space-y-6">
@@ -59,7 +91,7 @@ function SummaryPage() {
           <Sparkles className="w-4 h-4 text-primary" />
           <h3 className="font-heading text-lg font-semibold text-foreground">AI-Generated Summary</h3>
         </div>
-        <p className="text-sm leading-relaxed text-muted-foreground">{meeting.summary}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{displaySummary}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -97,7 +129,7 @@ function SummaryPage() {
               <h3 className="font-heading font-semibold text-foreground">Decision Log</h3>
             </div>
             <div className="space-y-2">
-              {meeting.decisions.map((decision) => (
+              {displayDecisions.map((decision: string) => (
                 <div key={decision} className="flex items-start gap-2 py-1">
                   <div className="mt-1.5 shrink-0 neon-dot" />
                   <span className="text-sm text-muted-foreground">{decision}</span>
