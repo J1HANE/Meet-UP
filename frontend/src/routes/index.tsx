@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
+    if (typeof window === "undefined") throw redirect({ to: "/login" });
     const token = localStorage.getItem("meetup_access_token");
     if (!token) {
       throw redirect({ to: "/login" });
