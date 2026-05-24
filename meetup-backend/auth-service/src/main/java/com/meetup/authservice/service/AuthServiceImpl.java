@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
 
         String refreshToken = createRefreshToken(user.getId());
 
-        sendEmailVerification(user.getEmail());
+        sendEmailVerification(user);
 
         return buildAuthResponse(user, accessToken, refreshToken);
     }
@@ -161,6 +161,25 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
         return mapToUserResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUserFromPrincipal(UUID userId, String email, String displayName, List<String> roles, List<UUID> tweenIds, List<String> topics) {
+        return UserResponse.builder()
+                .id(userId)
+                .email(email)
+                .displayName(displayName)
+                .roles(roles != null ? roles : new java.util.ArrayList<>())
+                .tweenIds(tweenIds != null ? tweenIds : new java.util.ArrayList<>())
+                .topics(topics != null ? topics : new java.util.ArrayList<>())
+                .active(true)
+                .meetingReminders(true)
+                .taskDigest(true)
+                .profileVisibility(false)
+                .twoFactorEnabled(false)
+                .emailVerified(false)
+                .build();
     }
 
     @Override
@@ -300,18 +319,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public String sendEmailVerification(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(email));
+    public String sendEmailVerification(User user) {
 
         // Delete existing unverified tokens for this email
-        emailVerificationTokenRepository.deleteByEmail(email);
+        emailVerificationTokenRepository.deleteByEmail(user.getEmail());
 
         // Generate new verification token
         String token = UUID.randomUUID().toString();
         EmailVerificationToken verificationToken = EmailVerificationToken.builder()
                 .token(token)
-                .email(email)
+                .email(user.getEmail())
                 .expiryDate(LocalDateTime.now().plus(24, java.time.temporal.ChronoUnit.HOURS))
                 .verified(false)
                 .usedAt(null)
@@ -325,7 +342,7 @@ public class AuthServiceImpl implements AuthService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom(emailFrom);
-            helper.setTo(email);
+            helper.setTo(user.getEmail());
             helper.setSubject("Verify your Meet-Up account");
             helper.setText(
                 "<html><body>" +

@@ -3,8 +3,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  Bot,
   Clock3,
   FileText,
+  LoaderCircle,
   MessageSquare,
   Send,
   Users,
@@ -25,6 +27,11 @@ import {
   getMeetingUserName,
   setMeetingUser,
 } from "@/lib/meeting-user";
+import {
+  askAiQuestion,
+  buildFallbackAnswer,
+  buildMeetingAiContext,
+} from "@/lib/api/ai-insights";
 
 type VideoParticipant = {
   id: string;
@@ -54,6 +61,12 @@ type MeetingPageViewModel = {
 type MeetingIdentity = {
   userId: string;
   userName: string;
+};
+
+type AssistantMessage = {
+  id: string;
+  role: "assistant" | "user";
+  content: string;
 };
 
 function formatMeetingDateLabel(isoDate: string) {
@@ -205,9 +218,18 @@ function MeetingRoomPage() {
 function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"chat" | "transcript">("transcript");
+  const [activeTab, setActiveTab] = useState<"assistant" | "chat">("assistant");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [assistantMessages, setAssistantMessages] = useState<AssistantMessage[]>([
+    {
+      id: "assistant-welcome",
+      role: "assistant",
+      content: "Ask me about this meeting, the participants, risks, action items, or what should happen next.",
+    },
+  ]);
+  const [assistantInput, setAssistantInput] = useState("");
+  const [isAssistantThinking, setIsAssistantThinking] = useState(false);
   const [identity, setIdentity] = useState<MeetingIdentity>(() => ({
     userId: getMeetingUserId(),
     userName: getMeetingUserName(),
@@ -221,6 +243,7 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
     user_name: string;
   } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const assistantEndRef = useRef<HTMLDivElement>(null);
 
   const { data: liveMeeting } = useQuery({
     queryKey: ["meeting", meeting.id, identity.userId, identity.userName],
@@ -243,6 +266,10 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const roster = liveMeeting
     ? toViewModelFromBackend(liveMeeting).participants
     : meeting.participants;
+
+  useEffect(() => {
+    assistantEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [assistantMessages, isAssistantThinking]);
 
   useEffect(() => {
     let unsubscribeChat: (() => void) | undefined;
@@ -309,6 +336,38 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
       .catch((error) => console.error("Failed to send message:", error));
   };
 
+  const handleAskAssistant = () => {
+    const question = assistantInput.trim();
+    const sourceMeeting = liveMeeting;
+
+    if (!question || !sourceMeeting || isAssistantThinking) return;
+
+    const userMessage: AssistantMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: question,
+    };
+
+    const context = buildMeetingAiContext(sourceMeeting);
+    setAssistantMessages((messages) => [...messages, userMessage]);
+    setAssistantInput("");
+    setIsAssistantThinking(true);
+
+    void askAiQuestion(context, question)
+      .catch(() => buildFallbackAnswer(context, question))
+      .then((answer) => {
+        setAssistantMessages((messages) => [
+          ...messages,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: answer,
+          },
+        ]);
+      })
+      .finally(() => setIsAssistantThinking(false));
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -353,8 +412,8 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
                   No participants yet. Join the meeting to appear here.
                 </div>
               ) : (
-                roster.map((participant) => (
-                  <div key={`${participant.id}-${participant.role}`} className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/10 px-3 py-3">
+                roster.map((participant, index) => (
+                  <div key={`${participant.id}-${participant.role}-${index}`} className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/10 px-3 py-3">
                     <div className="relative">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
                         {participant.initials}
@@ -411,14 +470,14 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
         <div className="hidden w-80 shrink-0 rounded-[2rem] border border-border bg-card lg:flex lg:flex-col">
           <div className="flex border-b border-border">
             <button
-              onClick={() => setActiveTab("transcript")}
+              onClick={() => setActiveTab("assistant")}
               className={`flex-1 py-3 text-xs font-medium transition-colors ${
-                activeTab === "transcript" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
+                activeTab === "assistant" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
               }`}
             >
               <span className="inline-flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
-                Transcript
+                <Bot className="w-3.5 h-3.5" />
+                AI Assistant
               </span>
             </button>
             <button
@@ -434,27 +493,62 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
             </button>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
-            {activeTab === "transcript" ? (
-              meeting.transcriptLines.length === 0 ? (
-                <p className="mt-8 text-center text-sm text-muted-foreground">
-                  Transcript is not available yet for backend meetings.
-                </p>
-              ) : (
-                meeting.transcriptLines.map((line, index) => (
-                  <motion.div
-                    key={`${line.speaker}-${line.time}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.08 }}
-                  >
-                    <div className="mb-1 flex items-center gap-2">
-                      <span className="text-xs font-semibold text-primary">{line.speaker}</span>
-                      <span className="text-[10px] text-muted-foreground">{line.time}</span>
+            {activeTab === "assistant" ? (
+              <>
+                <div className="space-y-3">
+                  {assistantMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`rounded-2xl px-3 py-3 text-sm leading-relaxed ${
+                        message.role === "user"
+                          ? "ml-6 bg-primary text-primary-foreground"
+                          : "mr-6 border border-border/70 bg-muted/20 text-muted-foreground"
+                      }`}
+                    >
+                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">
+                        {message.role === "user" ? identity.userName : "MeetFlow AI"}
+                      </div>
+                      <p className="whitespace-pre-line">{message.content}</p>
                     </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{line.text}</p>
-                  </motion.div>
-                ))
-              )
+                  ))}
+                  {isAssistantThinking && (
+                    <div className="mr-6 flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+                      <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
+                      Thinking through the meeting context...
+                    </div>
+                  )}
+                  <div ref={assistantEndRef} />
+                </div>
+                <div className="border-t border-border p-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={assistantInput}
+                      onChange={(e) => setAssistantInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleAskAssistant();
+                        }
+                      }}
+                      placeholder="Ask about this meeting..."
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <Button
+                      onClick={handleAskAssistant}
+                      disabled={!assistantInput.trim() || isAssistantThinking || !liveMeeting}
+                      size="icon"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      {isAssistantThinking ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 <div className="space-y-3">

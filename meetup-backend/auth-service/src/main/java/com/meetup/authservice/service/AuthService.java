@@ -14,6 +14,7 @@ import com.meetup.authservice.dto.UpdateProfileRequest;
 import com.meetup.authservice.dto.UpdateRolesRequest;
 import com.meetup.authservice.dto.UserResponse;
 import com.meetup.authservice.dto.VerifyEmailRequest;
+import com.meetup.authservice.model.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,8 @@ public interface AuthService {
 
     UserResponse getCurrentUser(String email);
 
+    UserResponse getCurrentUserFromPrincipal(UUID userId, String email, String displayName, List<String> roles, List<UUID> tweenIds, List<String> topics);
+
     List<UserResponse> getAllUsers();
 
     UserResponse updateUserRoles(UUID userId, UpdateRolesRequest request);
@@ -38,7 +41,7 @@ public interface AuthService {
 
     void changePassword(String email, ChangePasswordRequest request);
 
-    String sendEmailVerification(String email);
+    String sendEmailVerification(User user);
 
     void verifyEmail(VerifyEmailRequest request);
 

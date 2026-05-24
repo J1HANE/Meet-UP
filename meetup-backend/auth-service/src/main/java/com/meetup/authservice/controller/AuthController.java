@@ -14,18 +14,20 @@ import com.meetup.authservice.dto.UpdateProfileRequest;
 import com.meetup.authservice.dto.UpdateRolesRequest;
 import com.meetup.authservice.dto.UserResponse;
 import com.meetup.authservice.dto.VerifyEmailRequest;
+import com.meetup.authservice.model.User;
+import com.meetup.authservice.repository.UserRepository;
 import com.meetup.authservice.security.UserDetailsImpl;
 import com.meetup.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -34,6 +36,7 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -59,7 +62,14 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return ResponseEntity.ok(authService.getCurrentUser(userDetails.getEmail()));
+        return ResponseEntity.ok(authService.getCurrentUserFromPrincipal(
+                userDetails.getId(),
+                userDetails.getEmail(),
+                userDetails.getDisplayName(),
+                userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList(),
+                userDetails.getTweenIds(),
+                userDetails.getTopics()
+        ));
     }
 
     @GetMapping("/users")
@@ -97,7 +107,9 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> sendVerificationEmail(
             Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String token = authService.sendEmailVerification(userDetails.getEmail());
+        User user = userRepository.findByEmail(userDetails.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String token = authService.sendEmailVerification(user);
         return ResponseEntity.ok(Map.of("token", token));
     }
 

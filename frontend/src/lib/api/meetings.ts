@@ -51,7 +51,7 @@ export interface BackendJoinMeetingResponse {
   participant: ParticipantResponse;
 }
 
-const MEETING_API_BASE_URL = import.meta.env.VITE_MEETING_API_URL ?? "http://localhost:8083";
+const MEETING_API_BASE_URL = import.meta.env.VITE_MEETING_API_URL ?? (import.meta.env.VITE_API_URL || "http://localhost:8085");
 
 export class MeetingApiError extends Error {
   constructor(

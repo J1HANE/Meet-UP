@@ -48,7 +48,7 @@ export interface GroupNode {
   meeting?: FormedIn;
 }
 
-const API_BASE_URL = "http://localhost:8083/api/groups"; 
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8085'}/api/groups`; 
 
 export const groupsApi = {
   // Fetch all groups

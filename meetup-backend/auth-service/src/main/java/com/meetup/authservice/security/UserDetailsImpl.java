@@ -29,6 +29,8 @@ public class UserDetailsImpl implements UserDetails {
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
+    private List<UUID> tweenIds;
+    private List<String> topics;
 
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = user.getRoles().stream()
@@ -40,7 +42,9 @@ public class UserDetailsImpl implements UserDetails {
                 user.getEmail(),
                 user.getDisplayName(),
                 user.getPassword(),
-                authorities
+                authorities,
+                user.getTweenIds() != null ? user.getTweenIds() : new java.util.ArrayList<>(),
+                user.getTopics() != null ? user.getTopics() : new java.util.ArrayList<>()
         );
     }
 

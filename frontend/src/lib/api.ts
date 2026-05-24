@@ -1,6 +1,7 @@
 ﻿const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8085/api";
 const CONTEXT_API_URL = import.meta.env.VITE_CONTEXT_API_URL || "http://localhost:8085/api/context";
 
+<<<<<<< HEAD
 export interface LoginRequest {
   email: string;
   password: string;
@@ -587,3 +588,154 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+=======
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8085', // API Gateway URL
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Automatically inject Bearer token if it exists in local storage
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('meetup_access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+// Types
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: UserResponse;
+}
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: string[];
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  displayName: string;
+}
+
+export interface RefreshRequest {
+  refreshToken: string;
+}
+
+export interface UpdateProfileRequest {
+  displayName?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+export interface RequestPasswordResetRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface Setup2FAResponse {
+  secret: string;
+  qrCodeUrl: string;
+}
+
+export interface Enable2FARequest {
+  verificationCode: string;
+}
+
+export interface Disable2FARequest {
+  verificationCode: string;
+}
+
+// API Methods
+export const authApi = {
+  login: (data: LoginRequest) => api.post<AuthResponse>('/api/auth/login', data),
+  register: (data: RegisterRequest) => api.post<AuthResponse>('/api/auth/register', data),
+  logout: (refreshToken: string, accessToken?: string) => 
+    api.post('/api/auth/logout', { refreshToken }, {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }),
+  refreshToken: (data: RefreshRequest) => api.post<AuthResponse>('/api/auth/refresh', data),
+  getCurrentUser: (token: string) => 
+    api.get<UserResponse>('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  updateProfile: (token: string, data: UpdateProfileRequest) =>
+    api.patch<UserResponse>('/api/auth/me', data, {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  changePassword: (token: string, data: ChangePasswordRequest) =>
+    api.post('/api/auth/change-password', data, {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  sendEmailVerification: (token: string) =>
+    api.post<{ token: string }>('/api/auth/send-verification-email', null, {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  verifyEmail: (data: VerifyEmailRequest) => 
+    api.post('/api/auth/verify-email', data),
+  requestPasswordReset: (data: RequestPasswordResetRequest) =>
+    api.post<{ token: string }>('/api/auth/request-password-reset', data),
+  resetPassword: (data: ResetPasswordRequest) =>
+    api.post('/api/auth/reset-password', data),
+  setup2FA: (token: string) =>
+    api.post<Setup2FAResponse>('/api/auth/2fa/setup', null, {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  enable2FA: (token: string, data: Enable2FARequest) =>
+    api.post('/api/auth/2fa/enable', data, {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  disable2FA: (token: string, data: Disable2FARequest) =>
+    api.post('/api/auth/2fa/disable', data, {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  deleteAccount: (token: string) =>
+    api.delete('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+};
+
+// Export individual methods for convenience
+export const login = authApi.login;
+export const register = authApi.register;
+export const logout = authApi.logout;
+export const refreshToken = authApi.refreshToken;
+export const getCurrentUser = authApi.getCurrentUser;
+export const updateProfile = authApi.updateProfile;
+export const changePassword = authApi.changePassword;
+export const sendEmailVerification = authApi.sendEmailVerification;
+export const verifyEmail = authApi.verifyEmail;
+export const requestPasswordReset = authApi.requestPasswordReset;
+export const resetPassword = authApi.resetPassword;
+export const setup2FA = authApi.setup2FA;
+export const enable2FA = authApi.enable2FA;
+export const disable2FA = authApi.disable2FA;
+export const deleteAccount = authApi.deleteAccount;
+>>>>>>> 404b421 (changes regarding the ai service)
