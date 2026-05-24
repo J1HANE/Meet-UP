@@ -18,7 +18,6 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as MeetingContextRouteImport } from './routes/meeting-context'
-import { Route as MeetingRouteImport } from './routes/meeting'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
@@ -33,9 +32,10 @@ import { Route as TasksGanttRouteImport } from './routes/tasks/gantt'
 import { Route as TasksCategoriesRouteImport } from './routes/tasks/categories'
 import { Route as TasksBoardRouteImport } from './routes/tasks/board'
 import { Route as TasksBacklogRouteImport } from './routes/tasks/backlog'
+import { Route as MeetingIdRouteImport } from './routes/meeting.$id'
 import { Route as GroupsFormRouteImport } from './routes/groups_/form'
-import { Route as GroupsGroupIdRouteImport } from './routes/groups_.$groupId'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as GroupsGroupIdIndexRouteImport } from './routes/groups_.$groupId.index'
 import { Route as GroupsGroupIdTransferRouteImport } from './routes/groups_.$groupId.transfer'
 import { Route as GroupsGroupIdSplitRouteImport } from './routes/groups_.$groupId.split'
 import { Route as GroupsGroupIdMergeRouteImport } from './routes/groups_.$groupId.merge'
@@ -84,11 +84,6 @@ const MemoryRoute = MemoryRouteImport.update({
 const MeetingContextRoute = MeetingContextRouteImport.update({
   id: '/meeting-context',
   path: '/meeting-context',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MeetingRoute = MeetingRouteImport.update({
-  id: '/meeting',
-  path: '/meeting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -161,14 +156,14 @@ const TasksBacklogRoute = TasksBacklogRouteImport.update({
   path: '/tasks/backlog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeetingIdRoute = MeetingIdRouteImport.update({
+  id: '/meeting/$id',
+  path: '/meeting/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsFormRoute = GroupsFormRouteImport.update({
   id: '/groups_/form',
   path: '/groups/form',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
-  id: '/groups_/$groupId',
-  path: '/groups/$groupId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -176,25 +171,30 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsGroupIdIndexRoute = GroupsGroupIdIndexRouteImport.update({
+  id: '/groups_/$groupId/',
+  path: '/groups/$groupId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsGroupIdTransferRoute = GroupsGroupIdTransferRouteImport.update({
-  id: '/transfer',
-  path: '/transfer',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/transfer',
+  path: '/groups/$groupId/transfer',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdSplitRoute = GroupsGroupIdSplitRouteImport.update({
-  id: '/split',
-  path: '/split',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/split',
+  path: '/groups/$groupId/split',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdMergeRoute = GroupsGroupIdMergeRouteImport.update({
-  id: '/merge',
-  path: '/merge',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/merge',
+  path: '/groups/$groupId/merge',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdAddMemberRoute = GroupsGroupIdAddMemberRouteImport.update({
-  id: '/add-member',
-  path: '/add-member',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/add-member',
+  path: '/groups/$groupId/add-member',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -206,7 +206,6 @@ export interface FileRoutesByFullPath {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -217,8 +216,8 @@ export interface FileRoutesByFullPath {
   '/transcript': typeof TranscriptRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/users': typeof AdminUsersRoute
-  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
+  '/meeting/$id': typeof MeetingIdRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
@@ -229,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
   '/groups/$groupId/transfer': typeof GroupsGroupIdTransferRoute
+  '/groups/$groupId/': typeof GroupsGroupIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -239,7 +239,6 @@ export interface FileRoutesByTo {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -250,8 +249,8 @@ export interface FileRoutesByTo {
   '/transcript': typeof TranscriptRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/users': typeof AdminUsersRoute
-  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
+  '/meeting/$id': typeof MeetingIdRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
@@ -262,6 +261,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
   '/groups/$groupId/transfer': typeof GroupsGroupIdTransferRoute
+  '/groups/$groupId': typeof GroupsGroupIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -273,7 +273,6 @@ export interface FileRoutesById {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -284,8 +283,8 @@ export interface FileRoutesById {
   '/transcript': typeof TranscriptRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/users': typeof AdminUsersRoute
-  '/groups_/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups_/form': typeof GroupsFormRoute
+  '/meeting/$id': typeof MeetingIdRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
@@ -296,6 +295,7 @@ export interface FileRoutesById {
   '/groups_/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups_/$groupId/split': typeof GroupsGroupIdSplitRoute
   '/groups_/$groupId/transfer': typeof GroupsGroupIdTransferRoute
+  '/groups_/$groupId/': typeof GroupsGroupIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -308,7 +308,6 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -319,8 +318,8 @@ export interface FileRouteTypes {
     | '/transcript'
     | '/verify-email'
     | '/admin/users'
-    | '/groups/$groupId'
     | '/groups/form'
+    | '/meeting/$id'
     | '/tasks/backlog'
     | '/tasks/board'
     | '/tasks/categories'
@@ -331,6 +330,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
     | '/groups/$groupId/transfer'
+    | '/groups/$groupId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -341,7 +341,6 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -352,8 +351,8 @@ export interface FileRouteTypes {
     | '/transcript'
     | '/verify-email'
     | '/admin/users'
-    | '/groups/$groupId'
     | '/groups/form'
+    | '/meeting/$id'
     | '/tasks/backlog'
     | '/tasks/board'
     | '/tasks/categories'
@@ -364,6 +363,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
     | '/groups/$groupId/transfer'
+    | '/groups/$groupId'
   id:
     | '__root__'
     | '/'
@@ -374,7 +374,6 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -385,8 +384,8 @@ export interface FileRouteTypes {
     | '/transcript'
     | '/verify-email'
     | '/admin/users'
-    | '/groups_/$groupId'
     | '/groups_/form'
+    | '/meeting/$id'
     | '/tasks/backlog'
     | '/tasks/board'
     | '/tasks/categories'
@@ -397,6 +396,7 @@ export interface FileRouteTypes {
     | '/groups_/$groupId/merge'
     | '/groups_/$groupId/split'
     | '/groups_/$groupId/transfer'
+    | '/groups_/$groupId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -408,7 +408,6 @@ export interface RootRouteChildren {
   GraphRoute: typeof GraphRoute
   GroupsRoute: typeof GroupsRoute
   LoginRoute: typeof LoginRoute
-  MeetingRoute: typeof MeetingRoute
   MeetingContextRoute: typeof MeetingContextRoute
   MemoryRoute: typeof MemoryRoute
   ProfileRoute: typeof ProfileRoute
@@ -419,14 +418,19 @@ export interface RootRouteChildren {
   TranscriptRoute: typeof TranscriptRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   AdminUsersRoute: typeof AdminUsersRoute
-  GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
   GroupsFormRoute: typeof GroupsFormRoute
+  MeetingIdRoute: typeof MeetingIdRoute
   TasksBacklogRoute: typeof TasksBacklogRoute
   TasksBoardRoute: typeof TasksBoardRoute
   TasksCategoriesRoute: typeof TasksCategoriesRoute
   TasksGanttRoute: typeof TasksGanttRoute
   TasksStatisticsRoute: typeof TasksStatisticsRoute
   TasksTagsRoute: typeof TasksTagsRoute
+  GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
+  GroupsGroupIdMergeRoute: typeof GroupsGroupIdMergeRoute
+  GroupsGroupIdSplitRoute: typeof GroupsGroupIdSplitRoute
+  GroupsGroupIdTransferRoute: typeof GroupsGroupIdTransferRoute
+  GroupsGroupIdIndexRoute: typeof GroupsGroupIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -492,13 +496,6 @@ declare module '@tanstack/react-router' {
       path: '/meeting-context'
       fullPath: '/meeting-context'
       preLoaderRoute: typeof MeetingContextRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/meeting': {
-      id: '/meeting'
-      path: '/meeting'
-      fullPath: '/meeting'
-      preLoaderRoute: typeof MeetingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -599,18 +596,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TasksBacklogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meeting/$id': {
+      id: '/meeting/$id'
+      path: '/meeting/$id'
+      fullPath: '/meeting/$id'
+      preLoaderRoute: typeof MeetingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups_/form': {
       id: '/groups_/form'
       path: '/groups/form'
       fullPath: '/groups/form'
       preLoaderRoute: typeof GroupsFormRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/groups_/$groupId': {
-      id: '/groups_/$groupId'
-      path: '/groups/$groupId'
-      fullPath: '/groups/$groupId'
-      preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -620,54 +617,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups_/$groupId/': {
+      id: '/groups_/$groupId/'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId/'
+      preLoaderRoute: typeof GroupsGroupIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups_/$groupId/transfer': {
       id: '/groups_/$groupId/transfer'
-      path: '/transfer'
+      path: '/groups/$groupId/transfer'
       fullPath: '/groups/$groupId/transfer'
       preLoaderRoute: typeof GroupsGroupIdTransferRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/split': {
       id: '/groups_/$groupId/split'
-      path: '/split'
+      path: '/groups/$groupId/split'
       fullPath: '/groups/$groupId/split'
       preLoaderRoute: typeof GroupsGroupIdSplitRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/merge': {
       id: '/groups_/$groupId/merge'
-      path: '/merge'
+      path: '/groups/$groupId/merge'
       fullPath: '/groups/$groupId/merge'
       preLoaderRoute: typeof GroupsGroupIdMergeRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/add-member': {
       id: '/groups_/$groupId/add-member'
-      path: '/add-member'
+      path: '/groups/$groupId/add-member'
       fullPath: '/groups/$groupId/add-member'
       preLoaderRoute: typeof GroupsGroupIdAddMemberRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface GroupsGroupIdRouteChildren {
-  GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
-  GroupsGroupIdMergeRoute: typeof GroupsGroupIdMergeRoute
-  GroupsGroupIdSplitRoute: typeof GroupsGroupIdSplitRoute
-  GroupsGroupIdTransferRoute: typeof GroupsGroupIdTransferRoute
-}
-
-const GroupsGroupIdRouteChildren: GroupsGroupIdRouteChildren = {
-  GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,
-  GroupsGroupIdMergeRoute: GroupsGroupIdMergeRoute,
-  GroupsGroupIdSplitRoute: GroupsGroupIdSplitRoute,
-  GroupsGroupIdTransferRoute: GroupsGroupIdTransferRoute,
-}
-
-const GroupsGroupIdRouteWithChildren = GroupsGroupIdRoute._addFileChildren(
-  GroupsGroupIdRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -678,7 +664,6 @@ const rootRouteChildren: RootRouteChildren = {
   GraphRoute: GraphRoute,
   GroupsRoute: GroupsRoute,
   LoginRoute: LoginRoute,
-  MeetingRoute: MeetingRoute,
   MeetingContextRoute: MeetingContextRoute,
   MemoryRoute: MemoryRoute,
   ProfileRoute: ProfileRoute,
@@ -689,14 +674,19 @@ const rootRouteChildren: RootRouteChildren = {
   TranscriptRoute: TranscriptRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   AdminUsersRoute: AdminUsersRoute,
-  GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
   GroupsFormRoute: GroupsFormRoute,
+  MeetingIdRoute: MeetingIdRoute,
   TasksBacklogRoute: TasksBacklogRoute,
   TasksBoardRoute: TasksBoardRoute,
   TasksCategoriesRoute: TasksCategoriesRoute,
   TasksGanttRoute: TasksGanttRoute,
   TasksStatisticsRoute: TasksStatisticsRoute,
   TasksTagsRoute: TasksTagsRoute,
+  GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,
+  GroupsGroupIdMergeRoute: GroupsGroupIdMergeRoute,
+  GroupsGroupIdSplitRoute: GroupsGroupIdSplitRoute,
+  GroupsGroupIdTransferRoute: GroupsGroupIdTransferRoute,
+  GroupsGroupIdIndexRoute: GroupsGroupIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,3 +1,10 @@
+import {
+  listMeetingMessagesApi,
+  postMeetingMessageApi,
+  type BackendChatInfo,
+  type BackendChatMessageResponse,
+} from "./api/meetings";
+
 export interface ChatMessage {
   id: string;
   userId: string;
@@ -6,117 +13,82 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-export interface ChatConfig {
-  apiKey: string;
-  channelId: string;
-  channelType: string;
-  userToken: string;
-}
-
 class ChatClient {
-  private config: ChatConfig | null = null;
-  private ws: WebSocket | null = null;
+  private meetingId: string | null = null;
+  private userId: string | null = null;
+  private userName: string | null = null;
+  private pollTimer: number | null = null;
   private messages: ChatMessage[] = [];
   private listeners: ((messages: ChatMessage[]) => void)[] = [];
 
-  async connect(meetingId: string, userId: string) {
-    try {
-      // Connect to REAL backend API
-      console.log('Connecting to REAL backend for meeting:', meetingId, 'user:', userId);
-      
-      const response = await fetch(`http://localhost:8080/api/meetings/${meetingId}/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to join chat');
-      }
-
-      const joinResponse = await response.json();
-      this.config = joinResponse.chat;
-      
-      console.log('Backend response:', joinResponse);
-      
-      // Simulate WebSocket connection
-      this.simulateMessages();
-      
-      return joinResponse;
-    } catch (error) {
-      console.error('Chat connection error:', error);
-      throw error;
+  async connect(meetingId: string, userId: string, userName: string, _chat?: BackendChatInfo) {
+    if (
+      this.meetingId === meetingId &&
+      this.userId === userId &&
+      this.userName === userName &&
+      this.pollTimer !== null
+    ) {
+      return;
     }
+
+    await this.disconnect();
+
+    this.meetingId = meetingId;
+    this.userId = userId;
+    this.userName = userName;
+    await this.refreshMessages();
+    this.pollTimer = window.setInterval(() => {
+      void this.refreshMessages();
+    }, 1500);
   }
 
-  private connectWebSocket() {
-    if (!this.config) return;
-
-    // For now, simulate WebSocket connection with mock messages
-    // In real implementation, you'd connect to Stream Chat WebSocket
-    this.simulateMessages();
-  }
-
-  private simulateMessages() {
-    console.log('Simulating chat messages...');
-    
-    // Simulate some initial chat messages
-    const mockMessages: ChatMessage[] = [
-      {
-        id: '1',
-        userId: 'system',
-        username: 'System',
-        message: 'Welcome to the meeting chat!',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        userId: 'user1',
-        username: 'Sarah Kim',
-        message: 'Hello everyone! Ready to start the meeting.',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        userId: 'user2',
-        username: 'Sarah Kim',
-        message: 'Great! Let me share my screen for the demo.',
-        timestamp: new Date().toISOString(),
-      },
-    ];
-
-    this.messages = mockMessages;
-    console.log('Setting initial messages:', this.messages);
+  private async refreshMessages() {
+    if (!this.meetingId) return;
+    const response = await listMeetingMessagesApi(
+      this.meetingId,
+      this.userId ?? undefined,
+      this.userName ?? undefined,
+    );
+    this.messages = this.dedupeMessages(response.map((message) => this.toChatMessage(message)));
     this.notifyListeners();
   }
 
-  sendMessage(message: string, username: string) {
-    console.log('Sending message:', message, 'from:', username);
-    
-    if (!this.config) {
-      console.log('No config, but sending anyway for testing');
-    }
-
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      userId: 'current-user',
-      username,
-      message,
-      timestamp: new Date().toISOString(),
+  private toChatMessage(message: BackendChatMessageResponse): ChatMessage {
+    return {
+      id: message.id,
+      userId: message.userId,
+      username: message.displayName,
+      message: message.message,
+      timestamp: message.sentAt,
     };
+  }
 
-    this.messages.push(newMessage);
-    console.log('Updated messages:', this.messages);
-    this.notifyListeners();
+  async sendMessage(message: string, username: string) {
+    if (!this.meetingId || !this.userId) {
+      throw new Error("Chat is not connected");
+    }
 
-    // In real implementation, send to WebSocket
-    console.log('Message sent successfully');
+    await postMeetingMessageApi(this.meetingId, {
+      userId: this.userId,
+      userName: username,
+      message,
+    });
+    await this.refreshMessages();
   }
 
   getMessages(): ChatMessage[] {
-    return [...this.messages];
+    return [...this.dedupeMessages(this.messages)];
+  }
+
+  private dedupeMessages(messages: ChatMessage[]) {
+    const seen = new Set<string>();
+    return messages.filter((message) => {
+      if (seen.has(message.id)) {
+        return false;
+      }
+      seen.add(message.id);
+      return true;
+    });
   }
 
   onMessages(callback: (messages: ChatMessage[]) => void) {
@@ -127,25 +99,19 @@ class ChatClient {
   }
 
   private notifyListeners() {
-    console.log('=== NOTIFYING LISTENERS ===');
-    console.log('Current messages:', this.messages);
-    console.log('Number of listeners:', this.listeners.length);
-    
-    this.listeners.forEach(callback => {
-      console.log('Calling listener with messages...');
-      callback(this.getMessages());
-    });
-    
-    console.log('All listeners notified');
+    this.listeners.forEach(callback => callback(this.getMessages()));
   }
 
-  disconnect() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+  async disconnect() {
+    if (this.pollTimer !== null) {
+      window.clearInterval(this.pollTimer);
+      this.pollTimer = null;
     }
-    this.config = null;
+    this.meetingId = null;
+    this.userId = null;
+    this.userName = null;
     this.messages = [];
+    this.notifyListeners();
   }
 }
 
