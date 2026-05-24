@@ -1,0 +1,47 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: context-service
+  
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/meetup_context
+    redis:
+      host: localhost
+      port: 6379
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# Custom configurations
+app:
+  rabbitmq:
+    exchanges:
+      meeting: meeting.exchange
+      task: task.exchange
+      group: group.exchange
+    queues:
+      context-ingestion: context.ingestion.queue
+    routing-keys:
+      meeting-started: meeting.started
+      meeting-ended: meeting.ended
+      transcript-chunk: transcript.chunk
+      task-created: task.created
+      task-completed: task.completed
+      group-formed: group.formed
+      group-dissolved: group.dissolved
+
+task:
+  service:
+    url: http://localhost:8091
+
+logging:
+  level:
+    com.meetup.contextservice: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.security: TRACE
