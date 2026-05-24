@@ -9,13 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as TranscriptRouteImport } from './routes/transcript'
+import { Route as TasksRefRouteImport } from './routes/tasks-ref'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as MeetingContextRouteImport } from './routes/meeting-context'
-import { Route as MeetingRouteImport } from './routes/meeting'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
@@ -30,6 +32,7 @@ import { Route as TasksGanttRouteImport } from './routes/tasks/gantt'
 import { Route as TasksCategoriesRouteImport } from './routes/tasks/categories'
 import { Route as TasksBoardRouteImport } from './routes/tasks/board'
 import { Route as TasksBacklogRouteImport } from './routes/tasks/backlog'
+import { Route as MeetingIdRouteImport } from './routes/meeting.$id'
 import { Route as GroupsFormRouteImport } from './routes/groups_/form'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups_.$groupId'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -38,6 +41,21 @@ import { Route as GroupsGroupIdSplitRouteImport } from './routes/groups_.$groupI
 import { Route as GroupsGroupIdMergeRouteImport } from './routes/groups_.$groupId.merge'
 import { Route as GroupsGroupIdAddMemberRouteImport } from './routes/groups_.$groupId.add-member'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TranscriptRoute = TranscriptRouteImport.update({
+  id: '/transcript',
+  path: '/transcript',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRefRoute = TasksRefRouteImport.update({
+  id: '/tasks-ref',
+  path: '/tasks-ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SummaryRoute = SummaryRouteImport.update({
   id: '/summary',
   path: '/summary',
@@ -66,11 +84,6 @@ const MemoryRoute = MemoryRouteImport.update({
 const MeetingContextRoute = MeetingContextRouteImport.update({
   id: '/meeting-context',
   path: '/meeting-context',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MeetingRoute = MeetingRouteImport.update({
-  id: '/meeting',
-  path: '/meeting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -143,6 +156,11 @@ const TasksBacklogRoute = TasksBacklogRouteImport.update({
   path: '/tasks/backlog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeetingIdRoute = MeetingIdRouteImport.update({
+  id: '/meeting/$id',
+  path: '/meeting/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsFormRoute = GroupsFormRouteImport.update({
   id: '/groups_/form',
   path: '/groups/form',
@@ -188,15 +206,19 @@ export interface FileRoutesByFullPath {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
+  '/meeting/$id': typeof MeetingIdRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
@@ -217,15 +239,19 @@ export interface FileRoutesByTo {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/form': typeof GroupsFormRoute
+  '/meeting/$id': typeof MeetingIdRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
@@ -247,15 +273,19 @@ export interface FileRoutesById {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups_/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups_/form': typeof GroupsFormRoute
+  '/meeting/$id': typeof MeetingIdRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
@@ -278,15 +308,19 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/summary'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups/$groupId'
     | '/groups/form'
+    | '/meeting/$id'
     | '/tasks/backlog'
     | '/tasks/board'
     | '/tasks/categories'
@@ -307,15 +341,19 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/summary'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups/$groupId'
     | '/groups/form'
+    | '/meeting/$id'
     | '/tasks/backlog'
     | '/tasks/board'
     | '/tasks/categories'
@@ -336,15 +374,19 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/summary'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups_/$groupId'
     | '/groups_/form'
+    | '/meeting/$id'
     | '/tasks/backlog'
     | '/tasks/board'
     | '/tasks/categories'
@@ -366,15 +408,19 @@ export interface RootRouteChildren {
   GraphRoute: typeof GraphRoute
   GroupsRoute: typeof GroupsRoute
   LoginRoute: typeof LoginRoute
-  MeetingRoute: typeof MeetingRoute
   MeetingContextRoute: typeof MeetingContextRoute
   MemoryRoute: typeof MemoryRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SummaryRoute: typeof SummaryRoute
+  TasksRefRoute: typeof TasksRefRoute
+  TranscriptRoute: typeof TranscriptRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
   GroupsFormRoute: typeof GroupsFormRoute
+  MeetingIdRoute: typeof MeetingIdRoute
   TasksBacklogRoute: typeof TasksBacklogRoute
   TasksBoardRoute: typeof TasksBoardRoute
   TasksCategoriesRoute: typeof TasksCategoriesRoute
@@ -385,6 +431,27 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transcript': {
+      id: '/transcript'
+      path: '/transcript'
+      fullPath: '/transcript'
+      preLoaderRoute: typeof TranscriptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks-ref': {
+      id: '/tasks-ref'
+      path: '/tasks-ref'
+      fullPath: '/tasks-ref'
+      preLoaderRoute: typeof TasksRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/summary': {
       id: '/summary'
       path: '/summary'
@@ -425,13 +492,6 @@ declare module '@tanstack/react-router' {
       path: '/meeting-context'
       fullPath: '/meeting-context'
       preLoaderRoute: typeof MeetingContextRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/meeting': {
-      id: '/meeting'
-      path: '/meeting'
-      fullPath: '/meeting'
-      preLoaderRoute: typeof MeetingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -532,6 +592,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TasksBacklogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meeting/$id': {
+      id: '/meeting/$id'
+      path: '/meeting/$id'
+      fullPath: '/meeting/$id'
+      preLoaderRoute: typeof MeetingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups_/form': {
       id: '/groups_/form'
       path: '/groups/form'
@@ -611,15 +678,19 @@ const rootRouteChildren: RootRouteChildren = {
   GraphRoute: GraphRoute,
   GroupsRoute: GroupsRoute,
   LoginRoute: LoginRoute,
-  MeetingRoute: MeetingRoute,
   MeetingContextRoute: MeetingContextRoute,
   MemoryRoute: MemoryRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SummaryRoute: SummaryRoute,
+  TasksRefRoute: TasksRefRoute,
+  TranscriptRoute: TranscriptRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
+  AdminUsersRoute: AdminUsersRoute,
   GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
   GroupsFormRoute: GroupsFormRoute,
+  MeetingIdRoute: MeetingIdRoute,
   TasksBacklogRoute: TasksBacklogRoute,
   TasksBoardRoute: TasksBoardRoute,
   TasksCategoriesRoute: TasksCategoriesRoute,

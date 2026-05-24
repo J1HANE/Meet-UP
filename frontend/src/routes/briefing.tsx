@@ -182,7 +182,7 @@ function BriefingPage() {
               Open the live room once you have reviewed the task context and selected the owners for the next actions.
             </p>
             <Button asChild variant="secondary" className="w-full bg-orange-500 text-slate-950 hover:bg-orange-400">
-              <Link to="/meeting" search={{ meetingId: meeting.id }}>
+              <Link to="/meeting/$id" params={{ id: meeting.id }}>
                 Open meeting room
                 <ArrowRight className="w-4 h-4" />
               </Link>
