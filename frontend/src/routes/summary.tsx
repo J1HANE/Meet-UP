@@ -79,7 +79,7 @@ function SummaryPage() {
         </div>
 
         <Button asChild className="bg-orange-500 text-slate-950 hover:bg-orange-400">
-          <Link to="/meeting" search={{ meetingId: meeting.id }}>
+          <Link to="/meeting/$id" params={{ id: meeting.id }}>
             Open live room
             <ArrowRight className="w-4 h-4" />
           </Link>
