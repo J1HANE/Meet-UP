@@ -4,7 +4,7 @@ import { groupsApi } from "@/lib/api/groups";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Users, UserMinus, UserPlus, ShieldAlert, GitFork, GitMerge, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/groups_/$groupId")({
+export const Route = createFileRoute("/groups_/$groupId/")({
   component: GroupDetailsPage,
 });
 

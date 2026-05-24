@@ -9,6 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as TranscriptRouteImport } from './routes/transcript'
+import { Route as TasksRefRouteImport } from './routes/tasks-ref'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -31,13 +34,28 @@ import { Route as TasksCategoriesRouteImport } from './routes/tasks/categories'
 import { Route as TasksBoardRouteImport } from './routes/tasks/board'
 import { Route as TasksBacklogRouteImport } from './routes/tasks/backlog'
 import { Route as GroupsFormRouteImport } from './routes/groups_/form'
-import { Route as GroupsGroupIdRouteImport } from './routes/groups_.$groupId'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as GroupsGroupIdIndexRouteImport } from './routes/groups_.$groupId.index'
 import { Route as GroupsGroupIdTransferRouteImport } from './routes/groups_.$groupId.transfer'
 import { Route as GroupsGroupIdSplitRouteImport } from './routes/groups_.$groupId.split'
 import { Route as GroupsGroupIdMergeRouteImport } from './routes/groups_.$groupId.merge'
 import { Route as GroupsGroupIdAddMemberRouteImport } from './routes/groups_.$groupId.add-member'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TranscriptRoute = TranscriptRouteImport.update({
+  id: '/transcript',
+  path: '/transcript',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRefRoute = TasksRefRouteImport.update({
+  id: '/tasks-ref',
+  path: '/tasks-ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SummaryRoute = SummaryRouteImport.update({
   id: '/summary',
   path: '/summary',
@@ -148,15 +166,15 @@ const GroupsFormRoute = GroupsFormRouteImport.update({
   path: '/groups/form',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
-  id: '/groups_/$groupId',
-  path: '/groups/$groupId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsGroupIdIndexRoute = GroupsGroupIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GroupsGroupIdRoute,
 } as any)
 const GroupsGroupIdTransferRoute = GroupsGroupIdTransferRouteImport.update({
   id: '/transfer',
@@ -195,7 +213,10 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
-  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups/form': typeof GroupsFormRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
@@ -207,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
   '/groups/$groupId/transfer': typeof GroupsGroupIdTransferRoute
+  '/groups/$groupId/': typeof GroupsGroupIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -224,7 +246,10 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
-  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups/form': typeof GroupsFormRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
@@ -236,6 +261,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
   '/groups/$groupId/transfer': typeof GroupsGroupIdTransferRoute
+  '/groups/$groupId': typeof GroupsGroupIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -254,7 +280,10 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/summary': typeof SummaryRoute
-  '/groups_/$groupId': typeof GroupsGroupIdRouteWithChildren
+  '/tasks-ref': typeof TasksRefRoute
+  '/transcript': typeof TranscriptRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/admin/users': typeof AdminUsersRoute
   '/groups_/form': typeof GroupsFormRoute
   '/tasks/backlog': typeof TasksBacklogRoute
   '/tasks/board': typeof TasksBoardRoute
@@ -266,6 +295,7 @@ export interface FileRoutesById {
   '/groups_/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups_/$groupId/split': typeof GroupsGroupIdSplitRoute
   '/groups_/$groupId/transfer': typeof GroupsGroupIdTransferRoute
+  '/groups_/$groupId/': typeof GroupsGroupIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -285,7 +315,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/summary'
-    | '/groups/$groupId'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups/form'
     | '/tasks/backlog'
     | '/tasks/board'
@@ -297,6 +330,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
     | '/groups/$groupId/transfer'
+    | '/groups/$groupId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -314,7 +348,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/summary'
-    | '/groups/$groupId'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups/form'
     | '/tasks/backlog'
     | '/tasks/board'
@@ -326,6 +363,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
     | '/groups/$groupId/transfer'
+    | '/groups/$groupId'
   id:
     | '__root__'
     | '/'
@@ -343,7 +381,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/summary'
-    | '/groups_/$groupId'
+    | '/tasks-ref'
+    | '/transcript'
+    | '/verify-email'
+    | '/admin/users'
     | '/groups_/form'
     | '/tasks/backlog'
     | '/tasks/board'
@@ -355,6 +396,7 @@ export interface FileRouteTypes {
     | '/groups_/$groupId/merge'
     | '/groups_/$groupId/split'
     | '/groups_/$groupId/transfer'
+    | '/groups_/$groupId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -373,7 +415,10 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SummaryRoute: typeof SummaryRoute
-  GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
+  TasksRefRoute: typeof TasksRefRoute
+  TranscriptRoute: typeof TranscriptRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   GroupsFormRoute: typeof GroupsFormRoute
   TasksBacklogRoute: typeof TasksBacklogRoute
   TasksBoardRoute: typeof TasksBoardRoute
@@ -385,6 +430,27 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transcript': {
+      id: '/transcript'
+      path: '/transcript'
+      fullPath: '/transcript'
+      preLoaderRoute: typeof TranscriptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks-ref': {
+      id: '/tasks-ref'
+      path: '/tasks-ref'
+      fullPath: '/tasks-ref'
+      preLoaderRoute: typeof TasksRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/summary': {
       id: '/summary'
       path: '/summary'
@@ -539,19 +605,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsFormRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/groups_/$groupId': {
-      id: '/groups_/$groupId'
-      path: '/groups/$groupId'
-      fullPath: '/groups/$groupId'
-      preLoaderRoute: typeof GroupsGroupIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/users': {
       id: '/admin/users'
       path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/groups_/$groupId/': {
+      id: '/groups_/$groupId/'
+      path: '/'
+      fullPath: '/groups/$groupId/'
+      preLoaderRoute: typeof GroupsGroupIdIndexRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
     '/groups_/$groupId/transfer': {
       id: '/groups_/$groupId/transfer'
@@ -584,24 +650,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface GroupsGroupIdRouteChildren {
-  GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
-  GroupsGroupIdMergeRoute: typeof GroupsGroupIdMergeRoute
-  GroupsGroupIdSplitRoute: typeof GroupsGroupIdSplitRoute
-  GroupsGroupIdTransferRoute: typeof GroupsGroupIdTransferRoute
-}
-
-const GroupsGroupIdRouteChildren: GroupsGroupIdRouteChildren = {
-  GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,
-  GroupsGroupIdMergeRoute: GroupsGroupIdMergeRoute,
-  GroupsGroupIdSplitRoute: GroupsGroupIdSplitRoute,
-  GroupsGroupIdTransferRoute: GroupsGroupIdTransferRoute,
-}
-
-const GroupsGroupIdRouteWithChildren = GroupsGroupIdRoute._addFileChildren(
-  GroupsGroupIdRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R2faSetupRoute: R2faSetupRoute,
@@ -618,7 +666,10 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SummaryRoute: SummaryRoute,
-  GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
+  TasksRefRoute: TasksRefRoute,
+  TranscriptRoute: TranscriptRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
+  AdminUsersRoute: AdminUsersRoute,
   GroupsFormRoute: GroupsFormRoute,
   TasksBacklogRoute: TasksBacklogRoute,
   TasksBoardRoute: TasksBoardRoute,
