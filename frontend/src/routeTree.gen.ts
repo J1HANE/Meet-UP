@@ -177,24 +177,24 @@ const GroupsGroupIdIndexRoute = GroupsGroupIdIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdTransferRoute = GroupsGroupIdTransferRouteImport.update({
-  id: '/groups_/$groupId/transfer',
-  path: '/groups/$groupId/transfer',
-  getParentRoute: () => rootRouteImport,
+  id: '/transfer',
+  path: '/transfer',
+  getParentRoute: () => GroupsGroupIdRoute,
 } as any)
 const GroupsGroupIdSplitRoute = GroupsGroupIdSplitRouteImport.update({
-  id: '/groups_/$groupId/split',
-  path: '/groups/$groupId/split',
-  getParentRoute: () => rootRouteImport,
+  id: '/split',
+  path: '/split',
+  getParentRoute: () => GroupsGroupIdRoute,
 } as any)
 const GroupsGroupIdMergeRoute = GroupsGroupIdMergeRouteImport.update({
-  id: '/groups_/$groupId/merge',
-  path: '/groups/$groupId/merge',
-  getParentRoute: () => rootRouteImport,
+  id: '/merge',
+  path: '/merge',
+  getParentRoute: () => GroupsGroupIdRoute,
 } as any)
 const GroupsGroupIdAddMemberRoute = GroupsGroupIdAddMemberRouteImport.update({
-  id: '/groups_/$groupId/add-member',
-  path: '/groups/$groupId/add-member',
-  getParentRoute: () => rootRouteImport,
+  id: '/add-member',
+  path: '/add-member',
+  getParentRoute: () => GroupsGroupIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -426,10 +426,6 @@ export interface RootRouteChildren {
   TasksGanttRoute: typeof TasksGanttRoute
   TasksStatisticsRoute: typeof TasksStatisticsRoute
   TasksTagsRoute: typeof TasksTagsRoute
-  GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
-  GroupsGroupIdMergeRoute: typeof GroupsGroupIdMergeRoute
-  GroupsGroupIdSplitRoute: typeof GroupsGroupIdSplitRoute
-  GroupsGroupIdTransferRoute: typeof GroupsGroupIdTransferRoute
   GroupsGroupIdIndexRoute: typeof GroupsGroupIdIndexRoute
 }
 
@@ -626,31 +622,31 @@ declare module '@tanstack/react-router' {
     }
     '/groups_/$groupId/transfer': {
       id: '/groups_/$groupId/transfer'
-      path: '/groups/$groupId/transfer'
+      path: '/transfer'
       fullPath: '/groups/$groupId/transfer'
       preLoaderRoute: typeof GroupsGroupIdTransferRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
     '/groups_/$groupId/split': {
       id: '/groups_/$groupId/split'
-      path: '/groups/$groupId/split'
+      path: '/split'
       fullPath: '/groups/$groupId/split'
       preLoaderRoute: typeof GroupsGroupIdSplitRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
     '/groups_/$groupId/merge': {
       id: '/groups_/$groupId/merge'
-      path: '/groups/$groupId/merge'
+      path: '/merge'
       fullPath: '/groups/$groupId/merge'
       preLoaderRoute: typeof GroupsGroupIdMergeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
     '/groups_/$groupId/add-member': {
       id: '/groups_/$groupId/add-member'
-      path: '/groups/$groupId/add-member'
+      path: '/add-member'
       fullPath: '/groups/$groupId/add-member'
       preLoaderRoute: typeof GroupsGroupIdAddMemberRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
   }
 }
@@ -682,10 +678,6 @@ const rootRouteChildren: RootRouteChildren = {
   TasksGanttRoute: TasksGanttRoute,
   TasksStatisticsRoute: TasksStatisticsRoute,
   TasksTagsRoute: TasksTagsRoute,
-  GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,
-  GroupsGroupIdMergeRoute: GroupsGroupIdMergeRoute,
-  GroupsGroupIdSplitRoute: GroupsGroupIdSplitRoute,
-  GroupsGroupIdTransferRoute: GroupsGroupIdTransferRoute,
   GroupsGroupIdIndexRoute: GroupsGroupIdIndexRoute,
 }
 export const routeTree = rootRouteImport
