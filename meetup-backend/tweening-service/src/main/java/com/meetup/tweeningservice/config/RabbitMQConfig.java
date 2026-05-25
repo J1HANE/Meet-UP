@@ -1,5 +1,13 @@
 package com.meetup.tweeningservice.config;
 
+import com.meetup.tweeningservice.event.in.MeetingEndedEvent;
+import com.meetup.tweeningservice.event.in.MeetingStartedEvent;
+import com.meetup.tweeningservice.event.in.SubmeetingSpawnedEvent;
+import com.meetup.tweeningservice.event.in.TaskCompletedEvent;
+import com.meetup.tweeningservice.event.in.TaskCreatedEvent;
+import com.meetup.tweeningservice.event.in.TaskUpdatedEvent;
+import com.meetup.tweeningservice.event.in.UserRegisteredEvent;
+import com.meetup.tweeningservice.event.in.UserUpdatedEvent;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -7,6 +15,8 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Map;
 
 @Configuration
 public class RabbitMQConfig {
@@ -109,6 +119,16 @@ public class RabbitMQConfig {
         org.springframework.amqp.support.converter.DefaultJackson2JavaTypeMapper typeMapper = 
                 new org.springframework.amqp.support.converter.DefaultJackson2JavaTypeMapper();
         typeMapper.setTrustedPackages("*");
+        typeMapper.setIdClassMapping(Map.of(
+                "com.meetup.authservice.event.UserRegisteredEvent", UserRegisteredEvent.class,
+                "com.meetup.authservice.event.UserUpdatedEvent", UserUpdatedEvent.class,
+                "com.meetup.meetingservice.event.MeetingStartedEvent", MeetingStartedEvent.class,
+                "com.meetup.meetingservice.event.MeetingEndedEvent", MeetingEndedEvent.class,
+                "com.meetup.meetingservice.event.SubmeetingSpawnedEvent", SubmeetingSpawnedEvent.class,
+                "com.meetup.taskservice.domain.event.TaskCreatedEvent", TaskCreatedEvent.class,
+                "com.meetup.taskservice.domain.event.TaskUpdatedEvent", TaskUpdatedEvent.class,
+                "com.meetup.taskservice.domain.event.TaskCompletedEvent", TaskCompletedEvent.class
+        ));
         converter.setJavaTypeMapper(typeMapper);
         return converter;
     }

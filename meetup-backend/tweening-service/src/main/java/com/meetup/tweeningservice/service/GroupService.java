@@ -46,11 +46,9 @@ public class GroupService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        // Link task if exists or create a dummy one
-        com.meetup.tweeningservice.domain.node.TaskNode taskNode = taskRepository.findById(taskId).orElseGet(() -> {
-            log.warn("Task {} not found, creating dummy TaskNode for testing", taskId);
-            return taskRepository.save(com.meetup.tweeningservice.domain.node.TaskNode.builder().id(taskId).title("Test Task " + taskId).build());
-        });
+        // Task should exist via TaskCreatedEvent
+        com.meetup.tweeningservice.domain.node.TaskNode taskNode = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task " + taskId + " not found. Ensure task-service has published TaskCreatedEvent."));
         group.setTask(WorksOn.builder().task(taskNode).assignedAt(LocalDateTime.now()).build());
 
         return groupRepository.save(group);
@@ -65,17 +63,14 @@ public class GroupService {
 
         group.setState("FORMING");
 
-        GroupNode finalGroup = group;
-        com.meetup.tweeningservice.domain.node.MeetingNode meetingNode = meetingRepository.findById(meetingId).orElseGet(() -> {
-            log.warn("Meeting {} not found, creating dummy MeetingNode for testing", meetingId);
-            return meetingRepository.save(com.meetup.tweeningservice.domain.node.MeetingNode.builder().id(meetingId).title("Test Meeting " + meetingId).build());
-        });
-        finalGroup.setMeeting(FormedIn.builder().meeting(meetingNode).spawnedAt(LocalDateTime.now()).build());
+        // Meeting should exist via MeetingStartedEvent
+        com.meetup.tweeningservice.domain.node.MeetingNode meetingNode = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new RuntimeException("Meeting " + meetingId + " not found. Ensure meeting-service has published MeetingStartedEvent."));
+        group.setMeeting(FormedIn.builder().meeting(meetingNode).spawnedAt(LocalDateTime.now()).build());
 
-        PersonNode owner = personRepository.findById(ownerId).orElseGet(() -> {
-            log.warn("Owner {} not found, creating dummy PersonNode for testing", ownerId);
-            return personRepository.save(PersonNode.builder().id(ownerId).name("Test User " + ownerId).build());
-        });
+        // Person should exist via UserRegisteredEvent
+        PersonNode owner = personRepository.findById(ownerId)
+                .orElseThrow(() -> new RuntimeException("Owner " + ownerId + " not found. Ensure auth-service has published UserRegisteredEvent."));
 
         // Make owner a lead
         group.getLeads().add(Leads.builder()
@@ -96,10 +91,10 @@ public class GroupService {
     public void joinGroup(String groupId, String personId, String role) {
         GroupNode group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
-        PersonNode person = personRepository.findById(personId).orElseGet(() -> {
-            log.warn("Person {} not found, creating dummy PersonNode for testing", personId);
-            return personRepository.save(PersonNode.builder().id(personId).name("Test Person " + personId).build());
-        });
+        
+        // Person should exist via UserRegisteredEvent
+        PersonNode person = personRepository.findById(personId)
+                .orElseThrow(() -> new RuntimeException("Person " + personId + " not found. Ensure auth-service has published UserRegisteredEvent."));
 
         MemberOf memberOf = MemberOf.builder()
                 .person(person)
@@ -150,10 +145,9 @@ public class GroupService {
                 .filter(l -> l.getPerson().getId().equals(oldLeadId) && l.getToDate() == null)
                 .forEach(l -> l.setToDate(LocalDateTime.now()));
 
-        PersonNode newLead = personRepository.findById(newLeadId).orElseGet(() -> {
-            log.warn("New lead {} not found, creating dummy PersonNode for testing", newLeadId);
-            return personRepository.save(PersonNode.builder().id(newLeadId).name("Test Lead " + newLeadId).build());
-        });
+        // Person should exist via UserRegisteredEvent
+        PersonNode newLead = personRepository.findById(newLeadId)
+                .orElseThrow(() -> new RuntimeException("New lead " + newLeadId + " not found. Ensure auth-service has published UserRegisteredEvent."));
 
         group.getLeads().add(Leads.builder()
                 .person(newLead)

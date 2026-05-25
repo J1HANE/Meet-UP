@@ -11,11 +11,17 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String GROUP_EVENTS_EXCHANGE = "group-events-exchange";
+    public static final String AUTH_EVENTS_EXCHANGE = "auth-events-exchange";
     public static final String AUTH_GROUP_EVENTS_QUEUE = "auth-group-events-queue";
 
     @Bean
     public TopicExchange groupEventsExchange() {
         return new TopicExchange(GROUP_EVENTS_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange authEventsExchange() {
+        return new TopicExchange(AUTH_EVENTS_EXCHANGE);
     }
 
     @Bean

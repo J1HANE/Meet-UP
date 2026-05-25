@@ -1,6 +1,9 @@
 package com.meetup.authservice.service;
 
 import com.meetup.authservice.dto.*;
+import com.meetup.authservice.event.RabbitMQEventPublisher;
+import com.meetup.authservice.event.UserRegisteredEvent;
+import com.meetup.authservice.event.UserUpdatedEvent;
 import com.meetup.authservice.exception.*;
 import com.meetup.authservice.model.EmailVerificationToken;
 import com.meetup.authservice.model.PasswordResetToken;
@@ -45,6 +48,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final JavaMailSender mailSender;
+    private final RabbitMQEventPublisher eventPublisher;
 
     @Value("${app.email.frontend-url}")
     private String frontendUrl;
@@ -72,6 +76,14 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         user = userRepository.save(user);
+
+        // Publish UserRegisteredEvent for tweening service
+        eventPublisher.publishUserRegistered(new UserRegisteredEvent(
+            user.getId().toString(),
+            user.getDisplayName(),
+            user.getEmail(),
+            user.getRoles() != null && !user.getRoles().isEmpty() ? user.getRoles().get(0) : "MEMBER"
+        ));
 
         String accessToken = jwtUtil.generateAccessToken(
                 user.getId(),
@@ -240,6 +252,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         user = userRepository.save(user);
+
+        // Publish UserUpdatedEvent for tweening service
+        eventPublisher.publishUserUpdated(new UserUpdatedEvent(
+            user.getId().toString(),
+            user.getDisplayName(),
+            user.getEmail(),
+            user.getRoles() != null && !user.getRoles().isEmpty() ? user.getRoles().get(0) : "MEMBER"
+        ));
+
         return mapToUserResponse(user);
     }
 

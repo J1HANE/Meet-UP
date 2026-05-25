@@ -8,6 +8,9 @@ import com.meetup.meetingservice.dto.JoinMeetingResponse;
 import com.meetup.meetingservice.dto.MeetingResponse;
 import com.meetup.meetingservice.dto.PostChatMessageRequest;
 import com.meetup.meetingservice.dto.UpdateMeetingRequest;
+import com.meetup.meetingservice.event.MeetingEndedEvent;
+import com.meetup.meetingservice.event.MeetingStartedEvent;
+import com.meetup.meetingservice.event.RabbitMQEventPublisher;
 import com.meetup.meetingservice.exception.MeetingNotFoundException;
 import com.meetup.meetingservice.exception.MeetingValidationException;
 import com.meetup.meetingservice.integration.streamchat.StreamChatChannel;
@@ -28,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,19 +45,22 @@ public class MeetingServiceImpl implements MeetingService {
     private final StreamChatClient streamChatClient;
     private final MeetingMapper meetingMapper;
     private final CurrentUserService currentUserService;
+    private final RabbitMQEventPublisher eventPublisher;
 
     public MeetingServiceImpl(
             MeetingRepository meetingRepository,
             StreamVideoClient streamVideoClient,
             StreamChatClient streamChatClient,
             MeetingMapper meetingMapper,
-            CurrentUserService currentUserService
+            CurrentUserService currentUserService,
+            RabbitMQEventPublisher eventPublisher
     ) {
         this.meetingRepository = meetingRepository;
         this.streamVideoClient = streamVideoClient;
         this.streamChatClient = streamChatClient;
         this.meetingMapper = meetingMapper;
         this.currentUserService = currentUserService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -116,13 +124,29 @@ public class MeetingServiceImpl implements MeetingService {
             meeting.setScheduledAt(request.scheduledAt());
         }
         if (request.status() != null) {
+            MeetingStatus oldStatus = meeting.getStatus();
             meeting.setStatus(request.status());
+            
             if (request.status() == MeetingStatus.ONGOING && meeting.getStartedAt() == null) {
                 meeting.setStartedAt(Instant.now());
+                // Publish MeetingStartedEvent
+                eventPublisher.publishMeetingStarted(new MeetingStartedEvent(
+                    meeting.getId().toString(),
+                    meeting.getTitle(),
+                    meeting.getStreamCallType() != null ? meeting.getStreamCallType() : "SYNC",
+                    LocalDateTime.ofInstant(meeting.getStartedAt(), ZoneId.systemDefault()),
+                    meeting.getTweenId() != null ? meeting.getTweenId().toString() : null
+                ));
             }
+            
             if ((request.status() == MeetingStatus.COMPLETED || request.status() == MeetingStatus.CANCELLED)
                     && meeting.getEndedAt() == null) {
                 meeting.setEndedAt(Instant.now());
+                // Publish MeetingEndedEvent
+                eventPublisher.publishMeetingEnded(new MeetingEndedEvent(
+                    meeting.getId().toString(),
+                    LocalDateTime.ofInstant(meeting.getEndedAt(), ZoneId.systemDefault())
+                ));
             }
         }
 

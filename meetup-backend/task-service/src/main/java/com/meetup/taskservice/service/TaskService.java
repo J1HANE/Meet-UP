@@ -4,6 +4,8 @@ package com.meetup.taskservice.service;
 
 import com.meetup.taskservice.domain.entity.*;
 
+import com.meetup.taskservice.domain.event.TaskCompletedEvent;
+import com.meetup.taskservice.domain.event.TaskCreatedEvent;
 import com.meetup.taskservice.domain.enums.*;
 import com.meetup.taskservice.dto.*;
 import com.meetup.taskservice.dto.request.TaskCreateDto;
@@ -16,6 +18,7 @@ import com.meetup.taskservice.repository.CategoryRepository;
 import com.meetup.taskservice.repository.TagRepository;
 import com.meetup.taskservice.repository.TaskDependencyRepository;
 import com.meetup.taskservice.repository.TaskRepository;
+import com.meetup.taskservice.event.RabbitMQEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +41,7 @@ public class TaskService {
     private final TaskMapper taskMapper;
     private final TaskDependencyRepository taskDependencyRepository;
     private final TaskDependencyService taskDependencyService;
+    private final RabbitMQEventPublisher eventPublisher;
 
 
     @Transactional(readOnly = true)
@@ -206,6 +211,18 @@ public class TaskService {
         }
 
         Task savedTask = taskRepository.save(newTask);
+
+        // Publish TaskCreatedEvent for tweening service
+        List<String> tagNames = savedTask.getTags().stream().map(tag -> tag.getName()).toList();
+        eventPublisher.publishTaskCreated(new TaskCreatedEvent(
+            savedTask.getTaskId().toString(),
+            savedTask.getTaskName(),
+            savedTask.getAssignedTo(),
+            tagNames,
+            savedTask.getPriority() != null ? savedTask.getPriority().name() : "MEDIUM",
+            savedTask.getStatus() != null ? savedTask.getStatus().name() : "TODO",
+            LocalDateTime.now()
+        ));
 
         //Resolve dependencies through relationships
         if(taskCreateDto.getDependencyIds() != null && !taskCreateDto.getDependencyIds().isEmpty()) {
@@ -541,6 +558,14 @@ public class TaskService {
         touch(task);
 
         Task saved = taskRepository.save(task);
+
+        // Publish TaskCompletedEvent for tweening service
+        if (status == TaskStatus.COMPLETED) {
+            eventPublisher.publishTaskCompleted(new TaskCompletedEvent(
+                saved.getTaskId().toString(),
+                LocalDateTime.now()
+            ));
+        }
 
         // Notify dependency service so downstream block records get resolved
         taskDependencyService.handleUpstreamStatusChange(saved);
