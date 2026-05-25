@@ -33,7 +33,21 @@ const DEV_USER: UserResponse = {
   email: "dev@meetup.local",
   displayName: "Meeting Host",
   roles: ["admin", "user"],
+  tweenIds: [],
+  active: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  lastLoginAt: null,
 };
+
+const normalizeUser = (user: Partial<UserResponse> & Pick<UserResponse, "id" | "email" | "displayName" | "roles">): UserResponse => ({
+  tweenIds: [],
+  active: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  lastLoginAt: null,
+  ...user,
+});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(DEV_AUTH_ENABLED ? DEV_USER : null);
@@ -75,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await authApi.getCurrentUser(token);
-      setUser(response.data);
+      setUser(response);
     } catch {
       clearTokens();
       setUser(null);
@@ -95,10 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await authApi.login({ email, password });
-      setTokens(response.data);
-
-      const userData = await authApi.getCurrentUser(response.data.accessToken);
-      setUser(userData.data);
+      setTokens(response);
+      setUser(normalizeUser(response.user));
     } finally {
       setIsLoading(false);
     }
@@ -113,10 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await authApi.register({ email, password, displayName });
-      setTokens(response.data);
-
-      const userData = await authApi.getCurrentUser(response.data.accessToken);
-      setUser(userData.data);
+      setTokens(response);
+      setUser(normalizeUser(response.user));
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) throw new Error("Not authenticated");
 
     const response = await authApi.updateProfile(token, data);
-    setUser(response.data);
+    setUser(response);
   }, [getAccessToken]);
 
   const changePassword = useCallback(async (data: import("@/lib/api").ChangePasswordRequest) => {
@@ -172,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) throw new Error("Not authenticated");
 
     const response = await authApi.sendEmailVerification(token);
-    return response.data.token;
+    return response.token;
   }, [getAccessToken]);
 
   const verifyEmail = useCallback(async (token: string) => {
@@ -183,7 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (DEV_AUTH_ENABLED) return "dev-password-reset-token";
 
     const response = await authApi.requestPasswordReset({ email });
-    return response.data.token;
+    return response.token;
   }, []);
 
   const resetPassword = useCallback(async (token: string, newPassword: string) => {
@@ -204,7 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) throw new Error("Not authenticated");
 
     const response = await authApi.setup2FA(token);
-    return response.data;
+    return response;
   }, [getAccessToken]);
 
   const enable2FA = useCallback(async (code: string) => {

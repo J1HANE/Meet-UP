@@ -4,14 +4,12 @@ const DEV_AUTH_ENABLED = import.meta.env.VITE_DEV_AUTH === "true";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
-<<<<<<< HEAD
-    if (typeof window === "undefined") throw redirect({ to: "/login" });
-=======
     if (DEV_AUTH_ENABLED) {
       throw redirect({ to: "/groups" });
     }
 
->>>>>>> 404b421 (changes regarding the ai service)
+    if (typeof window === "undefined") throw redirect({ to: "/login" });
+
     const token = localStorage.getItem("meetup_access_token");
     if (!token) {
       throw redirect({ to: "/login" });

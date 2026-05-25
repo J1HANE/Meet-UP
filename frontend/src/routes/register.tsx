@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -59,11 +58,7 @@ function RegisterPage() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="relative z-10 w-full max-w-md p-8"
-      >
+      <div className="relative z-10 w-full max-w-md p-8">
         <div className="rounded-2xl glass-panel p-8 space-y-6">
           {/* Logo */}
           <div className="flex items-center gap-3 justify-center">
@@ -149,7 +144,7 @@ function RegisterPage() {
             </Link>
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

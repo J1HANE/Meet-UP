@@ -18,6 +18,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as MeetingContextRouteImport } from './routes/meeting-context'
+import { Route as MeetingRouteImport } from './routes/meeting'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
@@ -84,6 +85,11 @@ const MemoryRoute = MemoryRouteImport.update({
 const MeetingContextRoute = MeetingContextRouteImport.update({
   id: '/meeting-context',
   path: '/meeting-context',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingRoute = MeetingRouteImport.update({
+  id: '/meeting',
+  path: '/meeting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -157,9 +163,9 @@ const TasksBacklogRoute = TasksBacklogRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const MeetingIdRoute = MeetingIdRouteImport.update({
-  id: '/meeting/$id',
-  path: '/meeting/$id',
-  getParentRoute: () => rootRouteImport,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MeetingRoute,
 } as any)
 const GroupsFormRoute = GroupsFormRouteImport.update({
   id: '/groups_/form',
@@ -177,24 +183,24 @@ const GroupsGroupIdIndexRoute = GroupsGroupIdIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdTransferRoute = GroupsGroupIdTransferRouteImport.update({
-  id: '/transfer',
-  path: '/transfer',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/transfer',
+  path: '/groups/$groupId/transfer',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdSplitRoute = GroupsGroupIdSplitRouteImport.update({
-  id: '/split',
-  path: '/split',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/split',
+  path: '/groups/$groupId/split',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdMergeRoute = GroupsGroupIdMergeRouteImport.update({
-  id: '/merge',
-  path: '/merge',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/merge',
+  path: '/groups/$groupId/merge',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdAddMemberRoute = GroupsGroupIdAddMemberRouteImport.update({
-  id: '/add-member',
-  path: '/add-member',
-  getParentRoute: () => GroupsGroupIdRoute,
+  id: '/groups_/$groupId/add-member',
+  path: '/groups/$groupId/add-member',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
+  '/meeting': typeof MeetingRouteWithChildren
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
+  '/meeting': typeof MeetingRouteWithChildren
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
+  '/meeting': typeof MeetingRouteWithChildren
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
+    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
+    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
+    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -408,6 +420,7 @@ export interface RootRouteChildren {
   GraphRoute: typeof GraphRoute
   GroupsRoute: typeof GroupsRoute
   LoginRoute: typeof LoginRoute
+  MeetingRoute: typeof MeetingRouteWithChildren
   MeetingContextRoute: typeof MeetingContextRoute
   MemoryRoute: typeof MemoryRoute
   ProfileRoute: typeof ProfileRoute
@@ -419,13 +432,16 @@ export interface RootRouteChildren {
   VerifyEmailRoute: typeof VerifyEmailRoute
   AdminUsersRoute: typeof AdminUsersRoute
   GroupsFormRoute: typeof GroupsFormRoute
-  MeetingIdRoute: typeof MeetingIdRoute
   TasksBacklogRoute: typeof TasksBacklogRoute
   TasksBoardRoute: typeof TasksBoardRoute
   TasksCategoriesRoute: typeof TasksCategoriesRoute
   TasksGanttRoute: typeof TasksGanttRoute
   TasksStatisticsRoute: typeof TasksStatisticsRoute
   TasksTagsRoute: typeof TasksTagsRoute
+  GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
+  GroupsGroupIdMergeRoute: typeof GroupsGroupIdMergeRoute
+  GroupsGroupIdSplitRoute: typeof GroupsGroupIdSplitRoute
+  GroupsGroupIdTransferRoute: typeof GroupsGroupIdTransferRoute
   GroupsGroupIdIndexRoute: typeof GroupsGroupIdIndexRoute
 }
 
@@ -492,6 +508,13 @@ declare module '@tanstack/react-router' {
       path: '/meeting-context'
       fullPath: '/meeting-context'
       preLoaderRoute: typeof MeetingContextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meeting': {
+      id: '/meeting'
+      path: '/meeting'
+      fullPath: '/meeting'
+      preLoaderRoute: typeof MeetingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -594,10 +617,10 @@ declare module '@tanstack/react-router' {
     }
     '/meeting/$id': {
       id: '/meeting/$id'
-      path: '/meeting/$id'
+      path: '/$id'
       fullPath: '/meeting/$id'
       preLoaderRoute: typeof MeetingIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof MeetingRoute
     }
     '/groups_/form': {
       id: '/groups_/form'
@@ -622,34 +645,45 @@ declare module '@tanstack/react-router' {
     }
     '/groups_/$groupId/transfer': {
       id: '/groups_/$groupId/transfer'
-      path: '/transfer'
+      path: '/groups/$groupId/transfer'
       fullPath: '/groups/$groupId/transfer'
       preLoaderRoute: typeof GroupsGroupIdTransferRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/split': {
       id: '/groups_/$groupId/split'
-      path: '/split'
+      path: '/groups/$groupId/split'
       fullPath: '/groups/$groupId/split'
       preLoaderRoute: typeof GroupsGroupIdSplitRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/merge': {
       id: '/groups_/$groupId/merge'
-      path: '/merge'
+      path: '/groups/$groupId/merge'
       fullPath: '/groups/$groupId/merge'
       preLoaderRoute: typeof GroupsGroupIdMergeRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/groups_/$groupId/add-member': {
       id: '/groups_/$groupId/add-member'
-      path: '/add-member'
+      path: '/groups/$groupId/add-member'
       fullPath: '/groups/$groupId/add-member'
       preLoaderRoute: typeof GroupsGroupIdAddMemberRouteImport
-      parentRoute: typeof GroupsGroupIdRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
+
+interface MeetingRouteChildren {
+  MeetingIdRoute: typeof MeetingIdRoute
+}
+
+const MeetingRouteChildren: MeetingRouteChildren = {
+  MeetingIdRoute: MeetingIdRoute,
+}
+
+const MeetingRouteWithChildren =
+  MeetingRoute._addFileChildren(MeetingRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -660,6 +694,7 @@ const rootRouteChildren: RootRouteChildren = {
   GraphRoute: GraphRoute,
   GroupsRoute: GroupsRoute,
   LoginRoute: LoginRoute,
+  MeetingRoute: MeetingRouteWithChildren,
   MeetingContextRoute: MeetingContextRoute,
   MemoryRoute: MemoryRoute,
   ProfileRoute: ProfileRoute,
@@ -671,13 +706,16 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailRoute: VerifyEmailRoute,
   AdminUsersRoute: AdminUsersRoute,
   GroupsFormRoute: GroupsFormRoute,
-  MeetingIdRoute: MeetingIdRoute,
   TasksBacklogRoute: TasksBacklogRoute,
   TasksBoardRoute: TasksBoardRoute,
   TasksCategoriesRoute: TasksCategoriesRoute,
   TasksGanttRoute: TasksGanttRoute,
   TasksStatisticsRoute: TasksStatisticsRoute,
   TasksTagsRoute: TasksTagsRoute,
+  GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,
+  GroupsGroupIdMergeRoute: GroupsGroupIdMergeRoute,
+  GroupsGroupIdSplitRoute: GroupsGroupIdSplitRoute,
+  GroupsGroupIdTransferRoute: GroupsGroupIdTransferRoute,
   GroupsGroupIdIndexRoute: GroupsGroupIdIndexRoute,
 }
 export const routeTree = rootRouteImport

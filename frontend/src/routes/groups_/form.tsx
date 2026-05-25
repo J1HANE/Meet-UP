@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { groupsApi } from "@/lib/api/groups";
 import { ArrowLeft, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/groups_/form")({
   component: FormGroupPage,
@@ -14,12 +15,15 @@ export const Route = createFileRoute("/groups_/form")({
 function FormGroupPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [taskId, setTaskId] = useState("");
   const [meetingId, setMeetingId] = useState("");
-  const [ownerId, setOwnerId] = useState("");
 
   const formMutation = useMutation({
-    mutationFn: () => groupsApi.formGroup(taskId, meetingId, ownerId),
+    mutationFn: () => {
+      if (!user?.id) throw new Error("You must be signed in to form a group.");
+      return groupsApi.formGroup(taskId, meetingId, user.id);
+    },
     onSuccess: (newGroup) => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       navigate({ to: `/groups/${newGroup.id}` });
@@ -28,7 +32,7 @@ function FormGroupPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!taskId || !meetingId || !ownerId) return;
+    if (!taskId || !meetingId) return;
     formMutation.mutate();
   };
 
@@ -45,6 +49,10 @@ function FormGroupPage() {
       </div>
 
       <div className="bg-card border border-border p-6 rounded-2xl">
+        <div className="mb-5 rounded-lg border border-border bg-background/60 p-3 text-sm text-muted-foreground">
+          Use IDs from existing tasks and meetings. Your owner ID is taken from your signed-in account automatically.
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Task ID</label>
@@ -70,18 +78,6 @@ function FormGroupPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Owner ID</label>
-            <input
-              type="text"
-              value={ownerId}
-              onChange={(e) => setOwnerId(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Enter Owner ID"
-              required
-            />
-          </div>
-
           <div className="pt-4 flex justify-end gap-3">
             <Link to="/groups">
               <Button variant="ghost" type="button">Cancel</Button>
@@ -94,7 +90,7 @@ function FormGroupPage() {
           
           {formMutation.isError && (
             <div className="text-destructive text-sm mt-2">
-              Failed to form group. Please try again.
+              {formMutation.error instanceof Error ? formMutation.error.message : "Failed to form group. Please try again."}
             </div>
           )}
         </form>

@@ -50,75 +50,85 @@ export interface GroupNode {
 
 const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8085'}/api/groups`; 
 
+const getHeaders = (): HeadersInit => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("meetup_access_token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const getErrorMessage = async (res: Response, fallback: string): Promise<string> => {
+  const error = await res.json().catch(() => ({}));
+  return error.message || fallback;
+};
+
 export const groupsApi = {
   // Fetch all groups
   getAllGroups: async (): Promise<GroupNode[]> => {
-    const res = await fetch(API_BASE_URL);
-    if (!res.ok) throw new Error("Failed to fetch groups");
+    const res = await fetch(API_BASE_URL, { headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to fetch groups"));
     return res.json();
   },
 
   // Fetch group by ID
   getGroupById: async (groupId: string): Promise<GroupNode> => {
-    const res = await fetch(`${API_BASE_URL}/${groupId}`);
-    if (!res.ok) throw new Error("Failed to fetch group");
+    const res = await fetch(`${API_BASE_URL}/${groupId}`, { headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to fetch group"));
     return res.json();
   },
 
   // Form a new group
   formGroup: async (taskId: string, meetingId: string, ownerId: string): Promise<GroupNode> => {
     const params = new URLSearchParams({ taskId, meetingId, ownerId });
-    const res = await fetch(`${API_BASE_URL}/form?${params}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to form group");
+    const res = await fetch(`${API_BASE_URL}/form?${params}`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to form group"));
     return res.json();
   },
 
   // Join a group
   joinGroup: async (groupId: string, personId: string, role: string): Promise<void> => {
     const params = new URLSearchParams({ personId, role });
-    const res = await fetch(`${API_BASE_URL}/${groupId}/join?${params}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to join group");
+    const res = await fetch(`${API_BASE_URL}/${groupId}/join?${params}`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to join group"));
   },
 
   // Leave a group
   leaveGroup: async (groupId: string, personId: string): Promise<void> => {
     const params = new URLSearchParams({ personId });
-    const res = await fetch(`${API_BASE_URL}/${groupId}/leave?${params}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to leave group");
+    const res = await fetch(`${API_BASE_URL}/${groupId}/leave?${params}`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to leave group"));
   },
 
   // Transfer lead
   transferLead: async (groupId: string, oldLeadId: string, newLeadId: string): Promise<void> => {
     const params = new URLSearchParams({ oldLeadId, newLeadId });
-    const res = await fetch(`${API_BASE_URL}/${groupId}/transfer?${params}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to transfer lead");
+    const res = await fetch(`${API_BASE_URL}/${groupId}/transfer?${params}`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to transfer lead"));
   },
 
   // Split group
   splitGroup: async (groupId: string, newGroupName: string): Promise<void> => {
     const params = new URLSearchParams({ newGroupName });
-    const res = await fetch(`${API_BASE_URL}/${groupId}/split?${params}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to split group");
+    const res = await fetch(`${API_BASE_URL}/${groupId}/split?${params}`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to split group"));
   },
 
   // Merge groups
   mergeGroups: async (targetGroupId: string, sourceGroupId: string): Promise<void> => {
     const params = new URLSearchParams({ sourceGroupId });
-    const res = await fetch(`${API_BASE_URL}/${targetGroupId}/merge?${params}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to merge groups");
+    const res = await fetch(`${API_BASE_URL}/${targetGroupId}/merge?${params}`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to merge groups"));
   },
 
   // Dissolve group
   dissolveGroup: async (groupId: string): Promise<void> => {
-    const res = await fetch(`${API_BASE_URL}/${groupId}/dissolve`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to dissolve group");
+    const res = await fetch(`${API_BASE_URL}/${groupId}/dissolve`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to dissolve group"));
   },
 
   // Suggest members
   suggestMembers: async (taskId: string, creatorId: string): Promise<PersonNode[]> => {
     const params = new URLSearchParams({ taskId, creatorId });
-    const res = await fetch(`${API_BASE_URL}/suggestions?${params}`);
-    if (!res.ok) throw new Error("Failed to fetch suggestions");
+    const res = await fetch(`${API_BASE_URL}/suggestions?${params}`, { headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to fetch suggestions"));
     return res.json();
   },
 };
