@@ -1,16 +1,17 @@
 spring:
   application:
     name: tweening-service
-  neo4j:
-    uri: bolt://localhost:7687
-    authentication:
-      username: neo4j
-      password: password
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+  profiles:
+    active: dev
 
 server:
-  port: 8083
+  port: 8086
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized

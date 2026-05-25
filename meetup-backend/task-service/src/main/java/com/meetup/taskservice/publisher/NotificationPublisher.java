@@ -20,7 +20,7 @@ public class NotificationPublisher {
         String routingKey = "notifications." + channel.name().toLowerCase();
 
         rabbitTemplate.convertAndSend(
-                RabbitMQPublisherConfig.EXCHANGE,
+                RabbitMQPublisherConfig.NOTIFICATIONS_EXCHANGE,
                 routingKey,
                 message
         );

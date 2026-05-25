@@ -35,8 +35,8 @@ meetup:
     active-provider: ${AI_PROVIDER:ollama}
 
   services:
-    context-service-url: ${CONTEXT_SERVICE_URL:http://localhost:8083}
-    task-service-url: ${TASK_SERVICE_URL:http://localhost:8084}
+    context-service-url: ${CONTEXT_SERVICE_URL:http://localhost:8084}
+    task-service-url: ${TASK_SERVICE_URL:http://localhost:8091}
 
   cache:
     snapshot-ttl-seconds: 30
@@ -45,7 +45,7 @@ meetup:
     summary-completed-ttl-seconds: 86400  # 24h (effectively permanent for a project)
 
 server:
-  port: 8086
+  port: 8088
 
 logging:
   level:

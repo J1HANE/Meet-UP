@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: dev
+
+server:
+  port: 8085
+
+# JWT Configuration
+jwt:
+  secret: defaultSecretKeyForDevelopmentOnly123456789
+
+gateway:
+  jwt:
+    enabled: true
+  cache:
+    enabled: false
+
+# Rate Limiting Configuration
+rate:
+  limit:
+    capacity: 100
+    refill:
+      tokens: 10
+      duration: 1
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

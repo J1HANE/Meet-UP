@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: meeting-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5433/meetup_meetings
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8083
+
+# JWT Configuration
+jwt:
+  secret: defaultSecretKeyForDevelopmentOnly123456789

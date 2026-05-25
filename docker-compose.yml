@@ -51,6 +51,27 @@ services:
       timeout: 5s
       retries: 5
 
+  # Neo4j for Tweening Service
+  neo4j:
+    image: neo4j:5
+    container_name: meetup-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_server_config_strict__validation_enabled=false
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1"]
+      interval: 15s
+      timeout: 20s
+      retries: 10
+      start_period: 90s
+
   # PostgreSQL for Auth Service
   postgres:
     image: postgres:16
@@ -99,11 +120,11 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: ["CMD-SHELL", "nc -z localhost 8081 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 150s
 
   # Context Service
   context-service:
@@ -132,17 +153,17 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      test: ["CMD-SHELL", "nc -z localhost 8084 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 150s
 
   # Task Service
   task-service:
     build:
-      context: ./meetup-backend/task-service
-      dockerfile: Dockerfile
+      context: ./meetup-backend
+      dockerfile: task-service/Dockerfile
     container_name: task-service
     ports:
       - "8091:8091"
@@ -162,11 +183,11 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
+      test: ["CMD-SHELL", "nc -z localhost 8091 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 150s
 
   # API Gateway
   api-gateway:
@@ -180,9 +201,7 @@ services:
       - JWT_SECRET=defaultSecretKeyForDevelopmentOnly123456789
       - GATEWAY_JWT_ENABLED=true
       - JWT_PUBLIC_KEY_LOCATION=/keys/public.pem
-      - SPRING_CLOUD_GATEWAY_ROUTES[0]_URI=http://auth-service:8081
-      - SPRING_CLOUD_GATEWAY_ROUTES[1]_URI=http://context-service:8084
-      - SPRING_CLOUD_GATEWAY_ROUTES[2]_URI=http://task-service:8091
+      - SPRING_PROFILES_ACTIVE=prod
     volumes:
       - jwt_keys:/keys
     depends_on:
@@ -192,16 +211,110 @@ services:
         condition: service_healthy
       task-service:
         condition: service_healthy
+      meeting-service:
+        condition: service_healthy
+      tweening-service:
+        condition: service_healthy
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      test: ["CMD-SHELL", "nc -z localhost 8085 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 150s
+
+  # Meeting Service
+  meeting-service:
+    build:
+      context: ./meetup-backend/meeting-service
+      dockerfile: Dockerfile
+    container_name: meeting-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_meetings
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - JWT_SECRET=defaultSecretKeyForDevelopmentOnly123456789
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8083 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # AI Service
+  ai-service:
+    build:
+      context: ./meetup-backend/ai-service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    ports:
+      - "8088:8087"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CONTEXT_SERVICE_URL=http://context-service:8084
+      - TASK_SERVICE_URL=http://task-service:8091
+      - AI_PROVIDER=ollama
+      - OLLAMA_BASE_URL=http://localhost:11434
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8087 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Tweening Service
+  tweening-service:
+    build:
+      context: ./meetup-backend/tweening-service
+      dockerfile: Dockerfile
+    container_name: tweening-service
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=password
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8086 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
 
 volumes:
   mongodb_data:
   postgres_data:
   jwt_keys:
+  neo4j_data:
