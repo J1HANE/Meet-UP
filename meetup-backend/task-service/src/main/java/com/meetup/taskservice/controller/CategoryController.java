@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/tasks/categories")
 @RequiredArgsConstructor
 @Tag(name = "Category Management", description = "Endpoints for managing categories")
 public class CategoryController {
