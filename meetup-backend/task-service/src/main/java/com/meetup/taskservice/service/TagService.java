@@ -1,8 +1,6 @@
 package com.meetup.taskservice.service;
 
-import com.meetup.taskservice.domain.entity.Category;
-import com.meetup.taskservice.domain.entity.Tag;
-import com.meetup.taskservice.domain.entity.Task;
+import com.meetup.taskservice.domain.entity.*;
 import com.meetup.taskservice.dto.request.TagCreateDto;
 import com.meetup.taskservice.dto.request.TagUpdateDto;
 import com.meetup.taskservice.dto.response.TagResponseDto;
@@ -43,8 +41,9 @@ public class TagService {
         }
 
         Tag newTag = tagMapper.toEntity(tagCreateDto);
+        UserContext user = UserContextHolder.get();
         newTag.setContextId(contextId);
-        newTag.setCreatedBy("user-1");
+        newTag.setCreatedBy(user.getUserId());
         Tag savedTag = tagRepository.save(newTag);
         return tagMapper.toResponseDto(savedTag);
     }

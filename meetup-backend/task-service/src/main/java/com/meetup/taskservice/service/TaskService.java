@@ -176,6 +176,8 @@ public class TaskService {
     @Transactional
     public TaskResponseDto createTask(String contextId, TaskCreateDto taskCreateDto) {
         Task newTask = taskMapper.toEntity(taskCreateDto);
+        UserContext currentUser = UserContextHolder.get();
+        newTask.setCreatedBy(currentUser.getUserId());
         newTask.setContextId(contextId);
 
         //Resolve categoryId to Category entity
