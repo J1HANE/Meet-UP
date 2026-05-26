@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/context/{contextId}/tasks")
+@RequestMapping("/api/tasks/context/{contextId}/tasks")
 @RequiredArgsConstructor
 @Tag(name = "Tasks", description = "Task management — CRUD, patch operations, dependencies, and block history")
 public class TaskController {

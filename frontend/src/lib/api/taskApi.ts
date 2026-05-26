@@ -25,25 +25,12 @@ import type {
   TaskDependencyCreateDto,
   TaskDependencyUpdateDto,
 } from "@/types/task-service";
-import axios from "axios";
+import { createApiClient } from "../axiosUtils";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8091";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("meetup_access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+const api = createApiClient(
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8085/api/tasks",
+  import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:8085/api/auth",
+);
 
 export const taskApi = {
   getAll: (contextId: string) => api.get<Task[]>(`/context/${contextId}/tasks`),

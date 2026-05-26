@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/context/{contextId}/tags")
+@RequestMapping("/api/tasks/context/{contextId}/tags")
 @RequiredArgsConstructor
 @Tag(name = "Tag Management", description = "Endpoints for managing tags")
 public class TagController {

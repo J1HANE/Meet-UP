@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/context/{contextId}/tasks/gantt")
+@RequestMapping("/api/tasks/context/{contextId}/tasks/gantt")
 @RequiredArgsConstructor
 @Tag(name = "Gantt Chart", description = "Endpoints for Gantt chart data")
 public class GanttController {
