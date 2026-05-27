@@ -16,13 +16,14 @@ function GanttPage() {
   const [ganttData, setGanttData] = useState<GanttData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const meetingName = "Project Alpha";
+  const meetingName = "Project Alpha"; //Should come from selected meeting
+  const contextId = "project-123"; //Should come from selected meeting
 
   useEffect(() => {
     const fetchGanttData = async () => {
       try {
         setLoading(true);
-        const response = await taskApi.getGanttData("project-123");
+        const response = await taskApi.getGanttData(contextId); //Should get from taskStore
         setGanttData(response.data);
         setError(null);
       } catch (err) {

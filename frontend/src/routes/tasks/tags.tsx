@@ -41,7 +41,8 @@ export const Route = createFileRoute("/tasks/tags")({
   component: TagManagementPage,
 });
 
-const contextId = "project-123"; // This would come from context/route params
+const contextId = "project-123"; // Should come from selected meeting
+const meetingName = "Project Alpha"; //Should come from selected meeting
 
 function TagManagementPage() {
   const { tags, fetchTags } = useTaskStore();
@@ -54,8 +55,6 @@ function TagManagementPage() {
     color: "#3498db",
     icon: "",
   });
-
-  const meetingName = "Project Alpha";
 
   useEffect(() => {
     fetchTags(contextId);

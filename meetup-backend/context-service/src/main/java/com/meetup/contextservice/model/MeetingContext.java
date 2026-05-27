@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -54,7 +55,7 @@ public class MeetingContext implements Serializable {
 
     @JsonIgnore
     @Builder.Default
-    private List<TaskSnapshot> tasks = new ArrayList<>();
+    private List<Map<String, Object>> tasks = new ArrayList<>();
 
     @Data
     @Builder

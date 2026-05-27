@@ -32,8 +32,6 @@ interface AiInsightState {
   reset: () => void;
 }
 
-// ─── Error helper ─────────────────────────────────────────────────────────────
-
 function extractErrorMessage(error: unknown): string {
   if (error instanceof AxiosError) {
     const serverMsg =
@@ -45,8 +43,6 @@ function extractErrorMessage(error: unknown): string {
   }
   return error instanceof Error ? error.message : "Unknown error";
 }
-
-// ─── Offline fallbacks ────────────────────────────────────────────────────────
 
 function buildFallbackReport(context: AiMeetingContext): AiSummaryReport {
   const now = new Date().toISOString();
@@ -135,8 +131,6 @@ function buildFallbackAnswer(
     `Start ai-service on ${import.meta.env.VITE_AI_API_URL ?? "http://localhost:8087"} to get a generated answer.`,
   ].join("\n");
 }
-
-// ─── Initial state ────────────────────────────────────────────────────────────
 
 const initialState = {
   report: null,

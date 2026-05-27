@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useTaskStore } from "@/store/taskStore";
 
-const contextId = "project-123";
-const meetingName = "Project Alpha";
+const contextId = "project-123"; //Should come from selected meeting.
+const meetingName = "Project Alpha"; //Should come from selected meeting.
 
 interface UseProjectDataOptions {
   withGantt?: boolean;

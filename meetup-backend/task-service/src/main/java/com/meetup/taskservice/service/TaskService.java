@@ -215,7 +215,7 @@ public class TaskService {
         Task savedTask = taskRepository.save(newTask);
 
         // Publish TaskCreatedEvent for tweening service
-        List<String> tagNames = savedTask.getTags().stream().map(tag -> tag.getName()).toList();
+        List<String> tagNames = savedTask.getTags().stream().map(Tag::getName).toList();
         eventPublisher.publishTaskCreated(new TaskCreatedEvent(
             savedTask.getTaskId().toString(),
             savedTask.getTaskName(),
