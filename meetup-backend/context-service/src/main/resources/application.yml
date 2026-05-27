@@ -40,8 +40,42 @@ task:
   service:
     url: http://localhost:8091
 
+tweening:
+  service:
+    url: http://localhost:8086
+
+meeting:
+  service:
+    url: http://localhost:8083
+
 logging:
   level:
     com.meetup.contextservice: DEBUG
     org.springframework.data.mongodb: DEBUG
     org.springframework.security: TRACE
+
+
+
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      taskService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        slow-call-duration-threshold: 3s
+        slow-call-rate-threshold: 50
+        register-health-indicator: true
+
+      tweeningService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        slow-call-duration-threshold: 3s
+        slow-call-rate-threshold: 50
+        register-health-indicator: true
+

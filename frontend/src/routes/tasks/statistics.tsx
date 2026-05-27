@@ -52,8 +52,8 @@ export const Route = createFileRoute("/tasks/statistics")({
 });
 
 function StatisticsPage() {
-  const { tasks } = useTaskStore();
-  const meetingName = "Project Alpha";
+  const { tasks } = useTaskStore(); //Should implement conditional fetching incase tasks is null
+  const meetingName = "Project Alpha"; //Should come from selected meeting
 
   const statusData = [
     {

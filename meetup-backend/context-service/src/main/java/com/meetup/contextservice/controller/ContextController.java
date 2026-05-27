@@ -1,6 +1,7 @@
 package com.meetup.contextservice.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.meetup.contextservice.dto.AggregatedSnapshot;
 import com.meetup.contextservice.dto.CreateDecisionRequest;
 import com.meetup.contextservice.dto.CreateMeetingContextRequest;
 import com.meetup.contextservice.model.MeetingContext;
@@ -168,15 +169,8 @@ public class ContextController {
         return ResponseEntity.ok(contextService.searchContexts(query, groupId, status, limit, offset, userTweenIds));
     }
 
-    @GetMapping("/{meetingId}/tasks")
-    public ResponseEntity<List<com.meetup.contextservice.dto.TaskSnapshot>> getMeetingTasks(
-            @PathVariable UUID meetingId,
-            Authentication authentication) {
-        List<UUID> userTweenIds = new ArrayList<>();
-        if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
-            AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
-            userTweenIds = user.getTweenIds();
-        }
-        return ResponseEntity.ok(contextService.getMeetingTasks(meetingId, userTweenIds));
+    @GetMapping("/{meetingId}/snapshot")
+    public ResponseEntity<AggregatedSnapshot> getAggregatedSnapshot(@PathVariable String meetingId) {
+        return ResponseEntity.ok(contextService.getAggregatedSnapshot(meetingId));
     }
 }
