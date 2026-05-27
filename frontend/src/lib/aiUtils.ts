@@ -1,4 +1,8 @@
-import { AiMeetingContext } from "@/types/ai-service";
+import {
+  AiInsight,
+  AiMeetingContext,
+  InsightResponse,
+} from "@/types/ai-service";
 
 export function buildMeetingAiContext(meeting: {
   id: string;
@@ -217,3 +221,84 @@ export const sampleAiMeetingContexts: AiMeetingContext[] = [
     ],
   },
 ];
+
+export const sampleTaskInsightData: InsightResponse = {
+  insightType: "TASK_ANALYSIS",
+  summary:
+    "The project team is facing a significant workload imbalance and several critical tasks are at risk of being delayed or missed due to a combination of factors.",
+  insights: [
+    {
+      category: "WORKLOAD_IMBALANCE",
+      severity: "HIGH",
+      title:
+        "Significant workload imbalance across teams – User-4 and User-3 are heavily burdened, while User-1 and User-5 have minimal assigned tasks.",
+      detail:
+        "User-4 has 80 hours of actual work completed, while User-3 is currently working on 33 hours. User-1 and User-5 have only 10 hours of work completed. This imbalance is creating bottlenecks and potentially impacting overall project delivery.",
+      affectedEntities: ["user-4", "user-3", "user-1", "user-5"],
+      recommendation:
+        "Prioritize workload redistribution. Re-evaluate task assignments and potentially re-assign some tasks to alleviate pressure on User-4 and User-3. Consider temporary resource allocation to address the imbalance.",
+    },
+    {
+      category: "OVERDUE_TASKS",
+      severity: "HIGH",
+      title:
+        "5 tasks are overdue, impacting deadlines and potential project delays.",
+      detail:
+        "Five tasks are currently overdue – f20f93c9-96dd-4ca2-bf10-90eac3b30e69, 4ff6fcfd-70e6-47ab-93d4-64e3b92c96aa, 3d31c693-62f8-4bcd-8888-bbccddeeff00, a1b2c3d4-1111-4abc-9999-aabbccddeeff00, and b2c3d4e5-2222-4bcd-8888-bbccddeeff0011.",
+      affectedEntities: [
+        "f20f93c9-96dd-4ca2-bf10-90eac3b30e69",
+        "4ff6fcfd-70e6-47ab-93d4-64e3b92c96aa",
+        "3d31c693-62f8-4bcd-8888-bbccddeeff00",
+        "a1b2c3d4-1111-4abc-9999-aabbccddeeff00",
+        "b2c3d4e5-2222-4bcd-8888-bbccddeeff0011",
+      ],
+      recommendation:
+        "Immediately initiate a task review and prioritization process to identify and address the root causes of these overdue tasks. Assign temporary resources to address critical tasks until the backlog is resolved.",
+    },
+    {
+      category: "BLOCKED_TASKS",
+      severity: "MEDIUM",
+      title:
+        "Task 'Database schema migration' is blocked – requires approval from the database team.",
+      detail:
+        "The Database schema migration task is blocked because the database team needs to approve the changes before proceeding. This is a critical task impacting data integrity and system stability.",
+      affectedEntities: ["task-id: 3d31c693-62f8-47ab-93d4-64e3b92c96aa"],
+      recommendation:
+        "Escalate the blocked task to the database team and ensure they receive all necessary approvals before proceeding. Document the approval process for future reference.",
+    },
+    {
+      category: "WORKLOAD_DISTRIBUTION",
+      severity: "LOW",
+      title:
+        "User-1 is heavily overloaded, while User-5 has minimal assigned tasks.",
+      detail:
+        "User-1 has 80 hours of work completed, while User-5 has only 10 hours of work completed. This imbalance suggests a need for re-evaluation of task assignments and potential re-prioritization of work.",
+      affectedEntities: ["user-1", "user-5"],
+      recommendation:
+        "Re-evaluate task assignments. Consider re-assigning some tasks to User-1 or User-5 to distribute the workload more evenly. Implement a task monitoring system to proactively identify potential bottlenecks.",
+    },
+    {
+      category: "PRIORITY_MISMATCH",
+      severity: "MEDIUM",
+      title:
+        "API rate limiting middleware – low priority compared to other tasks.",
+      detail:
+        "The API rate limiting middleware is currently assigned a low priority. It is crucial to ensure this task is properly prioritized to maintain system stability and prevent potential issues.",
+      affectedEntities: ["task-id: a1b2c3d4-1111-4abc-9999-aabbccddeeff00"],
+      recommendation:
+        "Re-evaluate the priority of this task. Consider pushing it to the backburner or re-assigning it to a higher-priority task if necessary. Ensure the team understands the importance of this task.",
+    },
+    {
+      category: "MISTAKES_AND_RISKS",
+      severity: "LOW",
+      title: "Potential risk of data loss during database schema migration.",
+      detail:
+        "The database schema migration task carries a risk of data loss if the migration process is not carefully executed. Proper testing and validation are crucial.",
+      affectedEntities: ["task-id: 3d31c693-62f8-4bcd-8888-bbccddeeff00"],
+      recommendation:
+        "Implement a robust data validation and rollback mechanism for the database schema migration. Conduct thorough testing and validation before deploying the changes.",
+    },
+  ],
+  model: "ollama",
+  generatedAt: "2026-05-26T22:30:43.280228900Z",
+};

@@ -29,6 +29,7 @@ import { Route as R2faSetupRouteImport } from './routes/2fa-setup'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TasksTagsRouteImport } from './routes/tasks/tags'
 import { Route as TasksStatisticsRouteImport } from './routes/tasks/statistics'
+import { Route as TasksInsightsRouteImport } from './routes/tasks/insights'
 import { Route as TasksGanttRouteImport } from './routes/tasks/gantt'
 import { Route as TasksCategoriesRouteImport } from './routes/tasks/categories'
 import { Route as TasksBoardRouteImport } from './routes/tasks/board'
@@ -142,6 +143,11 @@ const TasksStatisticsRoute = TasksStatisticsRouteImport.update({
   path: '/tasks/statistics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TasksInsightsRoute = TasksInsightsRouteImport.update({
+  id: '/tasks/insights',
+  path: '/tasks/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TasksGanttRoute = TasksGanttRouteImport.update({
   id: '/tasks/gantt',
   path: '/tasks/gantt',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
   '/tasks/gantt': typeof TasksGanttRoute
+  '/tasks/insights': typeof TasksInsightsRoute
   '/tasks/statistics': typeof TasksStatisticsRoute
   '/tasks/tags': typeof TasksTagsRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
   '/tasks/gantt': typeof TasksGanttRoute
+  '/tasks/insights': typeof TasksInsightsRoute
   '/tasks/statistics': typeof TasksStatisticsRoute
   '/tasks/tags': typeof TasksTagsRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/tasks/board': typeof TasksBoardRoute
   '/tasks/categories': typeof TasksCategoriesRoute
   '/tasks/gantt': typeof TasksGanttRoute
+  '/tasks/insights': typeof TasksInsightsRoute
   '/tasks/statistics': typeof TasksStatisticsRoute
   '/tasks/tags': typeof TasksTagsRoute
   '/groups_/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/tasks/board'
     | '/tasks/categories'
     | '/tasks/gantt'
+    | '/tasks/insights'
     | '/tasks/statistics'
     | '/tasks/tags'
     | '/groups/$groupId/add-member'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/tasks/board'
     | '/tasks/categories'
     | '/tasks/gantt'
+    | '/tasks/insights'
     | '/tasks/statistics'
     | '/tasks/tags'
     | '/groups/$groupId/add-member'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/tasks/board'
     | '/tasks/categories'
     | '/tasks/gantt'
+    | '/tasks/insights'
     | '/tasks/statistics'
     | '/tasks/tags'
     | '/groups_/$groupId/add-member'
@@ -436,6 +448,7 @@ export interface RootRouteChildren {
   TasksBoardRoute: typeof TasksBoardRoute
   TasksCategoriesRoute: typeof TasksCategoriesRoute
   TasksGanttRoute: typeof TasksGanttRoute
+  TasksInsightsRoute: typeof TasksInsightsRoute
   TasksStatisticsRoute: typeof TasksStatisticsRoute
   TasksTagsRoute: typeof TasksTagsRoute
   GroupsGroupIdAddMemberRoute: typeof GroupsGroupIdAddMemberRoute
@@ -587,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TasksStatisticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tasks/insights': {
+      id: '/tasks/insights'
+      path: '/tasks/insights'
+      fullPath: '/tasks/insights'
+      preLoaderRoute: typeof TasksInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tasks/gantt': {
       id: '/tasks/gantt'
       path: '/tasks/gantt'
@@ -710,6 +730,7 @@ const rootRouteChildren: RootRouteChildren = {
   TasksBoardRoute: TasksBoardRoute,
   TasksCategoriesRoute: TasksCategoriesRoute,
   TasksGanttRoute: TasksGanttRoute,
+  TasksInsightsRoute: TasksInsightsRoute,
   TasksStatisticsRoute: TasksStatisticsRoute,
   TasksTagsRoute: TasksTagsRoute,
   GroupsGroupIdAddMemberRoute: GroupsGroupIdAddMemberRoute,

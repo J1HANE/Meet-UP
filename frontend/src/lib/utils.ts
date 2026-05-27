@@ -1,3 +1,4 @@
+import { AiInsight } from "@/types/ai-service";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -11,6 +12,24 @@ export function pluckProperty<T, K extends keyof T>(
 ): T[K][] {
   return items.map((item) => item[property]);
 }
+
+export function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleString();
+}
+
+export const getSeverityStyles = (severity: string): string => {
+  switch (severity) {
+    case "HIGH":
+      return "bg-destructive/20 text-destructive border-destructive/30";
+    case "MEDIUM":
+      return "bg-chart-4/20 text-chart-4 border-chart-4/30";
+    case "LOW":
+      return "bg-chart-2/20 text-chart-2 border-chart-2/30";
+    default:
+      return "bg-muted text-muted-foreground border-border";
+  }
+};
 
 export const priorityColors = {
   LOW: "bg-blue-100 text-blue-800",

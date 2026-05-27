@@ -10,6 +10,7 @@ import {
   GanttChartSquare,
   Menu,
   X,
+  Lightbulb,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "@tanstack/react-router";
@@ -54,6 +55,13 @@ export const TaskHeader = ({ contextName }: HeaderProps) => {
       label: "Categories",
       icon: Layers,
       path: "/tasks/categories",
+    },
+
+    {
+      id: "tasks/insights",
+      label: "Insights",
+      icon: Lightbulb,
+      path: "/tasks/insights",
     },
   ];
 
