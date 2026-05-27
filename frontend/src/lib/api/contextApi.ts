@@ -1,6 +1,6 @@
 import {
   MeetingSnapshot,
-  RelationshipSnapshot,
+  GroupSnapshot,
   TaskSnapshot,
 } from "@/types/context-service";
 import axios from "axios";
@@ -12,12 +12,6 @@ const contextClient = axios.create({
 });
 
 export const contextApi = {
-  taskSnapshot: (meetingId: string) =>
-    contextClient.get<TaskSnapshot[]>(`/${meetingId}/tasks`),
-
-  relationshipSnapshot: (meetingId: string) =>
-    contextClient.get<RelationshipSnapshot[]>(`/${meetingId}/relationships`),
-
   meetingSnapshot: (meetingId: string) =>
-    contextClient.get<MeetingSnapshot>(`/${meetingId}/meetings`),
+    contextClient.get<Record<string, unknown>>(`/${meetingId}/snapshot`),
 };
