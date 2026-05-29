@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +32,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String gatewayUserId = request.getHeader("X-User-Id");
+        if (StringUtils.hasText(gatewayUserId)) {
+            try {
+                String email = request.getHeader("X-User-Email");
+                List<String> roles = parseCommaSeparated(request.getHeader("X-User-Roles"));
+                AuthenticatedUser authenticatedUser = new AuthenticatedUser(
+                        UUID.fromString(gatewayUserId.trim()),
+                        email,
+                        null,
+                        roles,
+                        parseCommaSeparatedUuids(request.getHeader("X-User-TweenIds"))
+                );
+
+                Collection<SimpleGrantedAuthority> authorities = roles.stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                        .toList();
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        authenticatedUser,
+                        null,
+                        authorities
+                );
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (Exception ignored) {
+                SecurityContextHolder.clearContext();
+            }
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
@@ -68,5 +101,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private List<String> parseCommaSeparated(String value) {
+        if (!StringUtils.hasText(value)) {
+            return List.of();
+        }
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .toList();
+    }
+
+    private List<UUID> parseCommaSeparatedUuids(String value) {
+        if (!StringUtils.hasText(value)) {
+            return List.of();
+        }
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .map(UUID::fromString)
+                .toList();
     }
 }
