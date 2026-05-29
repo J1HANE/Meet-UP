@@ -211,7 +211,9 @@ export const useTaskStore = create<TaskStore>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      set({ error: "Failed to create task: " + error, loading: false });
+      const message = "Failed to create task: " + error;
+      set({ error: message, loading: false });
+      throw new Error(message);
     }
   },
 
