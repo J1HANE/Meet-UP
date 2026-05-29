@@ -91,8 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.getCurrentUser(token);
       setUser(response);
     } catch {
-      clearTokens();
-      setUser(null);
+      if (getAccessToken() === token) {
+        clearTokens();
+        setUser(null);
+      }
     }
   }, [getAccessToken, clearTokens]);
 

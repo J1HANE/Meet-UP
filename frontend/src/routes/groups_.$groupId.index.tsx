@@ -33,6 +33,9 @@ function GroupDetailsPage() {
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading group details...</div>;
   if (!group) return <div className="p-8 text-center text-destructive">Group not found</div>;
 
+  const taskName = group.task?.task?.title || group.name || group.taskId;
+  const activeLeads = (group.leads || []).filter((lead) => !lead.toDate);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
@@ -41,7 +44,7 @@ function GroupDetailsPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-heading font-bold">{group.name || "Unnamed Group"}</h1>
-          <p className="text-muted-foreground text-sm">Task ID: {group.taskId}</p>
+          <p className="text-muted-foreground text-sm">Task: {taskName}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-sm bg-secondary text-secondary-foreground font-medium">
@@ -65,10 +68,18 @@ function GroupDetailsPage() {
             </div>
             
             <div className="space-y-4">
+              {activeLeads.map((lead, i) => (
+                <div key={`lead-${i}`} className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/30">
+                  <div>
+                    <p className="font-medium text-sm">{lead.person.name || lead.person.email || lead.person.id}</p>
+                    <p className="text-xs text-muted-foreground">Role: Lead</p>
+                  </div>
+                </div>
+              ))}
               {(group.members || []).filter(m => !m.leftAt).map((m, i) => (
                 <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-background border border-border">
                   <div>
-                    <p className="font-medium text-sm">{m.person.name || m.person.id}</p>
+                    <p className="font-medium text-sm">{m.person.name || m.person.email || m.person.id}</p>
                     <p className="text-xs text-muted-foreground">Role: {m.roleInGroup}</p>
                   </div>
                   <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => leaveMutation.mutate(m.person.id)}>
@@ -76,7 +87,7 @@ function GroupDetailsPage() {
                   </Button>
                 </div>
               ))}
-              {(!group.members || group.members.filter(m => !m.leftAt).length === 0) && (
+              {activeLeads.length === 0 && (!group.members || group.members.filter(m => !m.leftAt).length === 0) && (
                 <p className="text-sm text-muted-foreground">No active members.</p>
               )}
             </div>

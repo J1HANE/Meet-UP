@@ -23,9 +23,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleLogin = async () => {
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
@@ -36,12 +34,17 @@ function LoginPage() {
     try {
       await login(email, password);
       toast.success("Login successful!");
-      navigate({ to: "/groups" });
+      await navigate({ to: "/groups" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void handleLogin();
   };
 
   return (
@@ -91,15 +94,13 @@ function LoginPage() {
               />
             </div>
 
-            <Button 
-              type="submit" 
-              variant="glow" 
-              size="lg" 
-              className="w-full"
+            <button
+              type="submit"
+              className="w-full h-11 rounded-xl gradient-accent text-primary-foreground shadow-lg glow-border hover:scale-105 transition-transform inline-flex items-center justify-center gap-2 whitespace-nowrap text-base font-medium font-heading disabled:pointer-events-none disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign In"} <ArrowRight className="w-4 h-4" />
-            </Button>
+            </button>
           </form>
 
           <p className="text-xs text-muted-foreground text-center">

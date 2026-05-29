@@ -30,8 +30,8 @@ import {
 import {
   askAiQuestion,
   buildFallbackAnswer,
-  buildMeetingAiContext,
 } from "@/lib/api/ai-insights";
+import { buildMeetingAiContext } from "@/lib/aiUtils";
 
 type VideoParticipant = {
   id: string;

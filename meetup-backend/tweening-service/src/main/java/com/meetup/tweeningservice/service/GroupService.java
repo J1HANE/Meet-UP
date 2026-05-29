@@ -46,9 +46,11 @@ public class GroupService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        // Task should exist via TaskCreatedEvent
-        com.meetup.tweeningservice.domain.node.TaskNode taskNode = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task " + taskId + " not found. Ensure task-service has published TaskCreatedEvent."));
+        TaskNode taskNode = taskRepository.findById(taskId)
+                .orElseGet(() -> taskRepository.save(TaskNode.builder()
+                        .id(taskId)
+                        .title("Task " + taskId)
+                        .build()));
         group.setTask(WorksOn.builder().task(taskNode).assignedAt(LocalDateTime.now()).build());
 
         return groupRepository.save(group);
@@ -63,14 +65,21 @@ public class GroupService {
 
         group.setState("FORMING");
 
-        // Meeting should exist via MeetingStartedEvent
-        com.meetup.tweeningservice.domain.node.MeetingNode meetingNode = meetingRepository.findById(meetingId)
-                .orElseThrow(() -> new RuntimeException("Meeting " + meetingId + " not found. Ensure meeting-service has published MeetingStartedEvent."));
+        MeetingNode meetingNode = meetingRepository.findById(meetingId)
+                .orElseGet(() -> meetingRepository.save(MeetingNode.builder()
+                        .id(meetingId)
+                        .title("Meeting " + meetingId)
+                        .type("MEETING")
+                        .startedAt(LocalDateTime.now())
+                        .build()));
         group.setMeeting(FormedIn.builder().meeting(meetingNode).spawnedAt(LocalDateTime.now()).build());
 
-        // Person should exist via UserRegisteredEvent
         PersonNode owner = personRepository.findById(ownerId)
-                .orElseThrow(() -> new RuntimeException("Owner " + ownerId + " not found. Ensure auth-service has published UserRegisteredEvent."));
+                .orElseGet(() -> personRepository.save(PersonNode.builder()
+                        .id(ownerId)
+                        .name("User " + ownerId)
+                        .role("USER")
+                        .build()));
 
         // Make owner a lead
         group.getLeads().add(Leads.builder()
@@ -142,10 +151,9 @@ public class GroupService {
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
         group.getLeads().stream()
-                .filter(l -> l.getPerson().getId().equals(oldLeadId) && l.getToDate() == null)
+                .filter(l -> l.getToDate() == null)
                 .forEach(l -> l.setToDate(LocalDateTime.now()));
 
-        // Person should exist via UserRegisteredEvent
         PersonNode newLead = personRepository.findById(newLeadId)
                 .orElseThrow(() -> new RuntimeException("New lead " + newLeadId + " not found. Ensure auth-service has published UserRegisteredEvent."));
 
@@ -282,6 +290,11 @@ public class GroupService {
     @Transactional("transactionManager")
     public List<GroupNode> getAllGroups() {
         return groupRepository.findAll();
+    }
+
+    @Transactional("transactionManager")
+    public List<PersonNode> getAllPeople() {
+        return personRepository.findAll();
     }
 
     @Transactional("transactionManager")

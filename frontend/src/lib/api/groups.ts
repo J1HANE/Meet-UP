@@ -131,4 +131,10 @@ export const groupsApi = {
     if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to fetch suggestions"));
     return res.json();
   },
+
+  getPeople: async (): Promise<PersonNode[]> => {
+    const res = await fetch(`${API_BASE_URL}/people`, { headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to fetch people"));
+    return res.json();
+  },
 };

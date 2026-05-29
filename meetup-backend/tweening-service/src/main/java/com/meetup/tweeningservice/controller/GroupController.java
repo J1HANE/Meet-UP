@@ -86,6 +86,11 @@ public class GroupController {
         return ResponseEntity.ok(membershipResolverService.suggestMembersForTask(taskId, creatorId));
     }
 
+    @GetMapping("/people")
+    public ResponseEntity<List<PersonNode>> getAllPeople() {
+        return ResponseEntity.ok(groupService.getAllPeople());
+    }
+
     @GetMapping("/workload")
     public ResponseEntity<List<Map<String, Object>>> getActiveWorkloads() {
         return ResponseEntity.ok(groupService.getActiveWorkloads());

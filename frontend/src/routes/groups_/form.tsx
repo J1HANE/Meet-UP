@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,6 +7,10 @@ import { groupsApi } from "@/lib/api/groups";
 import { ArrowLeft, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useMeetingStore } from "@/store/meetingStore";
+import { useTaskStore } from "@/store/taskStore";
+
+const TASK_CONTEXT_ID = "project-123";
 
 export const Route = createFileRoute("/groups_/form")({
   component: FormGroupPage,
@@ -16,8 +20,28 @@ function FormGroupPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { selectedMeeting, meetings, meetingsLoading, fetchMeetings } = useMeetingStore();
+  const { tasks, loading: tasksLoading, fetchTasks } = useTaskStore();
   const [taskId, setTaskId] = useState("");
-  const [meetingId, setMeetingId] = useState("");
+  const [meetingId, setMeetingId] = useState(selectedMeeting?.id ?? "");
+
+  useEffect(() => {
+    if (!meetingId && selectedMeeting?.id) {
+      setMeetingId(selectedMeeting.id);
+    }
+  }, [meetingId, selectedMeeting?.id]);
+
+  useEffect(() => {
+    if (meetings.length === 0 && !meetingsLoading) {
+      void fetchMeetings(user?.id, user?.name);
+    }
+  }, [fetchMeetings, meetings.length, meetingsLoading, user?.id, user?.name]);
+
+  useEffect(() => {
+    if (tasks.length === 0 && !tasksLoading) {
+      void fetchTasks(TASK_CONTEXT_ID);
+    }
+  }, [fetchTasks, tasks.length, tasksLoading]);
 
   const formMutation = useMutation({
     mutationFn: () => {
@@ -50,32 +74,69 @@ function FormGroupPage() {
 
       <div className="bg-card border border-border p-6 rounded-2xl">
         <div className="mb-5 rounded-lg border border-border bg-background/60 p-3 text-sm text-muted-foreground">
-          Use IDs from existing tasks and meetings. Your owner ID is taken from your signed-in account automatically.
+          Choose an existing task and meeting. The meeting defaults to your selected meeting, and your owner ID is taken from your signed-in account automatically.
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Task ID</label>
-            <input
-              type="text"
-              value={taskId}
-              onChange={(e) => setTaskId(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Enter Task ID"
-              required
-            />
+            <label className="text-sm font-medium text-foreground">Task</label>
+            {tasks.length > 0 ? (
+              <select
+                value={taskId}
+                onChange={(e) => setTaskId(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                required
+              >
+                <option value="" disabled>Select a task</option>
+                {tasks.map((task) => (
+                  <option key={task.taskId} value={task.taskId}>
+                    {task.taskName} — {task.status}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={taskId}
+                onChange={(e) => setTaskId(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder={tasksLoading ? "Loading tasks..." : "Enter Task ID"}
+                required
+              />
+            )}
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Meeting ID</label>
-            <input
-              type="text"
-              value={meetingId}
-              onChange={(e) => setMeetingId(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Enter Meeting ID"
-              required
-            />
+            <label className="text-sm font-medium text-foreground">Meeting</label>
+            {meetings.length > 0 ? (
+              <select
+                value={meetingId}
+                onChange={(e) => setMeetingId(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                required
+              >
+                <option value="" disabled>Select a meeting</option>
+                {meetings.map((meeting) => (
+                  <option key={meeting.id} value={meeting.id}>
+                    {meeting.title} {meeting.id === selectedMeeting?.id ? "(current)" : ""}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={meetingId}
+                onChange={(e) => setMeetingId(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder={meetingsLoading ? "Loading meetings..." : "Enter Meeting ID"}
+                required
+              />
+            )}
+            {selectedMeeting?.id && (
+              <p className="text-xs text-muted-foreground">
+                Current meeting: {selectedMeeting.title}
+              </p>
+            )}
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

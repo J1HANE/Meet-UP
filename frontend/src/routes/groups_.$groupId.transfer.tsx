@@ -21,10 +21,9 @@ function TransferLeadPage() {
     queryFn: () => groupsApi.getGroupById(groupId),
   });
 
-  // Assuming the current user is the old lead. We should ideally get this from context.
-  // For now, we take the first lead found, or require them to pick.
-  // Let's assume the first lead in the array is the current one to simplify.
-  const currentLead = group?.leads?.[0]?.person?.id || "";
+  const activeLead = group?.leads?.find((lead) => !lead.toDate);
+  const currentLead = activeLead?.person?.id || "";
+  const currentLeadName = activeLead?.person?.name || activeLead?.person?.email || currentLead;
 
   const transferMutation = useMutation({
     mutationFn: () => groupsApi.transferLead(groupId, currentLead, newLeadId),
@@ -40,7 +39,7 @@ function TransferLeadPage() {
     transferMutation.mutate();
   };
 
-  const activeMembers = group?.members?.filter(m => !m.leftAt) || [];
+  const activeMembers = group?.members?.filter(m => !m.leftAt && m.person?.id !== currentLead) || [];
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="max-w-xl mx-auto space-y-6 mt-8">
@@ -57,16 +56,24 @@ function TransferLeadPage() {
       <div className="bg-card border border-border p-6 rounded-2xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Current Lead</label>
+            <div className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-muted-foreground">
+              {currentLeadName || "No active lead found"}
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Select New Lead</label>
             <select
               value={newLeadId}
               onChange={(e) => setNewLeadId(e.target.value)}
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              disabled={!currentLead || activeMembers.length === 0}
               required
             >
-              <option value="" disabled>Select a member...</option>
+              <option value="" disabled>{activeMembers.length === 0 ? "No eligible members available" : "Select a member..."}</option>
               {activeMembers.map(m => (
-                <option key={m.person.id} value={m.person.id}>{m.person.name || m.person.id}</option>
+                <option key={m.person.id} value={m.person.id}>{m.person.name || m.person.email || m.person.id}</option>
               ))}
             </select>
           </div>
@@ -75,7 +82,7 @@ function TransferLeadPage() {
             <Link to={`/groups/${groupId}`}>
               <Button variant="ghost" type="button">Cancel</Button>
             </Link>
-            <Button type="submit" disabled={transferMutation.isPending || !newLeadId} className="gap-2">
+            <Button type="submit" disabled={transferMutation.isPending || !newLeadId || !currentLead} className="gap-2">
               <Users className="w-4 h-4" /> 
               {transferMutation.isPending ? "Transferring..." : "Transfer Lead"}
             </Button>

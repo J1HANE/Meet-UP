@@ -19,6 +19,7 @@ export const Route = createFileRoute("/graph")({
 interface Node {
   id: string;
   label: string;
+  detail?: string;
   type: "person" | "group" | "task" | "meeting";
   x: number;
   y: number;
@@ -78,15 +79,21 @@ function GraphPage() {
 
     const center = getCenter();
 
-    groups.forEach((g) => {
+    groups.forEach((g, index) => {
+      const angle = (index / Math.max(groups.length, 1)) * Math.PI * 2;
+      const radius = 180 + Math.floor(index / 6) * 130;
+      const groupX = center.x + Math.cos(angle) * radius;
+      const groupY = center.y + Math.sin(angle) * radius;
+
       // Add Group
       if (!ns[g.id]) {
         ns[g.id] = {
           id: g.id,
-          label: g.name || `Group ${g.id.substring(0, 4)}`,
+          label: g.name || g.task?.task?.title || `Group ${g.id.substring(0, 8)}`,
+          detail: `State: ${g.state}`,
           type: "group",
-          x: center.x + (Math.random() - 0.5) * 150,
-          y: center.y + (Math.random() - 0.5) * 150,
+          x: groupX,
+          y: groupY,
           vx: 0,
           vy: 0,
         };
@@ -98,10 +105,11 @@ function GraphPage() {
         if (!ns[tid]) {
           ns[tid] = {
             id: tid,
-            label: g.task.task.title || `Task ${g.task.task.id}`,
+            label: g.task.task.title || `Task ${String(g.task.task.id).slice(0, 8)}`,
+            detail: String(g.task.task.id),
             type: "task",
-            x: center.x + (Math.random() - 0.5) * 200,
-            y: center.y + (Math.random() - 0.5) * 200,
+            x: groupX - 150,
+            y: groupY,
             vx: 0,
             vy: 0,
           };
@@ -115,10 +123,11 @@ function GraphPage() {
         if (!ns[mid]) {
           ns[mid] = {
             id: mid,
-            label: g.meeting.meeting.title || `Meeting ${g.meeting.meeting.id}`,
+            label: g.meeting.meeting.title || `Meeting ${String(g.meeting.meeting.id).slice(0, 8)}`,
+            detail: String(g.meeting.meeting.id),
             type: "meeting",
-            x: center.x + (Math.random() - 0.5) * 200,
-            y: center.y + (Math.random() - 0.5) * 200,
+            x: groupX + 150,
+            y: groupY,
             vx: 0,
             vy: 0,
           };
@@ -127,16 +136,18 @@ function GraphPage() {
       }
 
       // Add Members
-      g.members?.forEach((m) => {
+      g.members?.forEach((m, memberIndex) => {
         if (m.person?.id && !m.leftAt) {
           const pid = `person-${m.person.id}`;
           if (!ns[pid]) {
+            const memberAngle = angle + ((memberIndex + 1) * Math.PI) / 5;
             ns[pid] = {
               id: pid,
-              label: m.person.name || m.person.id,
+              label: getPersonLabel(m.person),
+              detail: m.roleInGroup,
               type: "person",
-              x: center.x + (Math.random() - 0.5) * 250,
-              y: center.y + (Math.random() - 0.5) * 250,
+              x: groupX + Math.cos(memberAngle) * 105,
+              y: groupY + Math.sin(memberAngle) * 105,
               vx: 0,
               vy: 0,
             };
@@ -152,10 +163,11 @@ function GraphPage() {
           if (!ns[pid]) {
             ns[pid] = {
               id: pid,
-              label: l.person.name || l.person.id,
+              label: getPersonLabel(l.person),
+              detail: "Lead",
               type: "person",
-              x: center.x + (Math.random() - 0.5) * 250,
-              y: center.y + (Math.random() - 0.5) * 250,
+              x: groupX,
+              y: groupY - 130,
               vx: 0,
               vy: 0,
             };
@@ -179,11 +191,11 @@ function GraphPage() {
       const width = containerRef.current?.clientWidth || 800;
       const height = containerRef.current?.clientHeight || 500;
 
-      const REPULSION = 1400;
-      const ATTRACTION = 0.04;
-      const CENTER_FORCE = 0.015;
-      const DAMPING = 0.85;
-      const LINK_DIST = 100;
+      const REPULSION = 2600;
+      const ATTRACTION = 0.025;
+      const CENTER_FORCE = 0.006;
+      const DAMPING = 0.78;
+      const LINK_DIST = 145;
 
       setNodes((prevNodes) => {
         const nextNodes = prevNodes.map((n) => ({ ...n }));
@@ -202,7 +214,7 @@ function GraphPage() {
             const distSq = dx * dx + dy * dy + 1;
             const dist = Math.sqrt(distSq);
 
-            if (dist < 400) {
+            if (dist < 520) {
               const force = REPULSION / distSq;
               const fx = force * (dx / dist);
               const fy = force * (dy / dist);
