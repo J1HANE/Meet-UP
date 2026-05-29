@@ -1,4 +1,5 @@
 import { meetingUserHeaders } from "@/lib/meeting-user";
+import { getAuthHeaders } from "@/lib/axiosUtils";
 
 export interface ParticipantResponse {
   userId: string;
@@ -75,6 +76,7 @@ export interface CreateMeetingRequest {
 function jsonHeaders(userId?: string, userName?: string): HeadersInit {
   return {
     "Content-Type": "application/json",
+    ...getAuthHeaders(),
     ...meetingUserHeaders(userId, userName),
   };
 }
@@ -85,7 +87,10 @@ export function isUuid(value: string) {
 
 export async function listMeetingsFromApi(userId?: string, userName?: string): Promise<BackendMeetingResponse[]> {
   const response = await fetch(`${MEETING_API_BASE_URL}/api/meetings`, {
-    headers: meetingUserHeaders(userId, userName),
+    headers: {
+      ...getAuthHeaders(),
+      ...meetingUserHeaders(userId, userName),
+    },
   });
 
   if (!response.ok) {
@@ -119,7 +124,10 @@ export async function getMeetingByIdFromApi(
   userName?: string,
 ): Promise<BackendMeetingResponse> {
   const response = await fetch(`${MEETING_API_BASE_URL}/api/meetings/${meetingId}`, {
-    headers: meetingUserHeaders(userId, userName),
+    headers: {
+      ...getAuthHeaders(),
+      ...meetingUserHeaders(userId, userName),
+    },
   });
 
   if (!response.ok) {
@@ -153,7 +161,10 @@ export async function listMeetingMessagesApi(
   userName?: string,
 ): Promise<BackendChatMessageResponse[]> {
   const response = await fetch(`${MEETING_API_BASE_URL}/api/meetings/${meetingId}/messages`, {
-    headers: meetingUserHeaders(userId, userName),
+    headers: {
+      ...getAuthHeaders(),
+      ...meetingUserHeaders(userId, userName),
+    },
   });
 
   if (!response.ok) {
