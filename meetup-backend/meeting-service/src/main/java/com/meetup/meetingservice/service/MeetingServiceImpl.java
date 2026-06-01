@@ -1,12 +1,15 @@
 package com.meetup.meetingservice.service;
 
+import com.meetup.meetingservice.dto.AddParticipantRequest;
 import com.meetup.meetingservice.dto.ChatInfoResponse;
 import com.meetup.meetingservice.dto.ChatMessageResponse;
 import com.meetup.meetingservice.dto.CreateMeetingRequest;
 import com.meetup.meetingservice.dto.JoinMeetingRequest;
 import com.meetup.meetingservice.dto.JoinMeetingResponse;
 import com.meetup.meetingservice.dto.MeetingResponse;
+import com.meetup.meetingservice.dto.ParticipantResponse;
 import com.meetup.meetingservice.dto.PostChatMessageRequest;
+import com.meetup.meetingservice.dto.RemoveParticipantRequest;
 import com.meetup.meetingservice.dto.UpdateMeetingRequest;
 import com.meetup.meetingservice.event.MeetingEndedEvent;
 import com.meetup.meetingservice.event.MeetingStartedEvent;
@@ -307,5 +310,39 @@ public class MeetingServiceImpl implements MeetingService {
         if (request.maxParticipants() != null && request.maxParticipants() <= 0) {
             throw new MeetingValidationException("maxParticipants must be greater than zero");
         }
+    }
+
+    @Override
+    public ParticipantResponse addParticipant(UUID meetingId, AddParticipantRequest request) {
+        Meeting meeting = getMeetingOrThrow(meetingId);
+        String effectiveUserName = request.userName() == null || request.userName().isBlank()
+                ? "User " + request.userId()
+                : request.userName();
+
+        MeetingParticipant participant = addParticipant(
+                meeting,
+                request.userId(),
+                effectiveUserName,
+                ParticipantRole.MEMBER
+        );
+        meeting.setUpdatedAt(Instant.now());
+        meetingRepository.save(meeting);
+        return meetingMapper.toParticipantResponse(participant);
+    }
+
+    @Override
+    public void removeParticipant(UUID meetingId, RemoveParticipantRequest request) {
+        Meeting meeting = getMeetingOrThrow(meetingId);
+        
+        boolean removed = meeting.getParticipants().removeIf(
+                participant -> participant.getUserId().equals(request.userId())
+        );
+        
+        if (!removed) {
+            throw new MeetingValidationException("Participant not found in meeting");
+        }
+        
+        meeting.setUpdatedAt(Instant.now());
+        meetingRepository.save(meeting);
     }
 }

@@ -8,17 +8,22 @@ import {
   FileText,
   LoaderCircle,
   MessageSquare,
+  Plus,
   Send,
+  Trash2,
   Users,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MeetingStreamSession } from "@/components/meeting/MeetingStreamSession";
 import { chatClient, ChatMessage } from "@/lib/chat";
 import {
+  addParticipantApi,
   getMeetingByIdFromApi,
   joinMeetingApi,
   MeetingApiError,
+  removeParticipantApi,
   type BackendMeetingResponse,
 } from "@/lib/api/meetings";
 import {
@@ -234,6 +239,11 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
     userId: getMeetingUserId(),
     userName: getMeetingUserName(),
   }));
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [newParticipantId, setNewParticipantId] = useState("");
+  const [newParticipantName, setNewParticipantName] = useState("");
+  const [isAddingParticipant, setIsAddingParticipant] = useState(false);
+  const [isRemovingParticipant, setIsRemovingParticipant] = useState(false);
   const [videoConfig, setVideoConfig] = useState<{
     api_key: string;
     call_id: string;
@@ -266,6 +276,8 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const roster = liveMeeting
     ? toViewModelFromBackend(liveMeeting).participants
     : meeting.participants;
+
+  const isHost = roster.some(p => p.id === identity.userId && p.role === "Host");
 
   useEffect(() => {
     assistantEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -368,6 +380,50 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
       .finally(() => setIsAssistantThinking(false));
   };
 
+  const handleAddParticipant = async () => {
+    if (!newParticipantId.trim() || isAddingParticipant) return;
+
+    setIsAddingParticipant(true);
+    try {
+      await addParticipantApi(
+        meeting.id,
+        {
+          userId: newParticipantId,
+          userName: newParticipantName || `User ${newParticipantId.slice(0, 8)}`,
+        },
+        identity.userId,
+        identity.userName,
+      );
+      await queryClient.invalidateQueries({ queryKey: ["meeting", meeting.id] });
+      setNewParticipantId("");
+      setNewParticipantName("");
+      setShowAddParticipant(false);
+    } catch (error) {
+      console.error("Failed to add participant:", error);
+    } finally {
+      setIsAddingParticipant(false);
+    }
+  };
+
+  const handleRemoveParticipant = async (participantId: string) => {
+    if (isRemovingParticipant) return;
+
+    setIsRemovingParticipant(true);
+    try {
+      await removeParticipantApi(
+        meeting.id,
+        { userId: participantId },
+        identity.userId,
+        identity.userName,
+      );
+      await queryClient.invalidateQueries({ queryKey: ["meeting", meeting.id] });
+    } catch (error) {
+      console.error("Failed to remove participant:", error);
+    } finally {
+      setIsRemovingParticipant(false);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -402,10 +458,52 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
       <div className="flex h-[calc(100vh-10rem)] gap-4">
         <div className="hidden w-64 shrink-0 space-y-4 xl:block">
           <div className="rounded-[2rem] border border-border bg-card p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <h3 className="font-heading text-sm font-semibold text-foreground">Participants</h3>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <h3 className="font-heading text-sm font-semibold text-foreground">Participants</h3>
+              </div>
+              {isHost && (
+                <Button
+                  onClick={() => setShowAddParticipant(!showAddParticipant)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                >
+                  {showAddParticipant ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                </Button>
+              )}
             </div>
+            {showAddParticipant && isHost && (
+              <div className="mb-3 space-y-2 rounded-xl border border-border/60 bg-muted/10 p-3">
+                <input
+                  type="text"
+                  value={newParticipantId}
+                  onChange={(e) => setNewParticipantId(e.target.value)}
+                  placeholder="Participant ID (UUID)"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <input
+                  type="text"
+                  value={newParticipantName}
+                  onChange={(e) => setNewParticipantName(e.target.value)}
+                  placeholder="Participant name (optional)"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <Button
+                  onClick={handleAddParticipant}
+                  disabled={!newParticipantId.trim() || isAddingParticipant}
+                  size="sm"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {isAddingParticipant ? (
+                    <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    "Add Participant"
+                  )}
+                </Button>
+              </div>
+            )}
             <div className="space-y-3">
               {roster.length === 0 ? (
                 <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-3 text-sm text-muted-foreground">
@@ -422,10 +520,21 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
                         <div className="absolute -bottom-0.5 -right-0.5 live-dot" style={{ width: 6, height: 6 }} />
                       )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="text-sm text-foreground">{participant.name}</div>
                       <div className="truncate text-[11px] text-muted-foreground">{participant.role}</div>
                     </div>
+                    {isHost && participant.role !== "Host" && (
+                      <Button
+                        onClick={() => handleRemoveParticipant(participant.id)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        disabled={isRemovingParticipant}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                   </div>
                 ))
               )}
