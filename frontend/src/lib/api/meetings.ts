@@ -190,3 +190,39 @@ export async function postMeetingMessageApi(
 
   return response.json();
 }
+
+export async function addParticipantApi(
+  meetingId: string,
+  body: { userId: string; userName: string },
+  userId?: string,
+  userName?: string,
+): Promise<ParticipantResponse> {
+  const response = await fetch(`${MEETING_API_BASE_URL}/api/meetings/${meetingId}/participants`, {
+    method: "POST",
+    headers: jsonHeaders(userId, userName),
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new MeetingApiError(`Failed to add participant to meeting ${meetingId}`, response.status);
+  }
+
+  return response.json();
+}
+
+export async function removeParticipantApi(
+  meetingId: string,
+  body: { userId: string },
+  userId?: string,
+  userName?: string,
+): Promise<void> {
+  const response = await fetch(`${MEETING_API_BASE_URL}/api/meetings/${meetingId}/participants`, {
+    method: "DELETE",
+    headers: jsonHeaders(userId, userName),
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new MeetingApiError(`Failed to remove participant from meeting ${meetingId}`, response.status);
+  }
+}

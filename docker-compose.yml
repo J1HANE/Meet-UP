@@ -92,6 +92,26 @@ services:
       timeout: 5s
       retries: 5
 
+  # PostgreSQL for Meeting Service
+  postgres-meeting:
+    image: postgres:16
+    container_name: meetup-postgres-meeting
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: meetup_meeting_service
+      POSTGRES_USER: meetup
+      POSTGRES_PASSWORD: meetup_password
+    volumes:
+      - postgres_meeting_data:/var/lib/postgresql
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meetup"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Auth Service
   auth-service:
     build:
@@ -316,5 +336,6 @@ services:
 volumes:
   mongodb_data:
   postgres_data:
+  postgres_meeting_data:
   jwt_keys:
   neo4j_data:
