@@ -60,10 +60,17 @@ public class GroupService {
     public GroupNode formGroup(String taskId, String meetingId, String ownerId) {
         log.info("Forming group for task {} in meeting {} by owner {}", taskId, meetingId, ownerId);
 
+        TaskNode taskNode = taskRepository.findById(taskId)
+                .orElseGet(() -> taskRepository.save(TaskNode.builder()
+                        .id(taskId)
+                        .title("Task " + taskId)
+                        .build()));
+
         GroupNode group = groupRepository.findByTaskId(taskId)
                 .orElseGet(() -> createLatentGroup(taskId));
 
         group.setState("FORMING");
+        group.setName(taskNode.getTitle());
 
         MeetingNode meetingNode = meetingRepository.findById(meetingId)
                 .orElseGet(() -> meetingRepository.save(MeetingNode.builder()
@@ -101,9 +108,12 @@ public class GroupService {
         GroupNode group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
         
-        // Person should exist via UserRegisteredEvent
         PersonNode person = personRepository.findById(personId)
-                .orElseThrow(() -> new RuntimeException("Person " + personId + " not found. Ensure auth-service has published UserRegisteredEvent."));
+                .orElseGet(() -> personRepository.save(PersonNode.builder()
+                        .id(personId)
+                        .name("User " + personId)
+                        .role("USER")
+                        .build()));
 
         MemberOf memberOf = MemberOf.builder()
                 .person(person)
@@ -155,7 +165,11 @@ public class GroupService {
                 .forEach(l -> l.setToDate(LocalDateTime.now()));
 
         PersonNode newLead = personRepository.findById(newLeadId)
-                .orElseThrow(() -> new RuntimeException("New lead " + newLeadId + " not found. Ensure auth-service has published UserRegisteredEvent."));
+                .orElseGet(() -> personRepository.save(PersonNode.builder()
+                        .id(newLeadId)
+                        .name("User " + newLeadId)
+                        .role("USER")
+                        .build()));
 
         group.getLeads().add(Leads.builder()
                 .person(newLead)

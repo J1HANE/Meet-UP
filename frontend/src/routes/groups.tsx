@@ -72,9 +72,9 @@ function GroupsPage() {
             </div>
 
             <div className="flex -space-x-2">
-              {(g.members || []).map((m, j) => (
-                <div key={j} className="w-8 h-8 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-xs font-bold text-secondary-foreground" title={m.person.id}>
-                  {(m.person.name || m.person.id).substring(0, 2).toUpperCase()}
+              {(g.members || []).filter(m => m.person).map((m, j) => (
+                <div key={j} className="w-8 h-8 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-xs font-bold text-secondary-foreground" title={m.person.id || "Unknown"}>
+                  {(m.person.name || m.person.id || "U").substring(0, 2).toUpperCase()}
                 </div>
               ))}
             </div>

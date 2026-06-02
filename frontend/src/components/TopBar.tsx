@@ -1,7 +1,9 @@
 import { Search, Bell, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 export function TopBar() {
+  const { user } = useAuth();
   return (
     <header className="h-16 border-b border-border bg-sidebar/50 backdrop-blur-xl sticky top-0 z-20 flex items-center justify-between px-6">
       {/* Search */}
@@ -26,7 +28,7 @@ export function TopBar() {
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
         </Button>
         <div className="ml-2 w-8 h-8 rounded-full gradient-accent flex items-center justify-center text-xs font-bold text-primary-foreground">
-          JD
+          {(user?.displayName || "U").substring(0, 2).toUpperCase()}
         </div>
       </div>
     </header>
