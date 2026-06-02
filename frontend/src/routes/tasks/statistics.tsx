@@ -114,7 +114,7 @@ function StatisticsPage() {
   const progressData = tasks
     .filter((t) => t.status !== "IN_BACKLOG")
     .map((t) => ({
-      name: t.taskName.substring(0, 20),
+      name: (t.taskName || "Unnamed").substring(0, 20),
       progress: t.progressPercent,
     }));
 

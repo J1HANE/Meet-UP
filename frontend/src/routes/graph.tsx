@@ -42,6 +42,10 @@ const typeStyles: Record<string, { bg: string; border: string; size: number; gra
   meeting: { bg: "#f87171", border: "#f87171", size: 23, gradient: "url(#meetingGrad)", label: "Meeting", text: "M" },
 };
 
+function getPersonLabel(person: { name?: string; email?: string; id?: string }): string {
+  return person.name || person.email || person.id || "Unknown";
+}
+
 function GraphPage() {
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups"],
@@ -757,7 +761,7 @@ function GraphPage() {
                                 {edge.relation}
                               </span>
                               <span className="font-semibold text-slate-200">
-                                {otherNode?.label || otherId.substring(0, 8)}
+                                {otherNode?.label || (otherId || "").substring(0, 8)}
                               </span>
                             </div>
                           );
