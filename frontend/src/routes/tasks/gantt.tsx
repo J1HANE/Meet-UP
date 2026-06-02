@@ -1,5 +1,5 @@
 // src/pages/GanttPage.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { GanttChart } from "@/components/tasks-service/GanttChart";
 import type { GanttData, GanttTask } from "@/types/task-service";
 import { taskApi } from "@/lib/api/taskApi";
@@ -7,6 +7,9 @@ import { Loader2, GanttChartSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
 import { createFileRoute } from "@tanstack/react-router";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/tasks/gantt")({
   component: GanttPage,
@@ -16,14 +19,16 @@ function GanttPage() {
   const [ganttData, setGanttData] = useState<GanttData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const meetingName = "Project Alpha"; //Should come from selected meeting
-  const contextId = "project-123"; //Should come from selected meeting
+  const { user } = useAuth();
+
+  const { contextId, isReady } = useSelectedMeeting();
 
   useEffect(() => {
+    if (contextId == null) return;
     const fetchGanttData = async () => {
       try {
         setLoading(true);
-        const response = await taskApi.getGanttData(contextId); //Should get from taskStore
+        const response = await taskApi.getGanttData(contextId);
         setGanttData(response.data);
         setError(null);
       } catch (err) {
@@ -34,7 +39,7 @@ function GanttPage() {
     };
 
     fetchGanttData();
-  }, []);
+  }, [contextId]);
 
   const handleTaskClick = (task: GanttTask) => {
     console.log("Task clicked:", task);
@@ -64,9 +69,20 @@ function GanttPage() {
     );
   }
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description='select a meeting from the dropdown above to see gantt diagram'
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
-      <TaskHeader contextName={meetingName} />
+      <TaskHeader userId={user?.id} userName={user?.displayName} />
       <div className='container mx-auto px-4 sm:px-6 py-6 space-y-5'>
         <motion.div
           initial={{ opacity: 0, y: -8 }}

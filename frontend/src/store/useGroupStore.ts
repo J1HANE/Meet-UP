@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { api } from '../lib/api';
+import { create } from "zustand";
+import { api } from "../lib/api";
 
 export interface Person {
   id: string;
@@ -33,7 +33,11 @@ interface GroupState {
 
   fetchGroups: () => Promise<void>;
   fetchGroupDetails: (groupId: string) => Promise<void>;
-  formGroup: (taskId: string, meetingId: string, ownerId: string) => Promise<void>;
+  formGroup: (
+    taskId: string,
+    meetingId: string,
+    ownerId: string,
+  ) => Promise<void>;
   joinGroup: (groupId: string, personId: string, role: string) => Promise<void>;
   leaveGroup: (groupId: string, personId: string) => Promise<void>;
   fetchSuggestions: (taskId: string, creatorId: string) => Promise<void>;
@@ -51,10 +55,13 @@ export const useGroupStore = create<GroupState>((set, get) => ({
   fetchGroups: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get('/api/groups');
+      const response = await api.get("/api/groups");
       set({ groups: response.data, isLoading: false });
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 
@@ -64,14 +71,17 @@ export const useGroupStore = create<GroupState>((set, get) => ({
       const response = await api.get(`/api/groups/${groupId}`);
       set({ activeGroup: response.data, isLoading: false });
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 
   formGroup: async (taskId, meetingId, ownerId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/api/groups/form', null, {
+      const response = await api.post("/api/groups/form", null, {
         params: { taskId, meetingId, ownerId },
       });
       set((state) => ({
@@ -80,7 +90,10 @@ export const useGroupStore = create<GroupState>((set, get) => ({
         isLoading: false,
       }));
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 
@@ -92,7 +105,10 @@ export const useGroupStore = create<GroupState>((set, get) => ({
       });
       await get().fetchGroupDetails(groupId);
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 
@@ -104,29 +120,38 @@ export const useGroupStore = create<GroupState>((set, get) => ({
       });
       await get().fetchGroupDetails(groupId);
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 
   fetchSuggestions: async (taskId, creatorId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get('/api/groups/suggestions', {
+      const response = await api.get("/api/groups/suggestions", {
         params: { taskId, creatorId },
       });
       set({ suggestions: response.data, isLoading: false });
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 
   fetchWorkloads: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get('/api/groups/workload');
+      const response = await api.get("/api/groups/workload");
       set({ workloads: response.data, isLoading: false });
     } catch (err: any) {
-      set({ error: err.response?.data?.message || err.message, isLoading: false });
+      set({
+        error: err.response?.data?.message || err.message,
+        isLoading: false,
+      });
     }
   },
 }));

@@ -1,4 +1,3 @@
-import React from "react";
 import { useTaskStore } from "@/store/taskStore";
 import {
   BarChart,
@@ -15,6 +14,9 @@ import {
 import { motion } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
 
 // CSS-variable-aware tooltip so it matches the card theme
 const ChartTooltip = ({ active, payload, label }: any) => {
@@ -53,8 +55,9 @@ export const Route = createFileRoute("/tasks/statistics")({
 
 function StatisticsPage() {
   const { tasks } = useTaskStore(); //Should implement conditional fetching incase tasks is null
-  const meetingName = "Project Alpha"; //Should come from selected meeting
+  const { user } = useAuth();
 
+  const { isReady } = useSelectedMeeting();
   const statusData = [
     {
       name: "In Backlog",
@@ -145,9 +148,20 @@ function StatisticsPage() {
   const cardClass =
     "rounded-[1.5rem] border border-border bg-card p-5 hover:border-primary/20 transition-colors";
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description='select a meeting from the dropdown above to see Statistics'
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
-      <TaskHeader contextName={meetingName} />
+      <TaskHeader userId={user?.id} userName={user?.displayName} />
       <div className='container mx-auto px-4 sm:px-6 py-6 space-y-6'>
         {/* Page header */}
         <motion.div

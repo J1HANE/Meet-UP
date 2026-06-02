@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/tasks/categories")
+@RequestMapping("/api/tasks/context/{contextId}/categories")
 @RequiredArgsConstructor
 @Tag(name = "Category Management", description = "Endpoints for managing categories")
 public class CategoryController {
@@ -32,8 +32,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "No categories found", content = @Content)
     })
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDto>> getCategories() {
-        List<CategoryResponseDto> categories = categoryService.getCategories();
+    public ResponseEntity<List<CategoryResponseDto>> getCategories(@PathVariable String contextId) {
+        List<CategoryResponseDto> categories = categoryService.getCategories(contextId);
         return ResponseEntity.ok().body(categories);
     }
 
@@ -44,9 +44,9 @@ public class CategoryController {
     })
     @PostMapping
     public ResponseEntity<CategoryResponseDto> createCategory(
-            @Valid @RequestBody CategoryCreateDto categoryCreateDto) {
+            @Valid @RequestBody CategoryCreateDto categoryCreateDto, @PathVariable String contextId) {
 
-        CategoryResponseDto categoryResponseDto = categoryService.createCategory(categoryCreateDto);
+        CategoryResponseDto categoryResponseDto = categoryService.createCategory(contextId, categoryCreateDto);
 
         return ResponseEntity.ok().body(categoryResponseDto);
     }
@@ -59,9 +59,9 @@ public class CategoryController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable UUID id,
-                                                              @Valid @RequestBody CategoryUpdateDto categoryUpdateDto) {
+                                                              @Valid @RequestBody CategoryUpdateDto categoryUpdateDto, @PathVariable String contextId) {
 
-        CategoryResponseDto categoryResponseDto = categoryService.updateCategory(id,
+        CategoryResponseDto categoryResponseDto = categoryService.updateCategory(contextId, id,
                 categoryUpdateDto);
 
         return ResponseEntity.ok().body(categoryResponseDto);
@@ -73,8 +73,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found", content = @Content)
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
-        categoryService.deleteCategory(id);
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id, @PathVariable String contextId) {
+        categoryService.deleteCategory(contextId, id);
         return ResponseEntity.noContent().build();
     }
 }

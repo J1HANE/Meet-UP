@@ -35,6 +35,8 @@ public class Category {
 
     private String icon;
 
+    private String contextId;
+
     @Column(nullable = false)
     private boolean isActive = true;
 

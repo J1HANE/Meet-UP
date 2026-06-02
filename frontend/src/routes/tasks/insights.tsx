@@ -1,10 +1,19 @@
 import InsightCard from "@/components/ai-service/InsightCard";
+import { ErrorDisplay } from "@/components/shared/ErrorDisplay";
+import { NoData } from "@/components/shared/NoData";
+import { LoadingSpinner } from "@/components/spinners/LoadingSpinner";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
-import { sampleTaskInsightData } from "@/lib/aiUtils";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
+import { useAuth } from "@/hooks/useAuth";
+import { snapshotToAiContext } from "@/lib/mappers/snapshotToContext";
 import { formatDate } from "@/lib/utils";
+import { useAiInsightStore } from "@/store/aiStore";
+import { useContextStore } from "@/store/contextStore";
 import { AiInsight } from "@/types/ai-service";
+import { MeetingSnapshot } from "@/types/context-service";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/tasks/insights")({
   component: InsightsDashboard,
@@ -15,9 +24,58 @@ function InsightsDashboard() {
     AiInsight["severity"] | "ALL"
   >("ALL");
   const [searchTerm, setSearchTerm] = useState("");
-  const meetingName = "Project Alpha";
+  const { contextId, isReady, selectedMeeting } = useSelectedMeeting();
+  const { meetingSnapshot, fetchMeetingSnapshot } = useContextStore();
+  const {
+    taskAnalysis,
+    taskAnalysisLoading,
+    taskAnalysisError,
+    fetchTaskAnalysis,
+  } = useAiInsightStore();
+  const { user } = useAuth();
 
-  const data = sampleTaskInsightData;
+  useEffect(() => {
+    if (contextId == null) return;
+    fetchMeetingSnapshot(contextId);
+  }, [fetchMeetingSnapshot, contextId]);
+
+  useEffect(() => {
+    const snapshot = meetingSnapshot[0];
+    if (!snapshot) return;
+
+    const enrichedSnapshot: MeetingSnapshot = {
+      ...snapshot,
+      generalMeetingDetails: {
+        ...snapshot.generalMeetingDetails,
+        ...selectedMeeting,
+      },
+    };
+    const context = snapshotToAiContext(enrichedSnapshot);
+    fetchTaskAnalysis(context);
+  }, [meetingSnapshot, fetchTaskAnalysis, selectedMeeting]);
+
+  const data = taskAnalysis;
+
+  if (taskAnalysisLoading)
+    return <LoadingSpinner label='Getting Insights.......' fullScreen />;
+
+  if (data == null)
+    return (
+      <NoData
+        title='No Insights'
+        description='Come back later!'
+        icon='folder'
+      />
+    );
+
+  if (taskAnalysisError != null)
+    return (
+      <ErrorDisplay
+        title='Error analysing tasks.'
+        message={taskAnalysisError}
+        variant='default'
+      />
+    );
 
   const filteredInsights = data.insights.filter((insight) => {
     const matchesSeverity =
@@ -36,13 +94,24 @@ function InsightsDashboard() {
   ).length;
   const lowCount = data.insights.filter((i) => i.severity === "LOW").length;
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description='select a meeting from the dropdown above to see insights'
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
         {/* Header Section */}
         <div className='space-y-6 mb-8'>
           {/* TaskHeader - Top row */}
-          <TaskHeader contextName={meetingName} />
+          <TaskHeader userId={user?.id} userName={user?.displayName} />
 
           {/* Second Row: Title and Stats */}
           <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
@@ -62,7 +131,7 @@ function InsightsDashboard() {
 
             {/* Severity Stats Cards */}
             <div className='flex gap-3'>
-              <div className='px-4 py-2 rounded-lg bg-surface border border-border text-center min-w-[80px]'>
+              <div className='px-4 py-2 rounded-lg bg-surface border border-border text-center min-w-20'>
                 <div className='text-xs font-semibold text-destructive uppercase tracking-wide'>
                   HIGH
                 </div>
@@ -70,7 +139,7 @@ function InsightsDashboard() {
                   {highCount}
                 </div>
               </div>
-              <div className='px-4 py-2 rounded-lg bg-surface border border-border text-center min-w-[80px]'>
+              <div className='px-4 py-2 rounded-lg bg-surface border border-border text-center min-w-20'>
                 <div className='text-xs font-semibold text-chart-4 uppercase tracking-wide'>
                   MEDIUM
                 </div>
@@ -78,7 +147,7 @@ function InsightsDashboard() {
                   {mediumCount}
                 </div>
               </div>
-              <div className='px-4 py-2 rounded-lg bg-surface border border-border text-center min-w-[80px]'>
+              <div className='px-4 py-2 rounded-lg bg-surface border border-border text-center min-w-20'>
                 <div className='text-xs font-semibold text-chart-2 uppercase tracking-wide'>
                   LOW
                 </div>

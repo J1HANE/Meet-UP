@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { AssignedToType, Participant, Task } from "@/types/task-service";
+import type { AssignedToType, Task } from "@/types/task-service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import { priorityColors, statusColors } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useAssignContext } from "@/hooks/task-service/useAssignContext";
+import { LoadingSpinner } from "../spinners/LoadingSpinner";
+import { ErrorDisplay } from "../shared/ErrorDisplay";
 
 interface TaskRowComponentProps {
   task: Task;
@@ -35,7 +38,11 @@ export const TaskRowComponent: React.FC<TaskRowComponentProps> = ({
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
+  const { participants, loading, error } = useAssignContext();
   const isSaving = React.useRef(false);
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorDisplay message={error} />;
 
   const handleUpdateField = (field: string, value: any) => {
     if (onUpdateField) {
@@ -118,38 +125,6 @@ export const TaskRowComponent: React.FC<TaskRowComponentProps> = ({
 
   const visibleTags = task.tags.slice(0, 3);
   const remainingTags = task.tags.length - 3;
-
-  const participants: Record<string, Participant> = {
-    "user-1": {
-      id: "user-1",
-      name: "Alice",
-      assignedToType: "PERSON",
-    },
-
-    "user-2": {
-      id: "user-2",
-      name: "Bob",
-      assignedToType: "PERSON",
-    },
-
-    "user-3": {
-      id: "user-3",
-      name: "Charlie",
-      assignedToType: "PERSON",
-    },
-
-    "team-a": {
-      id: "team-a",
-      name: "Team Alpha",
-      assignedToType: "GROUP",
-    },
-
-    "team-b": {
-      id: "team-b",
-      name: "Team Beta",
-      assignedToType: "GROUP",
-    },
-  };
 
   return (
     <div className='flex items-center gap-3 px-4 py-3 border-b border-border/50 hover:bg-muted/10 transition-colors group'>

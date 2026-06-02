@@ -104,7 +104,7 @@ function MeetingSummaryDetail({
   useEffect(() => {
     fetchReport(context);
     return () => reset();
-  }, [context]);
+  }, [context, fetchReport, reset]);
 
   const actionInsights = report?.actionItems.insights.length
     ? report.actionItems.insights

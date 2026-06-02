@@ -1,23 +1,12 @@
-import {
-  MeetingSnapshot,
-  RelationshipSnapshot,
-  TaskSnapshot,
-} from "@/types/context-service";
-import axios from "axios";
+import { MeetingSnapshot } from "@/types/context-service";
+import { createApiClient } from "../axiosUtils";
 
-const contextClient = axios.create({
-  baseURL: "http://localhost:8087/api/context",
-  headers: { "Content-Type": "application/json" },
-  timeout: 30_000,
-});
+const contextClient = createApiClient(
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8085/api/context",
+  import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:8085/api/auth",
+);
 
 export const contextApi = {
-  taskSnapshot: (meetingId: string) =>
-    contextClient.get<TaskSnapshot[]>(`/${meetingId}/tasks`),
-
-  relationshipSnapshot: (meetingId: string) =>
-    contextClient.get<RelationshipSnapshot[]>(`/${meetingId}/relationships`),
-
   meetingSnapshot: (meetingId: string) =>
-    contextClient.get<MeetingSnapshot>(`/${meetingId}/meetings`),
+    contextClient.get<MeetingSnapshot>(`/${meetingId}/snapshot`),
 };

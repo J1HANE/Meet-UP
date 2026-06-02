@@ -1,7 +1,7 @@
 import { contextApi } from "@/lib/api/contextApi";
 import {
   MeetingSnapshot,
-  RelationshipSnapshot,
+  GroupSnapshot,
   TaskSnapshot,
 } from "@/types/context-service";
 import { create } from "zustand";
@@ -9,40 +9,31 @@ import { create } from "zustand";
 interface ContextState {
   meetingId: string | null;
 
-  relationshipSnapshot: RelationshipSnapshot[];
+  groupSnapshot: GroupSnapshot[];
   taskSnapshot: TaskSnapshot[];
   meetingSnapshot: MeetingSnapshot[];
 
-  relationshipLoading: boolean;
-  taskLoading: boolean;
   meetingLoading: boolean;
-
-  relationshipError: string | null;
-  taskError: string | null;
   meetingError: string | null;
+  lastFetchedAt: number | null;
 
   setMeetingId: (meetingId: string) => void;
-  fetchRelationshipSnapshot: (meetingId?: string) => Promise<void>;
-  fetchTaskSnapshot: (meetingId?: string) => Promise<void>;
   fetchMeetingSnapshot: (meetingId?: string) => Promise<void>;
-  fetchAll: (meetingId?: string) => Promise<void>;
   reset: () => void;
 }
+
+const STALE_THRESHOLD_MS = 60_000;
 
 const initialState = {
   meetingId: null,
 
-  relationshipSnapshot: [] as RelationshipSnapshot[],
+  groupSnapshot: [] as GroupSnapshot[],
   taskSnapshot: [] as TaskSnapshot[],
   meetingSnapshot: [] as MeetingSnapshot[],
 
-  relationshipLoading: false,
-  taskLoading: false,
   meetingLoading: false,
-
-  relationshipError: null,
-  taskError: null,
   meetingError: null,
+  lastFetchedAt: null,
 } satisfies Partial<ContextState>;
 
 function extractErrorMessage(error: unknown): string {
@@ -52,78 +43,48 @@ function extractErrorMessage(error: unknown): string {
 export const useContextStore = create<ContextState>()((set, get) => ({
   ...initialState,
 
-  setMeetingId: (meetingId) => set({ meetingId }),
+  setMeetingId: (meetingId) => {
+    // Clear stale data when switching meetings
+    if (meetingId !== get().meetingId) {
+      set({ ...initialState, meetingId });
+    }
+  },
 
   reset: () => set(initialState),
 
-  fetchRelationshipSnapshot: async (meetingIdOverride) => {
-    const meetingId = meetingIdOverride ?? get().meetingId;
-    if (!meetingId) {
-      set({ relationshipError: "No meetingId set. Call setMeetingId first." });
-      return;
-    }
-
-    set({ relationshipLoading: true, relationshipError: null });
-    try {
-      const { data } = await contextApi.relationshipSnapshot(meetingId);
-      set({ relationshipSnapshot: data, relationshipLoading: false });
-    } catch (error) {
-      set({
-        relationshipLoading: false,
-        relationshipError: extractErrorMessage(error),
-      });
-    }
-  },
-
-  fetchTaskSnapshot: async (meetingIdOverride) => {
-    const meetingId = meetingIdOverride ?? get().meetingId;
-    if (!meetingId) {
-      set({ taskError: "No meetingId set. Call setMeetingId first." });
-      return;
-    }
-
-    set({ taskLoading: true, taskError: null });
-    try {
-      const { data } = await contextApi.taskSnapshot(meetingId);
-      set({ taskSnapshot: data, taskLoading: false });
-    } catch (error) {
-      set({
-        taskLoading: false,
-        taskError: extractErrorMessage(error),
-      });
-    }
-  },
-
-  fetchMeetingSnapshot: async (meetingIdOverride) => {
+  fetchMeetingSnapshot: async (meetingIdOverride, { force = false } = {}) => {
     const meetingId = meetingIdOverride ?? get().meetingId;
     if (!meetingId) {
       set({ meetingError: "No meetingId set. Call setMeetingId first." });
       return;
     }
 
-    set({ meetingLoading: true, meetingError: null });
+    // Skip if already loading
+    if (get().meetingLoading) return;
+
+    // Skip if data is fresh enough and not forced
+    const lastFetchedAt = get().lastFetchedAt;
+    const isFresh =
+      lastFetchedAt !== null &&
+      Date.now() - lastFetchedAt < STALE_THRESHOLD_MS &&
+      get().meetingId === meetingId;
+
+    if (isFresh && !force) return;
+
+    set({ meetingLoading: true, meetingError: null, meetingId });
+
     try {
       const { data } = await contextApi.meetingSnapshot(meetingId);
-      set({ meetingSnapshot: [data], meetingLoading: false });
+      set({
+        meetingSnapshot: [data],
+        meetingLoading: false,
+        lastFetchedAt: Date.now(),
+      });
     } catch (error) {
       set({
         meetingLoading: false,
         meetingError: extractErrorMessage(error),
       });
     }
-  },
-
-  fetchAll: async (meetingIdOverride) => {
-    const meetingId = meetingIdOverride ?? get().meetingId;
-    if (!meetingId) return;
-
-    // Persist the id so individual fetches can reuse it
-    set({ meetingId });
-
-    await Promise.all([
-      get().fetchRelationshipSnapshot(meetingId),
-      get().fetchTaskSnapshot(meetingId),
-      get().fetchMeetingSnapshot(meetingId),
-    ]);
   },
 }));

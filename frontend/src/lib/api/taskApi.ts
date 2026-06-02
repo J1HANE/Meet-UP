@@ -174,7 +174,7 @@ export const tagApi = {
   getById: (contextId: string, id: string) =>
     api.get<Tag>(`/context/${contextId}/tags/${id}`),
   create: (contextId: string, data: Partial<Tag>) =>
-    api.post<Tag>(`/context/${contextId}/tags/`, data),
+    api.post<Tag>(`/context/${contextId}/tags`, data),
   update: (contextId: string, id: string, data: Partial<Tag>) =>
     api.put<Tag>(`/context/${contextId}/tags/${id}`, data),
   delete: (contextId: string, id: string) =>
@@ -182,12 +182,16 @@ export const tagApi = {
 };
 
 export const categoryApi = {
-  getAll: () => api.get<Category[]>("/categories"),
-  getById: (id: string) => api.get<Category>(`/categories/${id}`),
-  create: (data: Partial<Category>) => api.post<Category>("/categories", data),
-  update: (id: string, data: Partial<Category>) =>
-    api.put<Category>(`/categories/${id}`, data),
-  delete: (id: string) => api.delete(`/categories/${id}`),
+  getAll: (contextId: string) =>
+    api.get<Category[]>(`/context/${contextId}/categories`),
+  getById: (contextId: string, id: string) =>
+    api.get<Category>(`/context/${contextId}/categories/${id}`),
+  create: (contextId: string, data: Partial<Category>) =>
+    api.post<Category>(`/context/${contextId}/categories`, data),
+  update: (contextId: string, id: string, data: Partial<Category>) =>
+    api.put<Category>(`/context/${contextId}/categories/${id}`, data),
+  delete: (contextId: string, id: string) =>
+    api.delete(`/context/${contextId}/categories/${id}`),
 };
 
 export default api;

@@ -1,6 +1,7 @@
 package com.meetup.taskservice.service;
 
 import com.meetup.taskservice.domain.entity.Category;
+import com.meetup.taskservice.domain.entity.Tag;
 import com.meetup.taskservice.domain.entity.Task;
 import com.meetup.taskservice.dto.request.CategoryCreateDto;
 import com.meetup.taskservice.dto.request.CategoryUpdateDto;
@@ -22,13 +23,14 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    public List<CategoryResponseDto> getCategories() {
-        List<Category> categories = categoryRepository.findAll();
-
-        return categories.stream().map(categoryMapper::toResponseDto).toList();
+    public List<CategoryResponseDto> getCategories(String contextId) {
+        return categoryRepository.findByContextId(contextId)
+                .stream()
+                .map(categoryMapper::toResponseDto)
+                .toList();
     }
 
-    public CategoryResponseDto getTaskById(UUID id) {
+    public CategoryResponseDto getCategoryById(UUID id) {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Category not found with ID: " + id)
         );
@@ -37,7 +39,7 @@ public class CategoryService {
 
 
 
-    public CategoryResponseDto createCategory(CategoryCreateDto categoryCreateDto) {
+    public CategoryResponseDto createCategory(String contextId, CategoryCreateDto categoryCreateDto) {
 
         if (categoryRepository.existsByName(categoryCreateDto.getName())) {
             throw new EntityAlreadyExistsException(
@@ -45,14 +47,15 @@ public class CategoryService {
                             + categoryCreateDto.getName());
         }
 
-        Category newCategory = categoryRepository.save(categoryMapper.toEntity(categoryCreateDto));
-        //Publish event to kafka
+        Category newCategory = categoryMapper.toEntity(categoryCreateDto);
+        newCategory.setContextId(contextId);
+        newCategory = categoryRepository.save(newCategory);
         return categoryMapper.toResponseDto(newCategory);
     }
 
-    public CategoryResponseDto updateCategory(UUID id, CategoryUpdateDto categoryUpdateDto) {
-        Category category = categoryRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Category not found with ID: " + id));
+    public CategoryResponseDto updateCategory(String contextId, UUID id, CategoryUpdateDto categoryUpdateDto) {
+
+        Category category = findCategory(contextId, id);
 
         boolean hasChanges = false;
 
@@ -84,7 +87,22 @@ public class CategoryService {
         return categoryMapper.toResponseDto(updatedCategory);
     }
 
-    public void deleteCategory(UUID id) {
+    public void deleteCategory(String contextId, UUID id) {
+        findCategory(contextId, id);
         categoryRepository.deleteById(id);
     }
+
+
+
+    //Helper functions
+    private Category findCategory(String contextId, UUID categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + categoryId));
+        if (!category.getContextId().equals(contextId)) {
+            throw new EntityNotFoundException("Category not found with ID: " + categoryId);
+        }
+        return category;
+    }
+
+
 }
