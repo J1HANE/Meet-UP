@@ -43,5 +43,5 @@ export interface BlockingDependency {
 export interface MeetingSnapshot {
   generalMeetingDetails: BackendMeetingResponse;
   tasks: TaskSnapshot[];
-  relationships: GroupSnapshot[];
+  groups: GroupSnapshot[];
 }
