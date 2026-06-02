@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useTaskStore } from "@/store/taskStore";
-
-const contextId = "project-123"; //Should come from selected meeting.
-const meetingName = "Project Alpha"; //Should come from selected meeting.
+import { useSelectedMeeting } from "./useSelectedMeeting";
 
 interface UseProjectDataOptions {
   withGantt?: boolean;
@@ -11,6 +9,7 @@ interface UseProjectDataOptions {
 
 export const useTaskContextData = (options: UseProjectDataOptions = {}) => {
   const { withGantt = false, withStats = false } = options;
+  const { contextId, meetingName, isReady } = useSelectedMeeting();
 
   const {
     fetchTasks,
@@ -21,12 +20,15 @@ export const useTaskContextData = (options: UseProjectDataOptions = {}) => {
   } = useTaskStore();
 
   useEffect(() => {
+    if (!isReady || !contextId) return;
     fetchTasks(contextId);
     fetchTags(contextId);
-    fetchCategories();
+    fetchCategories(contextId);
     if (withGantt) fetchGanttData(contextId);
     if (withStats) fetchTaskStats(contextId);
   }, [
+    contextId,
+    isReady,
     fetchCategories,
     fetchTags,
     fetchTasks,

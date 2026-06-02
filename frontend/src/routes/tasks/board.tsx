@@ -11,6 +11,9 @@ import { TaskHeader } from "@/components/tasks-service/TaskHeader";
 import { DroppableColumn } from "@/components/tasks-service/DroppableColumn";
 import { useTaskContextData } from "@/hooks/task-service/useTaskContextData";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
 
 // Status → primary color used for the column accent dot
 const COLUMN_ACCENT: Record<string, string> = {
@@ -31,7 +34,9 @@ function TaskBoardPage() {
   const { tasks, updateTaskStatus } = useTaskStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
-  const { contextId, meetingName } = useTaskContextData();
+  const { contextId } = useTaskContextData();
+  const { isReady } = useSelectedMeeting();
+  const { user } = useAuth();
 
   const getTasksByStatus = (status: string) =>
     tasks.filter((task) => task.status === status);
@@ -47,15 +52,27 @@ function TaskBoardPage() {
       const taskId = active.id as string;
       const newStatus = over.id as Task["status"];
       if (BOARD_COLUMNS.some((col) => col.id === newStatus)) {
+        if (contextId == null) return;
         updateTaskStatus(contextId, taskId, newStatus);
       }
     }
     setActiveTask(null);
   };
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description='select a meeting from the dropdown above to see task board'
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
-      <TaskHeader contextName={meetingName} />
+      <TaskHeader userId={user?.id} userName={user?.displayName} />
       <div className='container mx-auto px-4 sm:px-6 py-6 space-y-5'>
         {/* Page header */}
         <motion.div

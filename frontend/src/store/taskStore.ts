@@ -33,7 +33,7 @@ interface TaskStore {
 
   fetchTasks: (contextId: string) => Promise<void>;
   fetchTags: (contextId: string) => Promise<void>;
-  fetchCategories: () => Promise<void>;
+  fetchCategories: (contextId: string) => Promise<void>;
   fetchGanttData: (contextId: string) => Promise<void>;
   fetchTaskStats: (contextId: string) => Promise<void>;
 
@@ -172,10 +172,10 @@ export const useTaskStore = create<TaskStore>((set) => ({
     }
   },
 
-  fetchCategories: async () => {
+  fetchCategories: async (contextId: string) => {
     set({ error: null });
     try {
-      const response = await categoryApi.getAll();
+      const response = await categoryApi.getAll(contextId);
       set({ categories: response.data });
     } catch (error) {
       set({ error: "Failed to fetch categories: " + error });

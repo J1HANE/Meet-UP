@@ -1,5 +1,8 @@
 import InsightCard from "@/components/ai-service/InsightCard";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
+import { useAuth } from "@/hooks/useAuth";
 import { sampleTaskInsightData } from "@/lib/aiUtils";
 import { formatDate } from "@/lib/utils";
 import { AiInsight } from "@/types/ai-service";
@@ -15,7 +18,8 @@ function InsightsDashboard() {
     AiInsight["severity"] | "ALL"
   >("ALL");
   const [searchTerm, setSearchTerm] = useState("");
-  const meetingName = "Project Alpha";
+  const { contextId, isReady, meetingName } = useSelectedMeeting();
+  const { user } = useAuth();
 
   const data = sampleTaskInsightData;
 
@@ -36,13 +40,24 @@ function InsightsDashboard() {
   ).length;
   const lowCount = data.insights.filter((i) => i.severity === "LOW").length;
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description='select a meeting from the dropdown above to see insights'
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
         {/* Header Section */}
         <div className='space-y-6 mb-8'>
           {/* TaskHeader - Top row */}
-          <TaskHeader contextName={meetingName} />
+          <TaskHeader userId={user?.id} userName={user?.displayName} />
 
           {/* Second Row: Title and Stats */}
           <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>

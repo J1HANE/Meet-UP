@@ -29,6 +29,7 @@ public interface CategoryMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "active",   ignore = true)
+    @Mapping(target = "contextId", ignore = true)
     Category toEntity(CategoryCreateDto createDto);
 
 
