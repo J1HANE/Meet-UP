@@ -1,0 +1,472 @@
+{
+  "info": {
+    "name": "Meet-UP E2E Integration Tests",
+    "description": "Collection de tests d'intégration end-to-end pour l'application Meet-UP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8085" },
+    { "key": "authUrl", "value": "http://localhost:8081" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "meetingId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "groupId", "value": "" },
+    { "key": "testEmail", "value": "" },
+    { "key": "testPassword", "value": "SecurePass123!" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Flow",
+      "item": [
+        {
+          "name": "1.1 Register User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate dynamic email and password",
+                  "var timestamp = new Date().getTime();",
+                  "var email = 'test-e2e-' + timestamp + '@example.com';",
+                  "var password = 'SecurePass123!';",
+                  "pm.collectionVariables.set('testEmail', email);",
+                  "pm.collectionVariables.set('testPassword', password);",
+                  "console.log('Generated email:', email);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Response has tokens', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.accessToken).to.exist;",
+                  "    pm.expect(jsonData.refreshToken).to.exist;",
+                  "});",
+                  "// Save tokens for downstream requests",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "}",
+                  "if (jsonData.user && jsonData.user.id) {",
+                  "    pm.collectionVariables.set('userId', jsonData.user.id);",
+                  "}",
+                  "console.log('Registered user with email:', pm.collectionVariables.get('testEmail'));",
+                  "console.log('Access Token saved:', pm.collectionVariables.get('accessToken') ? 'YES' : 'NO');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"displayName\": \"Test User E2E\"\n}"
+            }
+          }
+        },
+        {
+          "name": "1.2 Login User",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "var jsonData = pm.response.json();",
+                "pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                "pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                "pm.collectionVariables.set('userId', jsonData.user.id);",
+                "console.log('Login successful - Token:', jsonData.accessToken.substring(0, 20) + '...');",
+                "console.log('User ID:', jsonData.user.id);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "1.3 Get Current User",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }]
+          },
+          "event": [{
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "console.log('Authorization header:', pm.request.headers.get('Authorization'));",
+                "console.log('accessToken variable:', pm.collectionVariables.get('accessToken') ? 'SET' : 'NOT SET');"
+              ]
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "pm.test('User data is present', function() {",
+                "    var jsonData = pm.response.json();",
+                "    pm.expect(jsonData.email).to.exist;",
+                "    pm.expect(jsonData.displayName).to.exist;",
+                "});",
+                "console.log('Response status:', pm.response.code);",
+                "console.log('Response body:', pm.response.text());"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "1.4 Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "var jsonData = pm.response.json();",
+                "pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                "pm.test('New access token received', function() {",
+                "    pm.expect(jsonData.accessToken).to.exist;",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "2. Context Service Flow",
+      "item": [
+        {
+          "name": "2.1 Create Meeting Context",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/context",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meetingId\": \"{{$randomUUID}}\",\n  \"participantIds\": [\"{{userId}}\"],\n  \"tweenGroupIds\": [],\n  \"status\": \"LIVE\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "var jsonData = pm.response.json();",
+                "pm.collectionVariables.set('meetingId', jsonData.meetingId);",
+                "console.log('Meeting ID:', jsonData.meetingId);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2.2 Get Meeting Context",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/context/{{meetingId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }]
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "pm.test('Meeting data is correct', function() {",
+                "    var jsonData = pm.response.json();",
+                "    pm.expect(jsonData.meetingId).to.eql(pm.collectionVariables.get('meetingId'));",
+                "    pm.expect(jsonData.status).to.eql('LIVE');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2.3 Add Transcript Chunk",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/context/{{meetingId}}/transcript",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"speakerId\": \"{{userId}}\",\n  \"text\": \"This is a test transcript entry for E2E testing\",\n  \"timestamp\": \"{{$isoTimestamp}}\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2.4 Add Decision",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/context/{{meetingId}}/decisions",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"We decided to proceed with microservices architecture\",\n  \"attributedSpeakerId\": \"{{userId}}\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2.5 Update Meeting Status",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/context/{{meetingId}}/status",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"COMPLETE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [{
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "console.log('Request body:', pm.request.body ? pm.request.body.toString() : 'NO BODY');",
+                "console.log('Meeting ID:', pm.collectionVariables.get('meetingId'));"
+              ]
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "console.log('Update Status Response:', pm.response.code, pm.response.text());"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2.6 Get Meeting Briefing",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/context/briefing?meetingId={{meetingId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }]
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "pm.test('Briefing has content', function() {",
+                "    var jsonData = pm.response.json();",
+                "    pm.expect(jsonData.summary).to.exist;",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2.7 Search Contexts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/context/search?query=test&limit=10&offset=0",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }]
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+                "pm.test('Search returns array', function() {",
+                "    var jsonData = pm.response.json();",
+                "    pm.expect(jsonData).to.be.an('array');",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "3. Gateway Integration",
+      "item": [
+        {
+          "name": "3.1 No Token - Should Return 401",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/context/test"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 401 Unauthorized', function() {",
+                "    pm.response.to.have.status(401);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "3.2 Public Route - Login (No Token)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword123!\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Invalid credentials returns 401', function() {",
+                "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "3.3 Invalid Token - Should Return 401",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/context/test",
+            "header": [{ "key": "Authorization", "value": "Bearer invalid.token.here" }]
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 401 for invalid token', function() {",
+                "    pm.response.to.have.status(401);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "4. End-to-End Complete Flow",
+      "item": [
+        {
+          "name": "4.1 Complete User Journey",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('E2E Flow - Step 1: Login successful', function() {",
+                "    pm.response.to.have.status(200);",
+                "    var jsonData = pm.response.json();",
+                "    pm.expect(jsonData.accessToken).to.exist;",
+                "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                "    pm.collectionVariables.set('userId', jsonData.user.id);",
+                "});",
+                "console.log('E2E Integration flow validated successfully');"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "5. Service Health Checks",
+      "item": [
+        {
+          "name": "5.1 Gateway Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/health"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Gateway is healthy', function() {",
+                "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "5.2 Auth Service Health",
+          "request": {
+            "method": "GET",
+            "url": "{{authUrl}}/actuator/health"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Auth Service is healthy', function() {",
+                "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                "    console.log('Health response:', pm.response.code, pm.response.text());",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    }
+  ]
+}

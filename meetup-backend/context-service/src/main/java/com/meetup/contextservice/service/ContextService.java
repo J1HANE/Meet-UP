@@ -96,7 +96,43 @@ public class ContextService {
         List<Map<String, Object>> tasks = taskServiceClient.getTasksByMeetingId(meetingId.toString());
         context.setTasks(tasks);
 
-        // Logic for briefing generation could go here
+        // Generate summary if not present
+        if (context.getSummary() == null || context.getSummary().isEmpty()) {
+            StringBuilder summary = new StringBuilder();
+            
+            // Add transcript summary
+            if (context.getTranscript() != null && !context.getTranscript().isEmpty()) {
+                summary.append("Transcript (").append(context.getTranscript().size()).append(" entries): ");
+                context.getTranscript().stream()
+                    .limit(3)
+                    .forEach(chunk -> summary.append(chunk.getText()).append(" "));
+                if (context.getTranscript().size() > 3) {
+                    summary.append("...");
+                }
+            }
+            
+            // Add decisions
+            if (context.getDecisions() != null && !context.getDecisions().isEmpty()) {
+                if (summary.length() > 0) summary.append(" | ");
+                summary.append("Decisions (").append(context.getDecisions().size()).append("): ");
+                context.getDecisions().stream()
+                    .limit(2)
+                    .forEach(d -> summary.append(d.getText()).append(" "));
+            }
+            
+            // Add tasks
+            if (tasks != null && !tasks.isEmpty()) {
+                if (summary.length() > 0) summary.append(" | ");
+                summary.append("Tasks (").append(tasks.size()).append(")");
+            }
+            
+            if (summary.length() > 0) {
+                context.setSummary(summary.toString());
+            } else {
+                context.setSummary("No content available for briefing generation.");
+            }
+        }
+        
         return context;
     }
 

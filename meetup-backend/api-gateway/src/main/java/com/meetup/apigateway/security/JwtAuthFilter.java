@@ -36,7 +36,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/api/auth/refresh",
             "/api/auth/verify-email",
             "/api/auth/request-password-reset",
-            "/api/auth/reset-password"
+            "/api/auth/reset-password",
+            "/actuator/health",
+            "/actuator/info"
     );
 
     private SecretKey getSigningKey() {
@@ -89,13 +91,14 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             List<String> tweenIds = (List<String>) claims.get("tweenIds");
             String tweenIdsHeader = tweenIds != null ? String.join(",", tweenIds) : "";
 
-            // Forward all user claims to downstream services
+            // Forward all user claims to downstream services (keep original Authorization header)
             ServerWebExchange mutatedExchange = exchange.mutate()
                     .request(r -> r
                             .header("X-User-Id", userId)
                             .header("X-User-Email", email != null ? email : "")
                             .header("X-User-Roles", rolesHeader)
-                            .header("X-User-TweenIds", tweenIdsHeader))
+                            .header("X-User-TweenIds", tweenIdsHeader)
+                            .header(HttpHeaders.AUTHORIZATION, authHeader))
                     .build();
 
             log.debug("JWT validated successfully for user: {} on path: {}", userId, path);

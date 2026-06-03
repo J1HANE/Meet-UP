@@ -33,9 +33,11 @@ public class UserDetailsImpl implements UserDetails {
     private List<String> topics;
 
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        List<GrantedAuthority> authorities = user.getRoles() != null
+                ? user.getRoles().stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList())
+                : new java.util.ArrayList<>();
 
         return new UserDetailsImpl(
                 user.getId(),

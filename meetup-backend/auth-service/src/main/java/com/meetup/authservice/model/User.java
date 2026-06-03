@@ -38,6 +38,7 @@ public class User {
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     @org.hibernate.annotations.BatchSize(size = 20)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<String> roles = new java.util.ArrayList<>();
 
     @Builder.Default
@@ -45,6 +46,7 @@ public class User {
     @CollectionTable(name = "user_tweens", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "tween_id")
     @org.hibernate.annotations.BatchSize(size = 20)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<UUID> tweenIds = new java.util.ArrayList<>();
 
     @Column(nullable = false)
@@ -81,6 +83,7 @@ public class User {
     @CollectionTable(name = "user_topics", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "topic")
     @org.hibernate.annotations.BatchSize(size = 20)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<String> topics = new java.util.ArrayList<>();
 
     // Preferences
