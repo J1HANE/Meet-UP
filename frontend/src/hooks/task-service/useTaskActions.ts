@@ -2,8 +2,7 @@
 import { useTaskStore } from "@/store/taskStore";
 import { ToastManager } from "@/lib/toastUtils";
 import type { Task } from "@/types/task-service";
-
-const contextId = "project-123";
+import { useSelectedMeeting } from "./useSelectedMeeting";
 
 export const useTaskActions = () => {
   const {
@@ -28,7 +27,10 @@ export const useTaskActions = () => {
     removeTaskTag,
   } = useTaskStore();
 
+  const { contextId } = useSelectedMeeting();
+
   const handleUpdateTask = (taskId: string, updates: Partial<Task>) => {
+    if (contextId == null) return;
     ToastManager.updateTask(updateTask(contextId, taskId, updates));
   };
 
@@ -44,6 +46,8 @@ export const useTaskActions = () => {
         error: "Failed to update task.",
       });
     };
+
+    if (contextId == null) return;
     switch (field) {
       case "status":
         return run(

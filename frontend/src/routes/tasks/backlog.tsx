@@ -96,11 +96,10 @@ function BacklogPage() {
           <div className='hidden md:flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/20 text-xs font-medium text-muted-foreground uppercase tracking-wide'>
             <div className='w-8 shrink-0' />
             <div className='flex-1 min-w-[180px]'>Task Name</div>
-            <div className='hidden sm:block w-28'>Assigned To</div>
             <div className='hidden md:block w-16 text-center'>Points</div>
             <div className='hidden md:block w-24'>Priority</div>
             <div className='hidden sm:block w-28'>Status</div>
-            <div className='hidden lg:block w-8' title='Visibility' />
+            <div className='hidden lg:block w-8'>View</div>
             <div className='hidden lg:block w-24'>Category</div>
             <div className='hidden xl:flex flex-1 min-w-[120px]'>Tags</div>
           </div>

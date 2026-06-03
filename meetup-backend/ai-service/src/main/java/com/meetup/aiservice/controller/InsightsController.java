@@ -26,7 +26,7 @@ import java.util.Map;
  *   (omit)         → auto-route based on complexity
  */
 @RestController
-@RequestMapping("/ai/insights")
+@RequestMapping("/api/ai/insights")
 @RequiredArgsConstructor
 @Tag(name = "AI Insights", description = "Endpoints for AI-powered meeting and task intelligence")
 public class InsightsController {

@@ -38,11 +38,11 @@ export const TaskRowComponent: React.FC<TaskRowComponentProps> = ({
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
-  const { participants, loading, error } = useAssignContext();
+  // const { participants, loading, error } = useAssignContext();
   const isSaving = React.useRef(false);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorDisplay message={error} />;
+  // if (loading) return <LoadingSpinner />;
+  // if (error) return <ErrorDisplay message={error} />;
 
   const handleUpdateField = (field: string, value: any) => {
     if (onUpdateField) {
@@ -162,7 +162,7 @@ export const TaskRowComponent: React.FC<TaskRowComponentProps> = ({
       </div>
 
       {/* Assignment — hidden on mobile */}
-      <div className='hidden sm:block'>
+      {/* <div className='hidden sm:block'>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -202,7 +202,7 @@ export const TaskRowComponent: React.FC<TaskRowComponentProps> = ({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </div> */}
 
       {/* Points — hidden on small screens */}
       <div className='hidden md:block w-16 text-center'>
