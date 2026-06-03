@@ -38,7 +38,7 @@ services:
     image: rabbitmq:3-management
     container_name: meetup-rabbitmq
     ports:
-      - "5672:5672"   # AMQP protocol port
+      - "5672:5672" # AMQP protocol port
       - "15672:15672" # Management UI port
     environment:
       RABBITMQ_DEFAULT_USER: guest
@@ -66,7 +66,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1"]
+      test:
+        ["CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1"]
       interval: 15s
       timeout: 20s
       retries: 10
@@ -163,6 +164,8 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - TASK_SERVICE_URL=http://task-service:8091
+      - TWEENING_SERVICE_URL=http://localhost:8086
+      - MEETING_SERVICE_URL=http://localhost:8083
     depends_on:
       mongodb:
         condition: service_healthy

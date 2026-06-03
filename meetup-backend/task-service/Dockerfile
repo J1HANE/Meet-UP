@@ -8,4 +8,5 @@ RUN mvn -f task-service/pom.xml clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/task-service/target/*.jar app.jar
+EXPOSE 8091
 ENTRYPOINT ["java", "-jar", "app.jar"]
