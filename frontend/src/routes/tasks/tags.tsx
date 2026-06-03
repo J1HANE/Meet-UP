@@ -30,22 +30,23 @@ import {
   Tag as TagIcon,
   Grid3X3,
   MoreHorizontal,
+  Video,
 } from "lucide-react";
 import { tagApi } from "@/lib/api/taskApi";
 import type { Tag } from "@/types/task-service";
 import { motion, AnimatePresence } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
 
 export const Route = createFileRoute("/tasks/tags")({
   component: TagManagementPage,
 });
 
-const contextId = "project-123"; // Should come from selected meeting
-const meetingName = "Project Alpha"; //Should come from selected meeting
-
 function TagManagementPage() {
   const { tags, fetchTags } = useTaskStore();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -56,12 +57,16 @@ function TagManagementPage() {
     icon: "",
   });
 
+  const { contextId, meetingName, isReady } = useSelectedMeeting();
+
   useEffect(() => {
+    if (!contextId) return;
     fetchTags(contextId);
-  }, [fetchTags]);
+  }, [fetchTags, contextId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!contextId) return;
     try {
       if (editingTag) {
         await tagApi.update(contextId, editingTag.tagId, formData);
@@ -78,6 +83,7 @@ function TagManagementPage() {
   };
 
   const handleDelete = async (tagId: string) => {
+    if (!contextId) return;
     if (confirm("Are you sure you want to delete this tag?")) {
       try {
         await tagApi.delete(contextId, tagId);
@@ -101,21 +107,37 @@ function TagManagementPage() {
 
   const openCreate = () => {
     setEditingTag(null);
-    setFormData({
-      name: "",
-      description: "",
-      color: "#3498db",
-      icon: "",
-    });
+    setFormData({ name: "", description: "", color: "#3498db", icon: "" });
     setIsModalOpen(true);
   };
 
   const inputClass =
     "border-border bg-card text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-primary/50 rounded-xl";
 
+  //No meeting selected.
+
+  if (!isReady) {
+    return (
+      <div className='min-h-screen bg-background'>
+        <TaskHeader userId={user?.id} userName={user?.displayName} />
+        <div className='flex flex-col items-center justify-center py-32 gap-4 text-center px-4'>
+          <div className='flex h-16 w-16 items-center justify-center rounded-full bg-muted/30 border border-border'>
+            <Video className='h-7 w-7 text-muted-foreground' />
+          </div>
+          <div>
+            <p className='font-semibold text-foreground'>No meeting selected</p>
+            <p className='text-sm text-muted-foreground mt-1 max-w-xs'>
+              Select a meeting from the dropdown above to manage its tags.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
-      <TaskHeader contextName={meetingName} />
+      <TaskHeader userId={user?.id} userName={user?.displayName} />
 
       <div className='container mx-auto px-4 sm:px-6 py-6 space-y-5'>
         {/* Page header */}
@@ -126,7 +148,8 @@ function TagManagementPage() {
         >
           <div>
             <p className='mt-1 text-sm text-muted-foreground'>
-              {tags.length} tag{tags.length !== 1 ? "s" : ""} total
+              {tags.length} tag{tags.length !== 1 ? "s" : ""} in{" "}
+              <span className='text-foreground font-medium'>{meetingName}</span>
             </p>
           </div>
           <div className='flex items-center gap-2'>
@@ -163,7 +186,7 @@ function TagManagementPage() {
           </div>
         </motion.div>
 
-        {/* Content based on view mode */}
+        {/* Content */}
         {tags.length === 0 ? (
           <div className='flex flex-col items-center justify-center py-20 gap-3 text-center rounded-[2rem] border border-border bg-card'>
             <div className='flex h-14 w-14 items-center justify-center rounded-full bg-muted/30 border border-border'>
@@ -205,7 +228,6 @@ function TagManagementPage() {
                   >
                     <div className='flex items-start justify-between mb-3'>
                       <div className='flex items-center gap-3 min-w-0'>
-                        {/* Color swatch */}
                         <div
                           className='w-10 h-10 rounded-full shrink-0 shadow-sm'
                           style={{ backgroundColor: tag.color }}
@@ -333,7 +355,6 @@ function TagManagementPage() {
                         </TableCell>
                         <TableCell className='text-right'>
                           <div className='flex items-center justify-end gap-1'>
-                            {/* Desktop buttons */}
                             <div className='hidden sm:flex gap-1'>
                               <Button
                                 variant='ghost'
@@ -352,7 +373,6 @@ function TagManagementPage() {
                                 <Trash2 className='h-3.5 w-3.5' />
                               </Button>
                             </div>
-                            {/* Mobile dropdown menu */}
                             <div className='sm:hidden'>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

@@ -20,7 +20,8 @@ function FormGroupPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { selectedMeeting, meetings, meetingsLoading, fetchMeetings } = useMeetingStore();
+  const { selectedMeeting, meetings, meetingsLoading, fetchMeetings } =
+    useMeetingStore();
   const { tasks, loading: tasksLoading, fetchTasks } = useTaskStore();
   const [taskId, setTaskId] = useState("");
   const [meetingId, setMeetingId] = useState(selectedMeeting?.id ?? "");
@@ -33,9 +34,15 @@ function FormGroupPage() {
 
   useEffect(() => {
     if (meetings.length === 0 && !meetingsLoading) {
-      void fetchMeetings(user?.id, user?.name);
+      void fetchMeetings(user?.id, user?.displayName);
     }
-  }, [fetchMeetings, meetings.length, meetingsLoading, user?.id, user?.name]);
+  }, [
+    fetchMeetings,
+    meetings.length,
+    meetingsLoading,
+    user?.id,
+    user?.displayName,
+  ]);
 
   useEffect(() => {
     if (tasks.length === 0 && !tasksLoading) {
@@ -61,33 +68,47 @@ function FormGroupPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="max-w-xl mx-auto space-y-6 mt-8">
-      <div className="flex items-center gap-4 mb-8">
-        <Link to="/groups">
-          <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      className='max-w-xl mx-auto space-y-6 mt-8'
+    >
+      <div className='flex items-center gap-4 mb-8'>
+        <Link to='/groups'>
+          <Button variant='ghost' size='icon'>
+            <ArrowLeft className='w-5 h-5' />
+          </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground">Form New Group</h1>
-          <p className="text-muted-foreground text-sm mt-1">Create a new collaborative tween group</p>
+          <h1 className='text-2xl font-heading font-bold text-foreground'>
+            Form New Group
+          </h1>
+          <p className='text-muted-foreground text-sm mt-1'>
+            Create a new collaborative tween group
+          </p>
         </div>
       </div>
 
-      <div className="bg-card border border-border p-6 rounded-2xl">
-        <div className="mb-5 rounded-lg border border-border bg-background/60 p-3 text-sm text-muted-foreground">
-          Choose an existing task and meeting. The meeting defaults to your selected meeting, and your owner ID is taken from your signed-in account automatically.
+      <div className='bg-card border border-border p-6 rounded-2xl'>
+        <div className='mb-5 rounded-lg border border-border bg-background/60 p-3 text-sm text-muted-foreground'>
+          Choose an existing task and meeting. The meeting defaults to your
+          selected meeting, and your owner ID is taken from your signed-in
+          account automatically.
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Task</label>
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium text-foreground'>Task</label>
             {tasks.length > 0 ? (
               <select
                 value={taskId}
                 onChange={(e) => setTaskId(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className='w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50'
                 required
               >
-                <option value="" disabled>Select a task</option>
+                <option value='' disabled>
+                  Select a task
+                </option>
                 {tasks.map((task) => (
                   <option key={task.taskId} value={task.taskId}>
                     {task.taskName} — {task.status}
@@ -96,62 +117,79 @@ function FormGroupPage() {
               </select>
             ) : (
               <input
-                type="text"
+                type='text'
                 value={taskId}
                 onChange={(e) => setTaskId(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder={tasksLoading ? "Loading tasks..." : "Enter Task ID"}
+                className='w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50'
+                placeholder={
+                  tasksLoading ? "Loading tasks..." : "Enter Task ID"
+                }
                 required
               />
             )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Meeting</label>
+
+          <div className='space-y-2'>
+            <label className='text-sm font-medium text-foreground'>
+              Meeting
+            </label>
             {meetings.length > 0 ? (
               <select
                 value={meetingId}
                 onChange={(e) => setMeetingId(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className='w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50'
                 required
               >
-                <option value="" disabled>Select a meeting</option>
+                <option value='' disabled>
+                  Select a meeting
+                </option>
                 {meetings.map((meeting) => (
                   <option key={meeting.id} value={meeting.id}>
-                    {meeting.title} {meeting.id === selectedMeeting?.id ? "(current)" : ""}
+                    {meeting.title}{" "}
+                    {meeting.id === selectedMeeting?.id ? "(current)" : ""}
                   </option>
                 ))}
               </select>
             ) : (
               <input
-                type="text"
+                type='text'
                 value={meetingId}
                 onChange={(e) => setMeetingId(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder={meetingsLoading ? "Loading meetings..." : "Enter Meeting ID"}
+                className='w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50'
+                placeholder={
+                  meetingsLoading ? "Loading meetings..." : "Enter Meeting ID"
+                }
                 required
               />
             )}
             {selectedMeeting?.id && (
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Current meeting: {selectedMeeting.title}
               </p>
             )}
           </div>
 
-          <div className="pt-4 flex justify-end gap-3">
-            <Link to="/groups">
-              <Button variant="ghost" type="button">Cancel</Button>
+          <div className='pt-4 flex justify-end gap-3'>
+            <Link to='/groups'>
+              <Button variant='ghost' type='button'>
+                Cancel
+              </Button>
             </Link>
-            <Button type="submit" disabled={formMutation.isPending} className="gap-2">
-              <Users className="w-4 h-4" /> 
+            <Button
+              type='submit'
+              disabled={formMutation.isPending}
+              className='gap-2'
+            >
+              <Users className='w-4 h-4' />
               {formMutation.isPending ? "Forming..." : "Form Group"}
             </Button>
           </div>
-          
+
           {formMutation.isError && (
-            <div className="text-destructive text-sm mt-2">
-              {formMutation.error instanceof Error ? formMutation.error.message : "Failed to form group. Please try again."}
+            <div className='text-destructive text-sm mt-2'>
+              {formMutation.error instanceof Error
+                ? formMutation.error.message
+                : "Failed to form group. Please try again."}
             </div>
           )}
         </form>

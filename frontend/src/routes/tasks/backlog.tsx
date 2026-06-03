@@ -12,6 +12,9 @@ import { useTaskActions } from "@/hooks/task-service/useTaskActions";
 import { useTaskContextData } from "@/hooks/task-service/useTaskContextData";
 import { ToastManager } from "@/lib/toastUtils";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
 
 export const Route = createFileRoute("/tasks/backlog")({
   component: BacklogPage,
@@ -28,11 +31,14 @@ function BacklogPage() {
   } = useTaskStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const { user } = useAuth();
 
-  const { contextId, meetingName } = useTaskContextData();
+  const { contextId } = useTaskContextData();
+  const { isReady } = useSelectedMeeting();
 
   const { handleUpdateTask, handleUpdateTaskField } = useTaskActions();
   const handleCreateTask = (data: Partial<Task>) => {
+    if (contextId == null) return;
     ToastManager.createTask(createTask(contextId, data));
   };
 
@@ -42,9 +48,20 @@ function BacklogPage() {
 
   const backlogTasks = tasks.filter((t) => t.status === "IN_BACKLOG");
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description='select a meeting from the dropdown above to see task backlog'
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
-      <TaskHeader contextName={meetingName} />
+      <TaskHeader userId={user?.id} userName={user?.displayName} />
 
       <div className='container mx-auto px-4 sm:px-6 py-6 space-y-5'>
         {/* Page header */}

@@ -57,17 +57,17 @@ public class TaskServiceClient {
 
 
 
-    public List<TaskSnapshot> getTasksByMeetingIdFallback(String meetingId, HttpClientErrorException.NotFound e) {
+    public List<Map<String, Object>> getTasksByMeetingIdFallback(String meetingId, HttpClientErrorException.NotFound e) {
         log.warn("Task service returned 404 for meeting: {}", meetingId);
         return List.of();
     }
 
-    public List<TaskSnapshot> getTasksByMeetingIdFallback(String meetingId, ResourceAccessException e) {
+    public List<Map<String, Object>> getTasksByMeetingIdFallback(String meetingId, ResourceAccessException e) {
         log.warn("Task service is unavailable (connection refused) for meeting: {}", meetingId);
         return List.of();
     }
 
-    public List<TaskSnapshot> getTasksByMeetingIdFallback(String meetingId, Exception e) {
+    public List<Map<String, Object>> getTasksByMeetingIdFallback(String meetingId, Exception e) {
         log.error("Task service circuit breaker triggered for meeting: {}", meetingId, e);
         return List.of();
     }

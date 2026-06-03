@@ -14,6 +14,9 @@ export const aiInsightApi = {
   riskRadar: (context: AiMeetingContext) =>
     aiClient.post<InsightResponse>("/ai/insights/risk-radar", context),
 
+  taskAnalysis: (context: Record<string, unknown>[]) =>
+    aiClient.post<InsightResponse>("/ai/insights/tasks", context),
+
   actionItems: (context: AiMeetingContext) =>
     aiClient.post<InsightResponse>("/ai/insights/action-items", context),
 
@@ -42,7 +45,9 @@ export function buildFallbackAnswer(
   question: string,
 ): string {
   const names = (context.participants as Array<Record<string, unknown>>)
-    .map((participant) => String(participant["name"] ?? participant["userId"] ?? "Unknown"))
+    .map((participant) =>
+      String(participant["name"] ?? participant["userId"] ?? "Unknown"),
+    )
     .join(", ");
 
   return [

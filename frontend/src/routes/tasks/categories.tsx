@@ -36,6 +36,9 @@ import type { Category } from "@/types/task-service";
 import { motion, AnimatePresence } from "framer-motion";
 import { TaskHeader } from "@/components/tasks-service/TaskHeader";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { useSelectedMeeting } from "@/hooks/task-service/useSelectedMeeting";
+import { NotReadyPage } from "@/components/tasks-service/NotReadPage";
 
 export const Route = createFileRoute("/tasks/categories")({
   component: CategoryManagementPage,
@@ -46,6 +49,8 @@ function CategoryManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const { user } = useAuth();
+  const { contextId, isReady } = useSelectedMeeting();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -54,21 +59,25 @@ function CategoryManagementPage() {
     isActive: true,
   });
 
-  const meetingName = "Project Alpha";
-
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    if (contextId == null) return;
+    fetchCategories(contextId);
+  }, [fetchCategories, contextId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (contextId == null) return;
     try {
       if (editingCategory) {
-        await categoryApi.update(editingCategory.categoryId, formData);
+        await categoryApi.update(
+          contextId,
+          editingCategory.categoryId,
+          formData,
+        );
       } else {
-        await categoryApi.create(formData);
+        await categoryApi.create(contextId, formData);
       }
-      await fetchCategories();
+      await fetchCategories(contextId);
       setIsModalOpen(false);
       setEditingCategory(null);
       setFormData({
@@ -84,10 +93,11 @@ function CategoryManagementPage() {
   };
 
   const handleDelete = async (categoryId: string) => {
+    if (contextId == null) return;
     if (confirm("Are you sure you want to delete this category?")) {
       try {
-        await categoryApi.delete(categoryId);
-        await fetchCategories();
+        await categoryApi.delete(contextId, categoryId);
+        await fetchCategories(contextId);
       } catch (error) {
         console.error("Failed to delete category:", error);
       }
@@ -123,9 +133,20 @@ function CategoryManagementPage() {
   const inputClass =
     "border-border bg-card text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-primary/50 rounded-xl";
 
+  if (!isReady) {
+    return (
+      <NotReadyPage
+        userId={user?.id}
+        userName={user?.displayName}
+        title='No Meeting Selected'
+        description="select a meeting from the dropdown above to manage it's categories."
+      />
+    );
+  }
+
   return (
     <div className='min-h-screen bg-background'>
-      <TaskHeader contextName={meetingName} />
+      <TaskHeader userId={user?.id} userName={user?.displayName} />
 
       <div className='container mx-auto px-4 sm:px-6 py-6 space-y-5'>
         {/* Page header */}

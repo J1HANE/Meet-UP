@@ -14,6 +14,9 @@ interface AiInsightState {
   report: AiSummaryReport | null;
   reportLoading: boolean;
   reportError: string | null;
+  taskAnalysisError: string | null;
+  taskAnalysisLoading: boolean;
+  taskAnalysis: InsightResponse | null;
 
   // Q&A
   qaHistory: QaEntry[];
@@ -25,6 +28,7 @@ interface AiInsightState {
 
   // Actions
   fetchReport: (context: AiMeetingContext) => Promise<void>;
+  fetchTaskAnalysis: (context: AiMeetingContext) => Promise<void>;
   askQuestion: (question: string, context?: AiMeetingContext) => Promise<void>;
   setActiveContext: (context: AiMeetingContext) => void;
   clearReport: () => void;
@@ -135,7 +139,10 @@ function buildFallbackAnswer(
 const initialState = {
   report: null,
   reportLoading: false,
+  taskAnalysisLoading: false,
+  taskAnalysis: null,
   reportError: null,
+  taskAnalysisError: null,
   qaHistory: [] as QaEntry[],
   qaLoading: false,
   qaError: null,
@@ -179,6 +186,29 @@ export const useAiInsightStore = create<AiInsightState>()((set, get) => ({
         report: buildFallbackReport(context),
         reportLoading: false,
         reportError: `AI service unavailable — showing offline report. (${extractErrorMessage(error)})`,
+      });
+    }
+  },
+
+  fetchTaskAnalysis: async (context) => {
+    set({
+      taskAnalysisLoading: true,
+      taskAnalysisError: null,
+      activeContext: context,
+    });
+
+    try {
+      const { data } = await aiInsightApi.taskAnalysis(context.tasks);
+
+      set({
+        taskAnalysis: data,
+        taskAnalysisLoading: false,
+      });
+    } catch (error) {
+      set({
+        taskAnalysis: null,
+        taskAnalysisLoading: false,
+        taskAnalysisError: `AI service unavailable — showing offline report. (${extractErrorMessage(error)})`,
       });
     }
   },
