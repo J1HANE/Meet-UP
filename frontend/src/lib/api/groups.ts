@@ -137,4 +137,17 @@ export const groupsApi = {
     if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to fetch people"));
     return res.json();
   },
+
+  updateGroupName: async (groupId: string, name: string): Promise<GroupNode> => {
+    const params = new URLSearchParams({ name });
+    const res = await fetch(`${API_BASE_URL}/${groupId}/name?${params}`, { method: 'PATCH', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to update group name"));
+    return res.json();
+  },
+
+  syncPeople: async (): Promise<PersonNode[]> => {
+    const res = await fetch(`${API_BASE_URL}/sync-people`, { method: 'POST', headers: getHeaders() });
+    if (!res.ok) throw new Error(await getErrorMessage(res, "Failed to sync people from auth-service"));
+    return res.json();
+  },
 };

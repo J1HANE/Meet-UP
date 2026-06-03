@@ -105,4 +105,15 @@ public class GroupController {
     public ResponseEntity<Map<String, Object>> getContextData(@PathVariable String groupId) {
         return ResponseEntity.ok(groupService.getContextData(groupId));
     }
+
+    @PatchMapping("/{groupId}/name")
+    public ResponseEntity<GroupNode> updateGroupName(@PathVariable String groupId,
+                                                     @RequestParam String name) {
+        return ResponseEntity.ok(groupService.updateGroupName(groupId, name));
+    }
+
+    @PostMapping("/sync-people")
+    public ResponseEntity<List<PersonNode>> syncPeopleFromAuthService() {
+        return ResponseEntity.ok(groupService.syncAllPeopleFromAuthService());
+    }
 }

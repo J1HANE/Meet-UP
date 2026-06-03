@@ -43,13 +43,16 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD-SHELL", "nc -z localhost 5672 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   # Neo4j for Tweening Service
   neo4j:
@@ -109,6 +112,26 @@ services:
       - meet-up
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U meetup"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for Task Service
+  postgres-task:
+    image: postgres:16
+    container_name: meetup-postgres-task
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: meetup_tasks
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_task_data:/var/lib/postgresql
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -191,7 +214,7 @@ services:
     ports:
       - "8091:8091"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_tasks
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-task:5432/meetup_tasks
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_RABBITMQ_HOST=rabbitmq
@@ -199,7 +222,7 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
     depends_on:
-      postgres:
+      postgres-task:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -340,5 +363,7 @@ volumes:
   mongodb_data:
   postgres_data:
   postgres_meeting_data:
+  postgres_task_data:
   jwt_keys:
   neo4j_data:
+  rabbitmq_data:

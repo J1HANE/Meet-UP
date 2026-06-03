@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { groupsApi } from "@/lib/api/groups";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, UserMinus, UserPlus, ShieldAlert, GitFork, GitMerge, Trash2 } from "lucide-react";
+import { ArrowLeft, Users, UserMinus, UserPlus, ShieldAlert, GitFork, GitMerge, Trash2, Edit2, Check, X } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/groups_/$groupId/")({
   component: GroupDetailsPage,
@@ -11,6 +12,8 @@ export const Route = createFileRoute("/groups_/$groupId/")({
 function GroupDetailsPage() {
   const { groupId } = Route.useParams();
   const queryClient = useQueryClient();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
 
   const { data: group, isLoading } = useQuery({
     queryKey: ["groups", groupId],
@@ -30,11 +33,35 @@ function GroupDetailsPage() {
     },
   });
 
+  const updateNameMutation = useMutation({
+    mutationFn: (name: string) => groupsApi.updateGroupName(groupId, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups", groupId] });
+      setIsEditingName(false);
+    },
+  });
+
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading group details...</div>;
   if (!group) return <div className="p-8 text-center text-destructive">Group not found</div>;
 
   const taskName = group.task?.task?.title || group.name || group.taskId;
   const activeLeads = (group.leads || []).filter((lead) => !lead.toDate);
+
+  const handleStartEdit = () => {
+    setEditedName(group.name || "");
+    setIsEditingName(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editedName.trim()) {
+      updateNameMutation.mutate(editedName.trim());
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditedName("");
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -42,8 +69,31 @@ function GroupDetailsPage() {
         <Link to="/groups">
           <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-heading font-bold">{group.name || "Unnamed Group"}</h1>
+        <div className="flex-1">
+          {isEditingName ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                className="text-2xl font-heading font-bold bg-background border border-border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                autoFocus
+              />
+              <Button variant="ghost" size="icon" onClick={handleSaveEdit} disabled={updateNameMutation.isPending}>
+                <Check className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleCancelEdit}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-heading font-bold">{group.name || "Unnamed Group"}</h1>
+              <Button variant="ghost" size="icon" onClick={handleStartEdit}>
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
           <p className="text-muted-foreground text-sm">Task: {taskName}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { groupsApi } from "@/lib/api/groups";
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, UserPlus, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/groups_/$groupId/add-member")({
@@ -33,6 +33,13 @@ function AddMemberPage() {
   const peopleQuery = useQuery({
     queryKey: ["group-people"],
     queryFn: () => groupsApi.getPeople(),
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => groupsApi.syncPeople(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["group-people"] });
+    },
   });
 
   const suggestions = suggestionsQuery.data ?? [];
@@ -67,7 +74,19 @@ function AddMemberPage() {
       <div className="bg-card border border-border p-6 rounded-2xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Member</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-foreground">Member</label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => syncMutation.mutate()}
+                disabled={syncMutation.isPending}
+                className="h-6 text-xs"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+                Sync from Auth
+              </Button>
+            </div>
             <select
               value={personId}
               onChange={(e) => setPersonId(e.target.value)}

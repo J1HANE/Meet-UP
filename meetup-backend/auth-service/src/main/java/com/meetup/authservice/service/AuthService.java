@@ -58,4 +58,6 @@ public interface AuthService {
     void deleteAccount(String email);
 
     List<UserResponse> searchUsers(String query, int limit, int offset);
+
+    UserResponse getUserById(UUID userId);
 }
