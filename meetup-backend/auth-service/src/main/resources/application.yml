@@ -38,3 +38,12 @@ app:
   email:
     frontend-url: http://localhost:5173
     from: ${EMAIL_FROM:noreply@meetup.com}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

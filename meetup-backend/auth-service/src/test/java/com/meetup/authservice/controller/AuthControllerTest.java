@@ -125,24 +125,43 @@ class AuthControllerTest {
 
     @Test
     void testGetCurrentUser_Success() {
+        UUID userId = UUID.randomUUID();
         UserDetailsImpl userDetails = UserDetailsImpl.builder()
+                .id(userId)
                 .email("test@example.com")
                 .password("password")
+                .displayName("Test User")
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_member")))
+                .tweenIds(List.of())
+                .topics(List.of())
                 .build();
 
         UsernamePasswordAuthenticationToken authentication = 
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        when(authService.getCurrentUser(anyString())).thenReturn(userResponse);
+        when(authService.getCurrentUserFromPrincipal(
+                any(UUID.class),
+                anyString(),
+                anyString(),
+                any(List.class),
+                any(List.class),
+                any(List.class)
+        )).thenReturn(userResponse);
 
         ResponseEntity<UserResponse> response = authController.getCurrentUser(authentication);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("test@example.com", response.getBody().getEmail());
         assertEquals("Test User", response.getBody().getDisplayName());
-        verify(authService).getCurrentUser("test@example.com");
+        verify(authService).getCurrentUserFromPrincipal(
+                eq(userId),
+                eq("test@example.com"),
+                eq("Test User"),
+                any(List.class),
+                any(List.class),
+                any(List.class)
+        );
         
         SecurityContextHolder.clearContext();
     }
