@@ -48,7 +48,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 5672 || exit 1"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -279,16 +279,16 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_meetings
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-meeting:5432/meetup_meeting_service
+      - SPRING_DATASOURCE_USERNAME=meetup
+      - SPRING_DATASOURCE_PASSWORD=meetup_password
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - JWT_SECRET=defaultSecretKeyForDevelopmentOnly123456789
     depends_on:
-      postgres:
+      postgres-meeting:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
