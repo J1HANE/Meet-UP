@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Users,
   Video,
+  Activity,
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -132,20 +133,20 @@ function RouteComponent() {
               />
             </div>
           </Link>
-          {/* Summary Card */}
+          {/* Activity Card */}
           <Link
-            to='/summary'
+            to='/activity'
             className='group glass-panel rounded-xl p-6 hover:glow-border transition-all duration-300 block'
           >
             <div className='w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors'>
-              <BarChart3 size={24} className='text-primary' />
+              <Activity size={24} className='text-primary' />
             </div>
-            <h2 className='text-xl font-semibold font-heading mb-2'>Summary</h2>
+            <h2 className='text-xl font-semibold font-heading mb-2'>Activity</h2>
             <p className='text-muted-foreground text-sm mb-4'>
-              View meeting summary and get AI-powered insights about your work.
+              View your group memberships, team leads, and task progress.
             </p>
             <div className='flex items-center gap-1 text-primary text-sm font-medium'>
-              See insights
+              View activity
               <ArrowRight
                 size={16}
                 className='group-hover:translate-x-1 transition-transform'
