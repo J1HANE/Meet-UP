@@ -27,6 +27,7 @@ import { Route as DecisionsRouteImport } from './routes/decisions'
 import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as R2faSetupRouteImport } from './routes/2fa-setup'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MeetingIndexRouteImport } from './routes/meeting.index'
 import { Route as TasksTagsRouteImport } from './routes/tasks/tags'
 import { Route as TasksStatisticsRouteImport } from './routes/tasks/statistics'
 import { Route as TasksInsightsRouteImport } from './routes/tasks/insights'
@@ -133,6 +134,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeetingIndexRoute = MeetingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MeetingRoute,
+} as any)
 const TasksTagsRoute = TasksTagsRouteImport.update({
   id: '/tasks/tags',
   path: '/tasks/tags',
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/tasks/insights': typeof TasksInsightsRoute
   '/tasks/statistics': typeof TasksStatisticsRoute
   '/tasks/tags': typeof TasksTagsRoute
+  '/meeting/': typeof MeetingIndexRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
@@ -253,7 +260,6 @@ export interface FileRoutesByTo {
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
-  '/meeting': typeof MeetingRouteWithChildren
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
   '/profile': typeof ProfileRoute
@@ -273,6 +279,7 @@ export interface FileRoutesByTo {
   '/tasks/insights': typeof TasksInsightsRoute
   '/tasks/statistics': typeof TasksStatisticsRoute
   '/tasks/tags': typeof TasksTagsRoute
+  '/meeting': typeof MeetingIndexRoute
   '/groups/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
   '/groups/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups/$groupId/split': typeof GroupsGroupIdSplitRoute
@@ -309,6 +316,7 @@ export interface FileRoutesById {
   '/tasks/insights': typeof TasksInsightsRoute
   '/tasks/statistics': typeof TasksStatisticsRoute
   '/tasks/tags': typeof TasksTagsRoute
+  '/meeting/': typeof MeetingIndexRoute
   '/groups_/$groupId/add-member': typeof GroupsGroupIdAddMemberRoute
   '/groups_/$groupId/merge': typeof GroupsGroupIdMergeRoute
   '/groups_/$groupId/split': typeof GroupsGroupIdSplitRoute
@@ -346,6 +354,7 @@ export interface FileRouteTypes {
     | '/tasks/insights'
     | '/tasks/statistics'
     | '/tasks/tags'
+    | '/meeting/'
     | '/groups/$groupId/add-member'
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
@@ -361,7 +370,6 @@ export interface FileRouteTypes {
     | '/graph'
     | '/groups'
     | '/login'
-    | '/meeting'
     | '/meeting-context'
     | '/memory'
     | '/profile'
@@ -381,6 +389,7 @@ export interface FileRouteTypes {
     | '/tasks/insights'
     | '/tasks/statistics'
     | '/tasks/tags'
+    | '/meeting'
     | '/groups/$groupId/add-member'
     | '/groups/$groupId/merge'
     | '/groups/$groupId/split'
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/tasks/insights'
     | '/tasks/statistics'
     | '/tasks/tags'
+    | '/meeting/'
     | '/groups_/$groupId/add-member'
     | '/groups_/$groupId/merge'
     | '/groups_/$groupId/split'
@@ -586,6 +596,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meeting/': {
+      id: '/meeting/'
+      path: '/'
+      fullPath: '/meeting/'
+      preLoaderRoute: typeof MeetingIndexRouteImport
+      parentRoute: typeof MeetingRoute
+    }
     '/tasks/tags': {
       id: '/tasks/tags'
       path: '/tasks/tags'
@@ -696,10 +713,12 @@ declare module '@tanstack/react-router' {
 
 interface MeetingRouteChildren {
   MeetingIdRoute: typeof MeetingIdRoute
+  MeetingIndexRoute: typeof MeetingIndexRoute
 }
 
 const MeetingRouteChildren: MeetingRouteChildren = {
   MeetingIdRoute: MeetingIdRoute,
+  MeetingIndexRoute: MeetingIndexRoute,
 }
 
 const MeetingRouteWithChildren =

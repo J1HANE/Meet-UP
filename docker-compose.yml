@@ -164,7 +164,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8081 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -187,8 +187,8 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - TASK_SERVICE_URL=http://task-service:8091
-      - TWEENING_SERVICE_URL=http://localhost:8086
-      - MEETING_SERVICE_URL=http://localhost:8083
+      - TWEENING_SERVICE_URL=http://tweening-service:8086
+      - MEETING_SERVICE_URL=http://meeting-service:8083
     depends_on:
       mongodb:
         condition: service_healthy
@@ -199,7 +199,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8084 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -229,7 +229,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8091 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8091/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -264,7 +264,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8085 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -295,7 +295,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8083 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -322,7 +322,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8087 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -353,7 +353,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8086 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
