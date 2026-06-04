@@ -14,6 +14,7 @@ import {
   Video,
   X,
   Zap,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -563,6 +564,12 @@ const features = [
     title: "Dynamic Groups",
     description:
       "Groups auto-create with tasks and dissolve when tasks are completed.",
+  },
+  {
+    icon: Activity,
+    title: "Activity Feed",
+    description:
+      "Track your group memberships, team leads, and associated task progress in one place.",
   },
   {
     icon: Sparkles,
