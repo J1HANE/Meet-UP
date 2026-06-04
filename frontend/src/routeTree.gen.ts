@@ -27,6 +27,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DecisionsRouteImport } from './routes/decisions'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BriefingRouteImport } from './routes/briefing'
+import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as R2faSetupRouteImport } from './routes/2fa-setup'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MeetingIndexRouteImport } from './routes/meeting.index'
@@ -136,6 +137,11 @@ const BriefingRoute = BriefingRouteImport.update({
   path: '/briefing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ActivityRoute = ActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const R2faSetupRoute = R2faSetupRouteImport.update({
   id: '/2fa-setup',
   path: '/2fa-setup',
@@ -230,6 +236,7 @@ const GroupsGroupIdAddMemberRoute = GroupsGroupIdAddMemberRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/2fa-setup': typeof R2faSetupRoute
+  '/activity': typeof ActivityRoute
   '/briefing': typeof BriefingRoute
   '/dashboard': typeof DashboardRoute
   '/decisions': typeof DecisionsRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/2fa-setup': typeof R2faSetupRoute
+  '/activity': typeof ActivityRoute
   '/briefing': typeof BriefingRoute
   '/dashboard': typeof DashboardRoute
   '/decisions': typeof DecisionsRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/2fa-setup': typeof R2faSetupRoute
+  '/activity': typeof ActivityRoute
   '/briefing': typeof BriefingRoute
   '/dashboard': typeof DashboardRoute
   '/decisions': typeof DecisionsRoute
@@ -346,6 +355,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/2fa-setup'
+    | '/activity'
     | '/briefing'
     | '/dashboard'
     | '/decisions'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/2fa-setup'
+    | '/activity'
     | '/briefing'
     | '/dashboard'
     | '/decisions'
@@ -421,6 +432,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/2fa-setup'
+    | '/activity'
     | '/briefing'
     | '/dashboard'
     | '/decisions'
@@ -460,6 +472,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R2faSetupRoute: typeof R2faSetupRoute
+  ActivityRoute: typeof ActivityRoute
   BriefingRoute: typeof BriefingRoute
   DashboardRoute: typeof DashboardRoute
   DecisionsRoute: typeof DecisionsRoute
@@ -622,6 +635,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BriefingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/2fa-setup': {
       id: '/2fa-setup'
       path: '/2fa-setup'
@@ -767,6 +787,7 @@ const MeetingRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R2faSetupRoute: R2faSetupRoute,
+  ActivityRoute: ActivityRoute,
   BriefingRoute: BriefingRoute,
   DashboardRoute: DashboardRoute,
   DecisionsRoute: DecisionsRoute,
