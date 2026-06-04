@@ -20,10 +20,12 @@ import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as MeetingContextRouteImport } from './routes/meeting-context'
 import { Route as MeetingRouteImport } from './routes/meeting'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LandingRouteImport } from './routes/landing'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GraphRouteImport } from './routes/graph'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DecisionsRouteImport } from './routes/decisions'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as R2faSetupRouteImport } from './routes/2fa-setup'
 import { Route as IndexRouteImport } from './routes/index'
@@ -99,6 +101,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsRoute = GroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
@@ -117,6 +124,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const DecisionsRoute = DecisionsRouteImport.update({
   id: '/decisions',
   path: '/decisions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BriefingRoute = BriefingRouteImport.update({
@@ -219,10 +231,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/2fa-setup': typeof R2faSetupRoute
   '/briefing': typeof BriefingRoute
+  '/dashboard': typeof DashboardRoute
   '/decisions': typeof DecisionsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
+  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/meeting': typeof MeetingRouteWithChildren
   '/meeting-context': typeof MeetingContextRoute
@@ -255,10 +269,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/2fa-setup': typeof R2faSetupRoute
   '/briefing': typeof BriefingRoute
+  '/dashboard': typeof DashboardRoute
   '/decisions': typeof DecisionsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
+  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/meeting-context': typeof MeetingContextRoute
   '/memory': typeof MemoryRoute
@@ -291,10 +307,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/2fa-setup': typeof R2faSetupRoute
   '/briefing': typeof BriefingRoute
+  '/dashboard': typeof DashboardRoute
   '/decisions': typeof DecisionsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/graph': typeof GraphRoute
   '/groups': typeof GroupsRoute
+  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/meeting': typeof MeetingRouteWithChildren
   '/meeting-context': typeof MeetingContextRoute
@@ -329,10 +347,12 @@ export interface FileRouteTypes {
     | '/'
     | '/2fa-setup'
     | '/briefing'
+    | '/dashboard'
     | '/decisions'
     | '/forgot-password'
     | '/graph'
     | '/groups'
+    | '/landing'
     | '/login'
     | '/meeting'
     | '/meeting-context'
@@ -365,10 +385,12 @@ export interface FileRouteTypes {
     | '/'
     | '/2fa-setup'
     | '/briefing'
+    | '/dashboard'
     | '/decisions'
     | '/forgot-password'
     | '/graph'
     | '/groups'
+    | '/landing'
     | '/login'
     | '/meeting-context'
     | '/memory'
@@ -400,10 +422,12 @@ export interface FileRouteTypes {
     | '/'
     | '/2fa-setup'
     | '/briefing'
+    | '/dashboard'
     | '/decisions'
     | '/forgot-password'
     | '/graph'
     | '/groups'
+    | '/landing'
     | '/login'
     | '/meeting'
     | '/meeting-context'
@@ -437,10 +461,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R2faSetupRoute: typeof R2faSetupRoute
   BriefingRoute: typeof BriefingRoute
+  DashboardRoute: typeof DashboardRoute
   DecisionsRoute: typeof DecisionsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GraphRoute: typeof GraphRoute
   GroupsRoute: typeof GroupsRoute
+  LandingRoute: typeof LandingRoute
   LoginRoute: typeof LoginRoute
   MeetingRoute: typeof MeetingRouteWithChildren
   MeetingContextRoute: typeof MeetingContextRoute
@@ -547,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups': {
       id: '/groups'
       path: '/groups'
@@ -573,6 +606,13 @@ declare module '@tanstack/react-router' {
       path: '/decisions'
       fullPath: '/decisions'
       preLoaderRoute: typeof DecisionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/briefing': {
@@ -728,10 +768,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R2faSetupRoute: R2faSetupRoute,
   BriefingRoute: BriefingRoute,
+  DashboardRoute: DashboardRoute,
   DecisionsRoute: DecisionsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GraphRoute: GraphRoute,
   GroupsRoute: GroupsRoute,
+  LandingRoute: LandingRoute,
   LoginRoute: LoginRoute,
   MeetingRoute: MeetingRouteWithChildren,
   MeetingContextRoute: MeetingContextRoute,

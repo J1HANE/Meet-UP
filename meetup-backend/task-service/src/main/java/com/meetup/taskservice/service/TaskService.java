@@ -560,6 +560,7 @@ public class TaskService {
         touch(task);
 
         Task saved = taskRepository.save(task);
+        taskDependencyService.handleUpstreamStatusChange(saved);
 
         // Publish TaskCompletedEvent for tweening service
         if (status == TaskStatus.COMPLETED) {
@@ -568,9 +569,6 @@ public class TaskService {
                 LocalDateTime.now()
             ));
         }
-
-        // Notify dependency service so downstream block records get resolved
-        taskDependencyService.handleUpstreamStatusChange(saved);
 
         return taskMapper.toResponseDto(saved);
     }

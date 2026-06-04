@@ -45,14 +45,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MeetFlow — Collaborative Meeting Intelligence" },
+      { title: "MeetUP! — Collaborative Meeting Intelligence" },
       {
         name: "description",
         content: "AI-powered meeting and task intelligence platform",
       },
       {
         property: "og:title",
-        content: "MeetFlow — Collaborative Meeting Intelligence",
+        content: "MeetUP! — Collaborative Meeting Intelligence",
       },
       {
         property: "og:description",
@@ -88,8 +88,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const location = useLocation();
-  const publicPaths = ["/login", "/register", "/verify-email", "/forgot-password", "/reset-password"];
-  const isLoginPage = publicPaths.some(p => location.pathname === p || location.pathname.startsWith(p));
+  const publicPaths = [
+    "/login",
+    "/register",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+    "/landing",
+  ];
+  const isLoginPage = publicPaths.some(
+    (p) => location.pathname === p || location.pathname.startsWith(p),
+  );
 
   return (
     <QueryClientProvider client={queryClient}>

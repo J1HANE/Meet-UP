@@ -49,7 +49,7 @@ public class ModelRouter {
         if ("gemini".equalsIgnoreCase(requested)) return geminiAvailable ? geminiClient : ollamaClient;
 
         // Auto-routing: use Gemini for complex analysis if available
-        if (complexity == Complexity.COMPLEX && geminiAvailable) return geminiClient;
+        //if (complexity == Complexity.COMPLEX && geminiAvailable) return geminiClient;
         return ollamaClient;
     }
 
