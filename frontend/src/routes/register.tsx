@@ -44,7 +44,7 @@ function RegisterPage() {
     try {
       await register(email, password, displayName);
       toast.success("Account created successfully!");
-      navigate({ to: "/groups" });
+      navigate({ to: "/dashboard" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed");
     }

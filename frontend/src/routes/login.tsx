@@ -34,7 +34,7 @@ function LoginPage() {
     try {
       await login(email, password);
       toast.success("Login successful!");
-      await navigate({ to: "/groups" });
+      await navigate({ to: "/dashboard" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {
