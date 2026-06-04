@@ -170,4 +170,9 @@ public class AuthController {
             @RequestParam(defaultValue = "0") int offset) {
         return ResponseEntity.ok(authService.searchUsers(query, limit, offset));
     }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID userId) {
+        return ResponseEntity.ok(authService.getUserById(userId));
+    }
 }

@@ -37,6 +37,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/api/auth/verify-email",
             "/api/auth/request-password-reset",
             "/api/auth/reset-password",
+            // Meeting-service enforces auth when meeting.security.require-auth=true
+            "/api/meetings",
             "/actuator/health",
             "/actuator/info"
     );

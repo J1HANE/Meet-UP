@@ -58,11 +58,3 @@ spring:
             - StripPrefix=0
             - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
-        - id: meeting-service
-          uri: http://meeting-service:8083
-          predicates:
-            - Path=/api/meetings/**
-          filters:
-            - StripPrefix=0
-            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
-

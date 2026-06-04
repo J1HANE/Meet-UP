@@ -619,4 +619,12 @@ public class AuthServiceImpl implements AuthService {
                 .map(this::mapToUserResponse)
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(UUID userId) {
+        return userRepository.findById(userId)
+                .map(this::mapToUserResponse)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    }
 }

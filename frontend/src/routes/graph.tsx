@@ -110,7 +110,7 @@ function GraphPage() {
           ns[tid] = {
             id: tid,
             label: g.task.task.title || `Task ${String(g.task.task.id).slice(0, 8)}`,
-            detail: String(g.task.task.id),
+            detail: g.task.task.title || String(g.task.task.id),
             type: "task",
             x: groupX - 150,
             y: groupY,
@@ -128,7 +128,7 @@ function GraphPage() {
           ns[mid] = {
             id: mid,
             label: g.meeting.meeting.title || `Meeting ${String(g.meeting.meeting.id).slice(0, 8)}`,
-            detail: String(g.meeting.meeting.id),
+            detail: g.meeting.meeting.title || String(g.meeting.meeting.id),
             type: "meeting",
             x: groupX + 150,
             y: groupY,

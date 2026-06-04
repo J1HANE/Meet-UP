@@ -73,14 +73,14 @@ function GroupsPage() {
 
             <div className="flex -space-x-2">
               {(g.members || []).filter(m => m.person).map((m, j) => (
-                <div key={j} className="w-8 h-8 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-xs font-bold text-secondary-foreground" title={m.person.id || "Unknown"}>
+                <div key={j} className="w-8 h-8 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-xs font-bold text-secondary-foreground" title={m.person.name || m.person.email || m.person.id || "Unknown"}>
                   {(m.person.name || m.person.id || "U").substring(0, 2).toUpperCase()}
                 </div>
               ))}
             </div>
 
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><ListTodo className="w-3.5 h-3.5" /> Task: {g.taskId || "None"}</span>
+              <span className="flex items-center gap-1"><ListTodo className="w-3.5 h-3.5" /> Task: {g.task?.task?.title || g.name || g.taskId || "None"}</span>
             </div>
 
             <div className="flex gap-2">

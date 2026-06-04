@@ -13,8 +13,10 @@ import com.meetup.tweeningservice.repository.TaskRepository;
 import com.meetup.tweeningservice.repository.WorkloadProjection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -35,6 +37,10 @@ public class GroupService {
     private final MeetingRepository meetingRepository;
     private final RabbitMQEventPublisher eventPublisher;
     private final org.springframework.data.neo4j.core.Neo4jClient neo4jClient;
+    private final RestTemplate restTemplate;
+
+    @Value("${auth-service.url:http://localhost:8081}")
+    private String authServiceUrl;
 
     @Transactional("transactionManager")
     public GroupNode createLatentGroup(String taskId) {
@@ -260,6 +266,50 @@ public class GroupService {
         eventPublisher.publishGroupDissolved(new GroupDissolvedEvent(
                 groupId, group.getTaskId(), LocalDateTime.now()
         ));
+    }
+
+    @Transactional("transactionManager")
+    public GroupNode updateGroupName(String groupId, String name) {
+        GroupNode group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+        group.setName(name);
+        return groupRepository.save(group);
+    }
+
+    public PersonNode syncPersonFromAuthService(String personId) {
+        try {
+            String url = String.format("%s/api/auth/users/%s", authServiceUrl, personId);
+            Map<String, Object> userData = restTemplate.getForObject(url, Map.class);
+            
+            if (userData != null) {
+                String name = (String) userData.get("displayName");
+                String email = (String) userData.get("email");
+                String role = (String) userData.get("role");
+                
+                PersonNode person = personRepository.findById(personId)
+                        .orElseGet(() -> PersonNode.builder().id(personId).build());
+                
+                if (name != null) person.setName(name);
+                if (email != null) person.setEmail(email);
+                if (role != null) person.setRole(role);
+                
+                return personRepository.save(person);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to sync person {} from auth-service: {}", personId, e.getMessage());
+        }
+        return null;
+    }
+
+    public List<PersonNode> syncAllPeopleFromAuthService() {
+        List<PersonNode> allPeople = new ArrayList<>();
+        personRepository.findAll().forEach(person -> {
+            PersonNode synced = syncPersonFromAuthService(person.getId());
+            if (synced != null) {
+                allPeople.add(synced);
+            }
+        });
+        return allPeople;
     }
 
     private void updateCollaborations(GroupNode group) {

@@ -43,13 +43,16 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   # Neo4j for Tweening Service
   neo4j:
@@ -113,6 +116,26 @@ services:
       timeout: 5s
       retries: 5
 
+  # PostgreSQL for Task Service
+  postgres-task:
+    image: postgres:16
+    container_name: meetup-postgres-task
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: meetup_tasks
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_task_data:/var/lib/postgresql
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Auth Service
   auth-service:
     build:
@@ -141,7 +164,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8081 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -164,8 +187,8 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - TASK_SERVICE_URL=http://task-service:8091
-      - TWEENING_SERVICE_URL=http://localhost:8086
-      - MEETING_SERVICE_URL=http://localhost:8083
+      - TWEENING_SERVICE_URL=http://tweening-service:8086
+      - MEETING_SERVICE_URL=http://meeting-service:8083
     depends_on:
       mongodb:
         condition: service_healthy
@@ -176,7 +199,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8084 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -191,7 +214,7 @@ services:
     ports:
       - "8091:8091"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_tasks
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-task:5432/meetup_tasks
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_RABBITMQ_HOST=rabbitmq
@@ -199,14 +222,14 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
     depends_on:
-      postgres:
+      postgres-task:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8091 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8091/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -241,7 +264,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8085 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -256,23 +279,23 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/meetup_meetings
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-meeting:5432/meetup_meeting_service
+      - SPRING_DATASOURCE_USERNAME=meetup
+      - SPRING_DATASOURCE_PASSWORD=meetup_password
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - JWT_SECRET=defaultSecretKeyForDevelopmentOnly123456789
     depends_on:
-      postgres:
+      postgres-meeting:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8083 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -299,7 +322,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8087 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -330,7 +353,7 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8086 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -340,5 +363,7 @@ volumes:
   mongodb_data:
   postgres_data:
   postgres_meeting_data:
+  postgres_task_data:
   jwt_keys:
   neo4j_data:
+  rabbitmq_data:
