@@ -21,6 +21,7 @@ import {
 import type { AiInsight } from "@/types/ai-service";
 import { useAiInsightStore } from "@/store/aiStore";
 import { buildMeetingAiContext } from "@/lib/aiUtils";
+import { useContextStore } from "@/store/contextStore";
 
 const meetingSearchSchema = z.object({
   meetingId: z.string().optional(),
@@ -97,14 +98,28 @@ function MeetingSummaryDetail({
   const { report, reportLoading, reportError, fetchReport, reset } =
     useAiInsightStore();
 
+  const { meetingSnapshot, fetchMeetingSnapshot } = useContextStore();
+
   const context = useMemo(() => buildMeetingAiContext(meeting), [meeting]);
 
-  // Fetch on mount; reset store on unmount so stale data doesn't bleed
-  // into a different meeting if the user navigates away and back.
+  //Get Meeting Snapshot
   useEffect(() => {
+    fetchMeetingSnapshot(meeting.id);
+    console.log(meetingSnapshot);
+  }, [fetchMeetingSnapshot, meeting, meetingSnapshot]);
+
+  useEffect(() => {
+    const snapshot = meetingSnapshot[0];
+    if (!snapshot) return;
+
+    //Override tasks and groups in context
+    context.tasks = snapshot.tasks;
+    context.groups = snapshot.groups;
+
     fetchReport(context);
+    console.log(report);
     return () => reset();
-  }, [context, fetchReport, reset]);
+  }, [context, fetchReport, meetingSnapshot, report, reset]);
 
   const actionInsights = report?.actionItems.insights.length
     ? report.actionItems.insights
