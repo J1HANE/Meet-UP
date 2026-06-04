@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import com.meetup.contextservice.config.AuthenticatedUser;
 import org.springframework.security.core.Authentication;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +24,15 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/context")
 @RequiredArgsConstructor
+@Tag(name = "Context Service", description = "API pour la gestion des contextes de réunion")
 public class ContextController {
 
     private final ContextService contextService;
 
     @PostMapping
+    @Operation(summary = "Créer un contexte de réunion", description = "Crée un nouveau contexte de réunion avec les participants et les informations de base")
     public ResponseEntity<MeetingContext> createMeetingContext(
-            @RequestBody CreateMeetingContextRequest request,
+            @Parameter(description = "Détails du contexte de réunion à créer") @RequestBody CreateMeetingContextRequest request,
             Authentication authentication) {
         // For testing without authentication, use empty tweenIds
         List<UUID> userTweenIds = new ArrayList<>();
@@ -39,8 +44,9 @@ public class ContextController {
     }
 
     @GetMapping("/{meetingId}")
+    @Operation(summary = "Récupérer un contexte de réunion", description = "Récupère le contexte complet d'une réunion par son ID")
     public ResponseEntity<MeetingContext> getMeetingContext(
-            @PathVariable UUID meetingId,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -51,8 +57,9 @@ public class ContextController {
     }
 
     @DeleteMapping("/{meetingId}")
+    @Operation(summary = "Supprimer un contexte de réunion", description = "Supprime le contexte d'une réunion par son ID")
     public ResponseEntity<Void> deleteMeetingContext(
-            @PathVariable UUID meetingId,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -64,8 +71,9 @@ public class ContextController {
     }
 
     @GetMapping("/briefing")
+    @Operation(summary = "Obtenir un briefing de réunion", description = "Génère un briefing résumé pour une réunion à venir")
     public ResponseEntity<MeetingContext> getBriefing(
-            @RequestParam UUID meetingId,
+            @Parameter(description = "ID de la réunion") @RequestParam UUID meetingId,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -76,8 +84,9 @@ public class ContextController {
     }
 
     @GetMapping("/decisions")
+    @Operation(summary = "Récupérer les décisions d'un groupe", description = "Récupère toutes les décisions prises dans un groupe")
     public ResponseEntity<List<MeetingContext.Decision>> getDecisions(
-            @RequestParam UUID groupId,
+            @Parameter(description = "ID du groupe") @RequestParam UUID groupId,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -88,9 +97,10 @@ public class ContextController {
     }
 
     @PatchMapping("/{meetingId}/summary")
+    @Operation(summary = "Mettre à jour le résumé", description = "Met à jour le résumé d'une réunion")
     public ResponseEntity<Void> updateSummary(
-            @PathVariable UUID meetingId,
-            @RequestBody Map<String, String> body,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
+            @Parameter(description = "Contenu du résumé") @RequestBody Map<String, String> body,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -102,9 +112,10 @@ public class ContextController {
     }
 
     @PostMapping("/{meetingId}/transcript")
+    @Operation(summary = "Ajouter un extrait de transcription", description = "Ajoute un extrait de transcription à une réunion")
     public ResponseEntity<MeetingContext> addTranscriptChunk(
-            @PathVariable UUID meetingId,
-            @RequestBody MeetingContext.TranscriptChunk chunk,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
+            @Parameter(description = "Extrait de transcription") @RequestBody MeetingContext.TranscriptChunk chunk,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -115,9 +126,10 @@ public class ContextController {
     }
 
     @PostMapping("/{meetingId}/decisions")
+    @Operation(summary = "Ajouter une décision", description = "Ajoute une décision prise lors d'une réunion")
     public ResponseEntity<MeetingContext> addDecision(
-            @PathVariable UUID meetingId,
-            @RequestBody CreateDecisionRequest request,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
+            @Parameter(description = "Détails de la décision") @RequestBody CreateDecisionRequest request,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -128,9 +140,10 @@ public class ContextController {
     }
 
     @PostMapping("/{meetingId}/tasks")
+    @Operation(summary = "Ajouter une référence de tâche", description = "Associe une tâche à une réunion")
     public ResponseEntity<MeetingContext> addTaskReference(
-            @PathVariable UUID meetingId,
-            @RequestBody Map<String, UUID> body,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
+            @Parameter(description = "ID de la tâche") @RequestBody Map<String, UUID> body,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -141,9 +154,10 @@ public class ContextController {
     }
 
     @PatchMapping("/{meetingId}/status")
+    @Operation(summary = "Mettre à jour le statut", description = "Met à jour le statut d'une réunion")
     public ResponseEntity<MeetingContext> updateMeetingStatus(
-            @PathVariable UUID meetingId,
-            @RequestBody Map<String, String> body,
+            @Parameter(description = "ID de la réunion") @PathVariable UUID meetingId,
+            @Parameter(description = "Nouveau statut") @RequestBody Map<String, String> body,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -154,12 +168,13 @@ public class ContextController {
     }
 
     @GetMapping("/search")
+    @Operation(summary = "Rechercher des contextes", description = "Recherche des contextes de réunion par mot-clé, groupe ou statut")
     public ResponseEntity<List<MeetingContext>> searchContexts(
-            @RequestParam String query,
-            @RequestParam(required = false) UUID groupId,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false, defaultValue = "10") int limit,
-            @RequestParam(required = false, defaultValue = "0") int offset,
+            @Parameter(description = "Mot-clé de recherche") @RequestParam String query,
+            @Parameter(description = "Filtrer par groupe") @RequestParam(required = false) UUID groupId,
+            @Parameter(description = "Filtrer par statut") @RequestParam(required = false) String status,
+            @Parameter(description = "Limite de résultats") @RequestParam(required = false, defaultValue = "10") int limit,
+            @Parameter(description = "Offset pour pagination") @RequestParam(required = false, defaultValue = "0") int offset,
             Authentication authentication) {
         List<UUID> userTweenIds = new ArrayList<>();
         if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
@@ -170,7 +185,8 @@ public class ContextController {
     }
 
     @GetMapping("/{meetingId}/snapshot")
-    public ResponseEntity<AggregatedSnapshot> getAggregatedSnapshot(@PathVariable String meetingId) {
+    @Operation(summary = "Obtenir un snapshot agrégé", description = "Récupère un snapshot agrégé des données d'une réunion")
+    public ResponseEntity<AggregatedSnapshot> getAggregatedSnapshot(@Parameter(description = "ID de la réunion") @PathVariable String meetingId) {
         return ResponseEntity.ok(contextService.getAggregatedSnapshot(meetingId));
     }
 }

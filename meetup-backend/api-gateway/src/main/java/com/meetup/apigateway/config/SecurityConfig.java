@@ -40,6 +40,7 @@ public class SecurityConfig {
                              "/api/auth/verify-email", "/api/auth/request-password-reset",
                              "/api/auth/reset-password").permitAll()
                 .pathMatchers("/actuator/**").permitAll()
+                .pathMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                 .anyExchange().permitAll()
             );
 
