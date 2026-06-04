@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ const navItems = [
   { title: "Summary", path: "/summary", icon: ClipboardCheck },
   { title: "Task Board", path: "/tasks/board", icon: ListTodo },
   { title: "Groups", path: "/groups", icon: Users },
+  { title: "Activity", path: "/activity", icon: Activity },
   { title: "Memory", path: "/memory", icon: Clock },
   { title: "Graph", path: "/graph", icon: Network },
   { title: "Profile", path: "/profile", icon: User },
