@@ -10,8 +10,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMeetingStore } from "@/store/meetingStore";
 import { useTaskStore } from "@/store/taskStore";
 
-const TASK_CONTEXT_ID = "project-123";
-
 export const Route = createFileRoute("/groups_/form")({
   component: FormGroupPage,
 });
@@ -45,10 +43,12 @@ function FormGroupPage() {
   ]);
 
   useEffect(() => {
-    if (tasks.length === 0 && !tasksLoading) {
-      void fetchTasks(TASK_CONTEXT_ID);
+    // Use the selected meeting ID as the context ID for tasks
+    const contextId = selectedMeeting?.id || meetingId;
+    if (contextId && tasks.length === 0 && !tasksLoading) {
+      void fetchTasks(contextId);
     }
-  }, [fetchTasks, tasks.length, tasksLoading]);
+  }, [fetchTasks, tasks.length, tasksLoading, selectedMeeting?.id, meetingId]);
 
   const formMutation = useMutation({
     mutationFn: () => {

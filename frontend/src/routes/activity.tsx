@@ -48,17 +48,24 @@ function ActivityPage() {
     return isMember || isLead;
   });
 
-  // Fetch task details for each group's task
-  const contextId = "default"; // You may need to adjust this based on your context logic
-  
-  // Fetch tasks for the context
-  const { data: tasksResponse, isLoading: tasksLoading } = useQuery({
-    queryKey: ["tasks", contextId],
-    queryFn: () => taskApi.getAll(contextId),
-    enabled: !!contextId,
+  // Extract unique meeting IDs from user groups
+  const meetingIds = [...new Set(userGroups.map((group) => group.meeting?.meeting?.id).filter(Boolean))];
+
+  // Fetch tasks for each unique meeting context
+  const { data: tasksResponses, isLoading: tasksLoading } = useQuery({
+    queryKey: ["tasks", "multiple", meetingIds],
+    queryFn: async () => {
+      if (meetingIds.length === 0) return [];
+      const tasksPromises = meetingIds.map((meetingId) => 
+        taskApi.getAll(meetingId).catch(() => ({ data: [] }))
+      );
+      const responses = await Promise.all(tasksPromises);
+      return responses.flatMap((response) => response.data || []);
+    },
+    enabled: meetingIds.length > 0,
   });
 
-  const tasks = tasksResponse?.data || [];
+  const tasks = tasksResponses || [];
 
   const handleLeaveGroup = async (groupId: string) => {
     if (!user?.id) return;
