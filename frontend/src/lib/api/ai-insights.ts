@@ -2,11 +2,16 @@ import type { AiMeetingContext, InsightResponse } from "@/types/ai-service";
 import { createApiClient } from "../axiosUtils";
 import axios from "axios";
 
-const aiClient = axios.create({
-  baseURL: import.meta.env.VITE_AI_API_URL ?? "http://localhost:8087/api/ai",
-  headers: { "Content-Type": "application/json" },
-  timeout: 30_000,
-});
+// const aiClient = axios.create({
+//   baseURL: import.meta.env.VITE_AI_API_URL ?? "http://localhost:8087/api/ai",
+//   headers: { "Content-Type": "application/json" },
+//   timeout: 30_000,
+// });
+
+const aiClient = createApiClient(
+  import.meta.env.VITE_AI_API_URL ?? "http://localhost:8085/api/ai",
+  import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:8085/api/auth",
+);
 
 export const aiInsightApi = {
   full: (context: AiMeetingContext) =>
