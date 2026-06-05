@@ -15,6 +15,7 @@ public class RabbitMQConfig {
     public static final String MEETING_STARTED_ROUTING_KEY = "meeting.started";
     public static final String MEETING_ENDED_ROUTING_KEY = "meeting.ended";
     public static final String SUBMEETING_SPAWNED_ROUTING_KEY = "submeeting.spawned";
+    public static final String PARTICIPANT_ADDED_ROUTING_KEY = "participant.added";
 
     @Bean
     public MessageConverter converter() {

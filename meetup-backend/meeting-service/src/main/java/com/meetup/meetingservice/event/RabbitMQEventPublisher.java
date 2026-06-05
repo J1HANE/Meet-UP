@@ -30,4 +30,13 @@ public class RabbitMQEventPublisher {
             event
         );
     }
+
+    public void publishParticipantAdded(ParticipantAddedEvent event) {
+        log.info("Publishing ParticipantAddedEvent for meeting: {} to participant: {}", event.getMeetingId(), event.getParticipantEmail());
+        rabbitTemplate.convertAndSend(
+            RabbitMQConfig.MEETING_EVENTS_EXCHANGE,
+            RabbitMQConfig.PARTICIPANT_ADDED_ROUTING_KEY,
+            event
+        );
+    }
 }

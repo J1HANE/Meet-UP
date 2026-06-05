@@ -65,6 +65,7 @@ public class PersistenceMeetingRepositoryAdapter implements MeetingRepository {
         entity.setStreamChannelType(meeting.getStreamChannelType());
         entity.setCreatedAt(meeting.getCreatedAt());
         entity.setUpdatedAt(meeting.getUpdatedAt());
+        entity.setNotes(meeting.getNotes());
 
         entity.setParticipants(new ArrayList<>());
         for (MeetingParticipant participant : meeting.getParticipants()) {
@@ -133,6 +134,7 @@ public class PersistenceMeetingRepositoryAdapter implements MeetingRepository {
         meeting.setStreamChannelType(entity.getStreamChannelType());
         meeting.setCreatedAt(entity.getCreatedAt());
         meeting.setUpdatedAt(entity.getUpdatedAt());
+        meeting.setNotes(entity.getNotes());
 
         entity.getParticipants().forEach(participantEntity -> {
             MeetingParticipant participant = new MeetingParticipant();

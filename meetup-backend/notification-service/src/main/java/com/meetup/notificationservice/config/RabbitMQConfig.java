@@ -14,12 +14,14 @@ public class RabbitMQConfig {
 
     // Exchange name — all publishers route to this
     public static final String EXCHANGE = "notifications.exchange";
+    public static final String MEETING_EVENTS_EXCHANGE = "meeting-events-exchange";
 
     // Queue names
     public static final String EMAIL_QUEUE = "notifications.email";
     public static final String SMS_QUEUE   = "notifications.sms";
     public static final String PUSH_QUEUE  = "notifications.push";
     public static final String DLQ         = "notifications.dlq";
+    public static final String MEETING_EVENTS_QUEUE = "meeting.events.queue";
 
     // Routing keys publishers use
     public static final String EMAIL_ROUTING_KEY = "notifications.email";
@@ -29,6 +31,11 @@ public class RabbitMQConfig {
     @Bean
     public TopicExchange notificationsExchange() {
         return new TopicExchange(EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange meetingEventsExchange() {
+        return new TopicExchange(MEETING_EVENTS_EXCHANGE);
     }
 
     // --- Queues ---
@@ -63,6 +70,11 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(DLQ).build();
     }
 
+    @Bean
+    public Queue meetingEventsQueue() {
+        return QueueBuilder.durable(MEETING_EVENTS_QUEUE).build();
+    }
+
     // --- Bindings (queue → exchange via routing key) ---
 
     @Bean
@@ -78,6 +90,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding pushBinding(Queue pushQueue, TopicExchange notificationsExchange) {
         return BindingBuilder.bind(pushQueue).to(notificationsExchange).with(PUSH_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding meetingEventsBinding(Queue meetingEventsQueue, TopicExchange meetingEventsExchange) {
+        return BindingBuilder.bind(meetingEventsQueue).to(meetingEventsExchange).with("participant.#");
     }
 
 

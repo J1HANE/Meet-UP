@@ -20,6 +20,7 @@ public record MeetingResponse(
         String streamChannelType,
         Instant createdAt,
         Instant updatedAt,
-        List<ParticipantResponse> participants
+        List<ParticipantResponse> participants,
+        String notes
 ) {
 }

@@ -71,6 +71,9 @@ public class MeetingEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("joinedAt ASC")
     private List<MeetingParticipantEntity> participants = new ArrayList<>();
@@ -213,6 +216,14 @@ public class MeetingEntity {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public List<MeetingParticipantEntity> getParticipants() {

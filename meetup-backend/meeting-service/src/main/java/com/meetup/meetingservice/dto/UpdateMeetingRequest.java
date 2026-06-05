@@ -7,6 +7,7 @@ import java.time.Instant;
 public record UpdateMeetingRequest(
         String title,
         Instant scheduledAt,
-        MeetingStatus status
+        MeetingStatus status,
+        String notes
 ) {
 }

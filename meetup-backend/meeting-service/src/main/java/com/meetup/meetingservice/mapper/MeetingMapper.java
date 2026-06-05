@@ -39,7 +39,8 @@ public class MeetingMapper {
                 meeting.getStreamChannelType(),
                 meeting.getCreatedAt(),
                 meeting.getUpdatedAt(),
-                toParticipantResponses(meeting)
+                toParticipantResponses(meeting),
+                meeting.getNotes()
         );
     }
 

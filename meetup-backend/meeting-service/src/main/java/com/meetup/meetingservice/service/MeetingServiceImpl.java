@@ -13,6 +13,7 @@ import com.meetup.meetingservice.dto.RemoveParticipantRequest;
 import com.meetup.meetingservice.dto.UpdateMeetingRequest;
 import com.meetup.meetingservice.event.MeetingEndedEvent;
 import com.meetup.meetingservice.event.MeetingStartedEvent;
+import com.meetup.meetingservice.event.ParticipantAddedEvent;
 import com.meetup.meetingservice.event.RabbitMQEventPublisher;
 import com.meetup.meetingservice.exception.MeetingNotFoundException;
 import com.meetup.meetingservice.exception.MeetingValidationException;
@@ -157,6 +158,9 @@ public class MeetingServiceImpl implements MeetingService {
                     LocalDateTime.ofInstant(meeting.getEndedAt(), ZoneId.systemDefault())
                 ));
             }
+        }
+        if (request.notes() != null) {
+            meeting.setNotes(request.notes());
         }
 
         meeting.setUpdatedAt(Instant.now());
@@ -318,6 +322,10 @@ public class MeetingServiceImpl implements MeetingService {
         }
     }
 
+    private String buildMeetingLink(UUID meetingId) {
+        return "http://localhost:5173/meeting/" + meetingId;
+    }
+
     @Override
     public ParticipantResponse addParticipant(UUID meetingId, AddParticipantRequest request) {
         Meeting meeting = getMeetingOrThrow(meetingId);
@@ -333,6 +341,31 @@ public class MeetingServiceImpl implements MeetingService {
         );
         meeting.setUpdatedAt(Instant.now());
         meetingRepository.save(meeting);
+
+        // Publish participant added event for email notification
+        if (request.email() != null && !request.email().isBlank()) {
+            String hostName = meeting.getParticipants().stream()
+                    .filter(p -> p.getRole() == ParticipantRole.HOST)
+                    .findFirst()
+                    .map(MeetingParticipant::getDisplayName)
+                    .orElse("Host");
+
+            String meetingLink = buildMeetingLink(meeting.getId());
+
+            ParticipantAddedEvent event = new ParticipantAddedEvent(
+                    meeting.getId().toString(),
+                    meeting.getTitle(),
+                    request.email(),
+                    effectiveUserName,
+                    hostName,
+                    meeting.getScheduledAt() != null 
+                            ? LocalDateTime.ofInstant(meeting.getScheduledAt(), ZoneId.systemDefault())
+                            : null,
+                    meetingLink
+            );
+            eventPublisher.publishParticipantAdded(event);
+        }
+
         return meetingMapper.toParticipantResponse(participant);
     }
 

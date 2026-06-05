@@ -28,19 +28,47 @@ public class EmailNotificationStrategy implements NotificationStrategy {
 
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(to);
-        mail.setSubject(buildSubject(message.getEvent()));
+        mail.setSubject(buildSubject(message));
         mail.setText(buildBody(message));
 
         mailSender.send(mail);
         log.info("Email sent to {} for event {}", to, message.getEvent());
     }
 
-    private String buildSubject(String event) {
-        // You'll want a proper template engine here later (Thymeleaf, Freemarker)
-        return "Notification: " + event;
+    private String buildSubject(NotificationMessage message) {
+        if ("participant.added".equals(message.getEvent())) {
+            return "You've been invited to join a meeting";
+        }
+        return "Notification: " + message.getEvent();
     }
 
     private String buildBody(NotificationMessage message) {
+        if ("participant.added".equals(message.getEvent())) {
+            return buildMeetingInvitationBody(message);
+        }
         return "Event: " + message.getEvent() + "\nDetails: " + message.getData().toString();
+    }
+
+    private String buildMeetingInvitationBody(NotificationMessage message) {
+        StringBuilder body = new StringBuilder();
+        body.append("You've been invited to join a meeting!\n\n");
+        
+        if (message.getData() != null) {
+            if (message.getData().containsKey("meetingTitle")) {
+                body.append("Meeting: ").append(message.getData().get("meetingTitle")).append("\n");
+            }
+            if (message.getData().containsKey("hostName")) {
+                body.append("Hosted by: ").append(message.getData().get("hostName")).append("\n");
+            }
+            if (message.getData().containsKey("scheduledAt")) {
+                body.append("Scheduled at: ").append(message.getData().get("scheduledAt")).append("\n");
+            }
+            if (message.getData().containsKey("meetingLink")) {
+                body.append("\nJoin the meeting at: ").append(message.getData().get("meetingLink")).append("\n");
+            }
+        }
+        
+        body.append("\nWe hope to see you there!");
+        return body.toString();
     }
 }

@@ -27,6 +27,7 @@ public class Meeting {
     private final List<MeetingChatMessage> chatMessages = new ArrayList<>();
     private final List<TranscriptSegment> transcriptSegments = new ArrayList<>();
     private final List<MeetingDecision> decisions = new ArrayList<>();
+    private String notes;
 
     public UUID getId() {
         return id;
@@ -170,5 +171,13 @@ public class Meeting {
 
     public List<MeetingDecision> getDecisions() {
         return decisions;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }
