@@ -164,7 +164,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -199,7 +200,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -229,7 +231,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8091/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8091/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -264,7 +267,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -295,7 +299,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -308,25 +313,62 @@ services:
       dockerfile: Dockerfile
     container_name: ai-service
     ports:
-      - "8088:8087"
+      - "8087:8087"
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - CONTEXT_SERVICE_URL=http://context-service:8084
       - TASK_SERVICE_URL=http://task-service:8091
       - AI_PROVIDER=ollama
-      - OLLAMA_BASE_URL=http://localhost:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
     depends_on:
       redis:
+        condition: service_healthy
+      ollama:
         condition: service_healthy
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 150s
+
+  ollama:
+    image: ollama/ollama
+    container_name: meetup-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - meet-up
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  ollama-init:
+    image: ollama/ollama
+    container_name: meetup-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: >
+      /bin/sh -c "
+        ollama pull qwen2.5:1.5b
+      "
+    networks:
+      - meet-up
 
   # Tweening Service
   tweening-service:
@@ -353,7 +395,8 @@ services:
     networks:
       - meet-up
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -367,3 +410,4 @@ volumes:
   jwt_keys:
   neo4j_data:
   rabbitmq_data:
+  ollama_data:

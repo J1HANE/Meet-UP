@@ -57,24 +57,36 @@ function InsightsDashboard() {
   const data = taskAnalysis;
 
   if (taskAnalysisLoading)
-    return <LoadingSpinner label='Getting Insights.......' fullScreen />;
+    // return <LoadingSpinner label='Getting Insights.......' fullScreen />;
+    return (
+      <div className='min-h-screen bg-background'>
+        <TaskHeader userId={user?.id} userName={user?.displayName} />
+        <LoadingSpinner label='Getting Insights.......' />;
+      </div>
+    );
 
   if (data == null)
     return (
-      <NoData
-        title='No Insights'
-        description='Come back later!'
-        icon='folder'
-      />
+      <div className='min-h-screen bg-background'>
+        <TaskHeader userId={user?.id} userName={user?.displayName} />
+        <NoData
+          title='No Insights'
+          description='Come back later!'
+          icon='folder'
+        />
+      </div>
     );
 
   if (taskAnalysisError != null)
     return (
-      <ErrorDisplay
-        title='Error analysing tasks.'
-        message={taskAnalysisError}
-        variant='default'
-      />
+      <div className='min-h-screen bg-background'>
+        <TaskHeader userId={user?.id} userName={user?.displayName} />
+        <ErrorDisplay
+          title='Error analysing tasks.'
+          message={taskAnalysisError}
+          variant='default'
+        />
+      </div>
     );
 
   const filteredInsights = data.insights.filter((insight) => {
