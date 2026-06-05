@@ -31,7 +31,7 @@ const availableTopics = [
 ];
 
 function ProfilePage() {
-  const { user, isAuthenticated, logout, updateProfile, changePassword, deleteAccount, sendEmailVerification } = useAuth();
+  const { user, isAuthenticated, logout, updateProfile, changePassword, deleteAccount, sendEmailVerification, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -61,6 +61,11 @@ function ProfilePage() {
     confirmPassword: "",
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Refresh user data on mount
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   // Initialize form with user data
   useEffect(() => {

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/verify-email")({
 });
 
 function VerifyEmail() {
-  const { verifyEmail } = useAuth();
+  const { verifyEmail, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { token: urlToken } = useSearch({ from: "/verify-email" });
   const [token, setToken] = useState(urlToken ?? "");
@@ -32,6 +32,7 @@ function VerifyEmail() {
     setError("");
     try {
       await verifyEmail(t);
+      await refreshUser();
       setSuccess(true);
       setTimeout(() => navigate({ to: "/login", replace: true }), 2000);
     } catch (err) {

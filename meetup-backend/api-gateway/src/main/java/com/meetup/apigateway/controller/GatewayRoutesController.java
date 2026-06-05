@@ -64,7 +64,7 @@ public class GatewayRoutesController {
         return routes;
     }
 
-    @GetMapping("/meetings/**")
+    @GetMapping("/meetings/**/**")
     @Operation(summary = "Meeting Service Routes", description = "Routes vers le Meeting Service (port 8083)")
     public Map<String, String> meetingRoutes() {
         Map<String, String> routes = new HashMap<>();
@@ -80,7 +80,7 @@ public class GatewayRoutesController {
         return routes;
     }
 
-    @GetMapping("/notifications/**")
+    @GetMapping("/notifications")
     @Operation(summary = "Notification Service Routes", description = "Routes vers le Notification Service")
     public Map<String, String> notificationRoutes() {
         Map<String, String> routes = new HashMap<>();
@@ -92,7 +92,7 @@ public class GatewayRoutesController {
         return routes;
     }
 
-    @GetMapping("/ai/**")
+    @GetMapping("/ai")
     @Operation(summary = "AI Service Routes", description = "Routes vers le AI Service")
     public Map<String, String> aiRoutes() {
         Map<String, String> routes = new HashMap<>();

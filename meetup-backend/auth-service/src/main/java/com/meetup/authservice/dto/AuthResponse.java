@@ -29,5 +29,18 @@ public class AuthResponse {
         private String email;
         private String displayName;
         private List<String> roles;
+        private List<UUID> tweenIds;
+        private boolean active;
+        private String bio;
+        private String location;
+        private String recoveryEmail;
+        private String avatarUrl;
+        private String phone;
+        private List<String> topics;
+        private boolean meetingReminders;
+        private boolean taskDigest;
+        private boolean profileVisibility;
+        private boolean twoFactorEnabled;
+        private boolean emailVerified;
     }
 }

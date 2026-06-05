@@ -54,7 +54,7 @@ function SummaryPage() {
     listMeetingsFromApi()
       .then((data) => {
         if (!cancelled) {
-          setMeetings(data);
+          setMeetings(Array.isArray(data) ? data : []);
           setMeetingsError(null);
         }
       })
@@ -75,7 +75,7 @@ function SummaryPage() {
     };
   }, []);
 
-  const selectedMeeting = meetings.find((m) => m.id === meetingId);
+  const selectedMeeting = Array.isArray(meetings) ? meetings.find((m) => m.id === meetingId) : undefined;
 
   if (!selectedMeeting) {
     return (
