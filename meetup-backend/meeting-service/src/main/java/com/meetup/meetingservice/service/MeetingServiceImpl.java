@@ -105,7 +105,13 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     @Transactional(readOnly = true)
     public List<MeetingResponse> getMeetings() {
+        java.util.UUID currentUserId = currentUserService.getCurrentUserId().orElse(null);
+        if (currentUserId == null) {
+            return List.of();
+        }
         return meetingRepository.findAll().stream()
+                .filter(meeting -> meeting.getParticipants().stream()
+                        .anyMatch(participant -> participant.getUserId().equals(currentUserId)))
                 .map(meetingMapper::toResponse)
                 .toList();
     }

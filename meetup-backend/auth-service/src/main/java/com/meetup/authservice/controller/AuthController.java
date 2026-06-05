@@ -175,4 +175,9 @@ public class AuthController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID userId) {
         return ResponseEntity.ok(authService.getUserById(userId));
     }
+
+    @GetMapping("/users/by-email")
+    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
+        return ResponseEntity.ok(authService.getCurrentUser(email));
+    }
 }

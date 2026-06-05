@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8085/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8085/api";
 const CONTEXT_API_URL = import.meta.env.VITE_CONTEXT_API_URL || "http://localhost:8085/api/context";
 
 export interface LoginRequest {
@@ -213,6 +213,21 @@ class ApiClient {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to get user");
+    }
+
+    return response.json();
+  }
+
+  async getUserByEmail(token: string, email: string): Promise<UserResponse> {
+    const response = await this.fetchWithRefresh(
+      `${API_BASE_URL}/auth/users/by-email?email=${encodeURIComponent(email)}`,
+      { method: "GET", headers: this.getHeaders(token) },
+      token
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || "Failed to find user by email");
     }
 
     return response.json();
@@ -597,6 +612,7 @@ export const authApi = {
   logout: (refreshToken: string, accessToken: string) => api.logout(refreshToken, accessToken),
   refreshToken: (refreshToken: string) => api.refreshToken(refreshToken),
   getCurrentUser: (token: string) => api.getCurrentUser(token),
+  getUserByEmail: (token: string, email: string) => api.getUserByEmail(token, email),
   updateProfile: (token: string, data: UpdateProfileRequest) => api.updateProfile(token, data),
   changePassword: (token: string, data: ChangePasswordRequest) => api.changePassword(token, data),
   sendEmailVerification: (token: string) => api.sendEmailVerification(token),

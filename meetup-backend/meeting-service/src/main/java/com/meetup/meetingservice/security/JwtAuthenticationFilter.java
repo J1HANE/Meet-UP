@@ -36,11 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(gatewayUserId)) {
             try {
                 String email = request.getHeader("X-User-Email");
+                String displayName = request.getHeader("X-User-Name");
                 List<String> roles = parseCommaSeparated(request.getHeader("X-User-Roles"));
                 AuthenticatedUser authenticatedUser = new AuthenticatedUser(
                         UUID.fromString(gatewayUserId.trim()),
                         email,
-                        null,
+                        displayName,
                         roles,
                         parseCommaSeparatedUuids(request.getHeader("X-User-TweenIds"))
                 );

@@ -53,6 +53,7 @@ class JwtAuthFilterTest {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", UUID.randomUUID().toString());
         claims.put("type", "access");
+        claims.put("displayName", "Test User");
         
         validToken = Jwts.builder()
                 .claims(claims)
@@ -189,7 +190,9 @@ class JwtAuthFilterTest {
         when(chain.filter(any(ServerWebExchange.class))).thenAnswer(invocation -> {
             ServerWebExchange capturedExchange = invocation.getArgument(0);
             String userIdHeader = capturedExchange.getRequest().getHeaders().getFirst("X-User-Id");
+            String userNameHeader = capturedExchange.getRequest().getHeaders().getFirst("X-User-Name");
             assertNotNull(userIdHeader);
+            assertEquals("Test User", userNameHeader);
             return Mono.empty();
         });
 

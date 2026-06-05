@@ -188,9 +188,7 @@ export function CreateMeetingDialog({
                 Add member
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              You are added as host automatically. Add teammates by name (user ID optional).
-            </p>
+            <p className="text-xs text-muted-foreground">You are added as host automatically. Add teammates by name (email optional).</p>
 
             <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
               {members.map((member, index) => (
@@ -225,7 +223,7 @@ export function CreateMeetingDialog({
                         )
                       }
                       className={inputClass}
-                      placeholder="User ID (optional)"
+                      placeholder="Email (optional)"
                     />
                   </div>
                   <Button
