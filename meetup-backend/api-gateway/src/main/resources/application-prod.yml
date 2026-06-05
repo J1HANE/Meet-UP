@@ -43,7 +43,7 @@ spring:
             - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
         - id: notification-service
-          uri: http://notification-service:8087
+          uri: http://notification-service:8088
           predicates:
             - Path=/api/notifications/**
           filters:

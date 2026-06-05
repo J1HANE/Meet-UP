@@ -2,21 +2,15 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
-    // Avoid localStorage access during SSR
+    // SSR: default to landing, client will re-evaluate
     if (typeof window === "undefined") {
-      return;
+      throw redirect({ to: "/landing" });
     }
 
     const token = localStorage.getItem("meetup_access_token");
 
-    if (!token) {
-      throw redirect({
-        to: "/landing",
-      });
-    }
-
     throw redirect({
-      to: "/dashboard",
+      to: token ? "/dashboard" : "/landing",
     });
   },
 
