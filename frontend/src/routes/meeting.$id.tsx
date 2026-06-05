@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Bot,
+  Check,
   Clock3,
+  Copy,
   FileText,
   LoaderCircle,
   MessageSquare,
@@ -16,11 +18,13 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { MeetingStreamSession } from "@/components/meeting/MeetingStreamSession";
 import { chatClient, ChatMessage } from "@/lib/chat";
 import {
   addParticipantApi,
   getMeetingByIdFromApi,
+  isUuid,
   joinMeetingApi,
   MeetingApiError,
   removeParticipantApi,
@@ -122,7 +126,14 @@ function toViewModelFromBackend(meeting: BackendMeetingResponse): MeetingPageVie
   };
 }
 
-function resolveMeetingIdentity(meeting: BackendMeetingResponse): MeetingIdentity {
+function resolveMeetingIdentity(meeting: BackendMeetingResponse, user: any): MeetingIdentity {
+  if (user) {
+    return {
+      userId: user.id,
+      userName: user.displayName || user.email || "User",
+    };
+  }
+
   const storedUserId = getMeetingUserId();
   const storedUserName = getMeetingUserName();
   const storedParticipant = meeting.participants.find((participant) => participant.userId === storedUserId);
@@ -169,10 +180,14 @@ export const Route = createFileRoute("/meeting/$id")({
 
 function MeetingRoomPage() {
   const { id } = Route.useParams();
+  const { user } = useAuth();
+
+  const userId = user?.id || getMeetingUserId();
+  const userName = user?.displayName || user?.email || getMeetingUserName();
 
   const { data: backendMeeting, isLoading, isError, error } = useQuery({
-    queryKey: ["meeting", id],
-    queryFn: () => getMeetingByIdFromApi(id, getMeetingUserId(), getMeetingUserName()),
+    queryKey: ["meeting", id, userId, userName],
+    queryFn: () => getMeetingByIdFromApi(id, userId, userName),
     retry: (failureCount, err) => {
       if (err instanceof MeetingApiError && err.status === 404) {
         return false;
@@ -223,6 +238,7 @@ function MeetingRoomPage() {
 function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"assistant" | "chat">("assistant");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -236,11 +252,12 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantThinking, setIsAssistantThinking] = useState(false);
   const [identity, setIdentity] = useState<MeetingIdentity>(() => ({
-    userId: getMeetingUserId(),
-    userName: getMeetingUserName(),
+    userId: user?.id || getMeetingUserId(),
+    userName: user?.displayName || user?.email || getMeetingUserName(),
   }));
+  const [copiedLink, setCopiedLink] = useState(false);
   const [showAddParticipant, setShowAddParticipant] = useState(false);
-  const [newParticipantId, setNewParticipantId] = useState("");
+  const [newParticipantEmail, setNewParticipantEmail] = useState("");
   const [newParticipantName, setNewParticipantName] = useState("");
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
   const [isRemovingParticipant, setIsRemovingParticipant] = useState(false);
@@ -261,7 +278,7 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
     refetchInterval: 2000,
   });
 
-  const preferredIdentity = liveMeeting ? resolveMeetingIdentity(liveMeeting) : identity;
+  const preferredIdentity = liveMeeting ? resolveMeetingIdentity(liveMeeting, user) : identity;
   const identityNeedsSync =
     preferredIdentity.userId !== identity.userId ||
     preferredIdentity.userName !== identity.userName;
@@ -381,21 +398,25 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   };
 
   const handleAddParticipant = async () => {
-    if (!newParticipantId.trim() || isAddingParticipant) return;
+    if (!newParticipantEmail.trim() || isAddingParticipant) return;
 
     setIsAddingParticipant(true);
     try {
+      const email = newParticipantEmail.trim();
+      const name = newParticipantName.trim();
+      const resolvedId = email && isUuid(email) ? email : crypto.randomUUID();
+      
       await addParticipantApi(
         meeting.id,
         {
-          userId: newParticipantId,
-          userName: newParticipantName || `User ${newParticipantId.slice(0, 8)}`,
+          userId: resolvedId,
+          userName: name || email || `User ${resolvedId.slice(0, 8)}`,
         },
         identity.userId,
         identity.userName,
       );
       await queryClient.invalidateQueries({ queryKey: ["meeting", meeting.id] });
-      setNewParticipantId("");
+      setNewParticipantEmail("");
       setNewParticipantName("");
       setShowAddParticipant(false);
     } catch (error) {
@@ -424,6 +445,17 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
     }
   };
 
+  const handleCopyInviteLink = async () => {
+    try {
+      const inviteUrl = `${window.location.origin}/meeting/${meeting.id}`;
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -446,6 +478,23 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
           <div className="rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-xs font-medium text-primary">
             {meeting.status}
           </div>
+          <Button
+            onClick={handleCopyInviteLink}
+            variant="outline"
+            className="gap-2 border-border bg-background hover:bg-muted text-foreground"
+          >
+            {copiedLink ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-500" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copy Link
+              </>
+            )}
+          </Button>
           <Button asChild className="bg-orange-500 text-slate-950 hover:bg-orange-400">
             <Link to="/summary" search={{ meetingId: meeting.summaryLinkMeetingId }}>
               Open summary
@@ -478,21 +527,21 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
               <div className="mb-3 space-y-2 rounded-xl border border-border/60 bg-muted/10 p-3">
                 <input
                   type="text"
-                  value={newParticipantId}
-                  onChange={(e) => setNewParticipantId(e.target.value)}
-                  placeholder="Participant ID (UUID)"
+                  value={newParticipantEmail}
+                  onChange={(e) => setNewParticipantEmail(e.target.value)}
+                  placeholder="Email (optional)"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <input
                   type="text"
                   value={newParticipantName}
                   onChange={(e) => setNewParticipantName(e.target.value)}
-                  placeholder="Participant name (optional)"
+                  placeholder="Display name"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <Button
                   onClick={handleAddParticipant}
-                  disabled={!newParticipantId.trim() || isAddingParticipant}
+                  disabled={!newParticipantEmail.trim() || isAddingParticipant}
                   size="sm"
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
@@ -541,23 +590,7 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-border bg-card p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <Clock3 className="w-4 h-4 text-primary" />
-              <h3 className="font-heading text-sm font-semibold text-foreground">Live Task Pulse</h3>
-            </div>
-            <div className="space-y-2 text-xs text-muted-foreground">
-              {meeting.openTasks.length === 0 ? (
-                <div className="rounded-xl bg-muted/20 px-3 py-2">No linked tasks yet.</div>
-              ) : (
-                meeting.openTasks.map((task) => (
-                  <div key={task.title} className="rounded-xl bg-muted/20 px-3 py-2">
-                    {task.title}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
