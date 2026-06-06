@@ -35,4 +35,6 @@ public interface MeetingService {
     ParticipantResponse addParticipant(UUID meetingId, AddParticipantRequest request);
 
     void removeParticipant(UUID meetingId, RemoveParticipantRequest request);
+
+    MeetingResponse endMeeting(UUID meetingId);
 }

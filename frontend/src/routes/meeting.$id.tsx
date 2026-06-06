@@ -10,6 +10,7 @@ import {
   FileText,
   LoaderCircle,
   MessageSquare,
+  Pencil,
   Plus,
   Send,
   Trash2,
@@ -18,6 +19,15 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { MeetingStreamSession } from "@/components/meeting/MeetingStreamSession";
 import { chatClient, ChatMessage } from "@/lib/chat";
@@ -263,6 +273,10 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const [isRemovingParticipant, setIsRemovingParticipant] = useState(false);
   const [notes, setNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [showEditMeeting, setShowEditMeeting] = useState(false);
+  const [editMeetingTitle, setEditMeetingTitle] = useState("");
+  const [editMeetingScheduledAt, setEditMeetingScheduledAt] = useState("");
+  const [isSavingMeeting, setIsSavingMeeting] = useState(false);
   const [videoConfig, setVideoConfig] = useState<{
     api_key: string;
     call_id: string;
@@ -503,6 +517,58 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
     }
   };
 
+  const handleEditMeeting = () => {
+    setEditMeetingTitle(liveMeeting?.title || meeting.title);
+    // Convert ISO string to datetime-local format
+    if (liveMeeting?.scheduledAt) {
+      const date = new Date(liveMeeting.scheduledAt);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      setEditMeetingScheduledAt(`${year}-${month}-${day}T${hours}:${minutes}`);
+    } else {
+      setEditMeetingScheduledAt("");
+    }
+    setShowEditMeeting(true);
+  };
+
+  const handleSaveMeeting = async () => {
+    if (isSavingMeeting) return;
+    setIsSavingMeeting(true);
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        "X-User-Id": identity.userId,
+        "X-User-Name": identity.userName,
+      };
+      // Convert datetime-local format to ISO string
+      let scheduledAt = null;
+      if (editMeetingScheduledAt) {
+        scheduledAt = new Date(editMeetingScheduledAt).toISOString();
+      }
+      const response = await fetch(`http://localhost:8083/api/meetings/${meeting.id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ 
+          title: editMeetingTitle,
+          scheduledAt,
+        }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to save meeting: ${response.status} - ${errorText}`);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["meeting", meeting.id] });
+      setShowEditMeeting(false);
+    } catch (error) {
+      console.error("Failed to save meeting:", error);
+    } finally {
+      setIsSavingMeeting(false);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -514,7 +580,17 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground">{meeting.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-heading font-bold text-foreground">{meeting.title}</h1>
+              <Button
+                onClick={handleEditMeeting}
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {meeting.group} · {meeting.roomLabel} · {meeting.time}
             </p>
@@ -827,6 +903,55 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
           </div>
         </div>
       </div>
+
+      <Dialog open={showEditMeeting} onOpenChange={setShowEditMeeting}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Meeting</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Meeting Title</Label>
+              <Input
+                id="title"
+                value={editMeetingTitle}
+                onChange={(e) => setEditMeetingTitle(e.target.value)}
+                placeholder="Enter meeting title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="scheduledAt">Scheduled Time</Label>
+              <Input
+                id="scheduledAt"
+                type="datetime-local"
+                value={editMeetingScheduledAt}
+                onChange={(e) => setEditMeetingScheduledAt(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEditMeeting(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveMeeting}
+              disabled={isSavingMeeting}
+            >
+              {isSavingMeeting ? (
+                <>
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

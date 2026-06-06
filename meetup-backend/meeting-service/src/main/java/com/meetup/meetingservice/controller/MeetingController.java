@@ -103,4 +103,9 @@ public class MeetingController {
         meetingService.removeParticipant(meetingId, request);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{meetingId}/end")
+    public ResponseEntity<MeetingResponse> endMeeting(@PathVariable UUID meetingId) {
+        return ResponseEntity.ok(meetingService.endMeeting(meetingId));
+    }
 }

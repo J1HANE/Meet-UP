@@ -175,6 +175,20 @@ public class MeetingServiceImpl implements MeetingService {
                 ? "User " + request.userId()
                 : request.userName();
 
+        // Change status to ONGOING when first participant joins
+        if (meeting.getStatus() == MeetingStatus.SCHEDULED && meeting.getStartedAt() == null) {
+            meeting.setStatus(MeetingStatus.ONGOING);
+            meeting.setStartedAt(Instant.now());
+            // Publish MeetingStartedEvent
+            eventPublisher.publishMeetingStarted(new MeetingStartedEvent(
+                meeting.getId().toString(),
+                meeting.getTitle(),
+                meeting.getStreamCallType() != null ? meeting.getStreamCallType() : "SYNC",
+                LocalDateTime.ofInstant(meeting.getStartedAt(), ZoneId.systemDefault()),
+                meeting.getTweenId() != null ? meeting.getTweenId().toString() : null
+            ));
+        }
+
         if (meeting.getStreamCallId() == null || meeting.getStreamCallType() == null) {
             StreamVideoCall call = streamVideoClient.createCall(meeting.getId());
             meeting.setStreamCallId(call.callId());
@@ -383,5 +397,31 @@ public class MeetingServiceImpl implements MeetingService {
         
         meeting.setUpdatedAt(Instant.now());
         meetingRepository.save(meeting);
+    }
+
+    @Override
+    public MeetingResponse endMeeting(UUID meetingId) {
+        Meeting meeting = getMeetingOrThrow(meetingId);
+        
+        if (meeting.getStatus() == MeetingStatus.SCHEDULED) {
+            throw new MeetingValidationException("Cannot end a meeting that hasn't started");
+        }
+        
+        if (meeting.getStatus() == MeetingStatus.COMPLETED || meeting.getStatus() == MeetingStatus.CANCELLED) {
+            throw new MeetingValidationException("Meeting is already ended");
+        }
+        
+        meeting.setStatus(MeetingStatus.COMPLETED);
+        meeting.setEndedAt(Instant.now());
+        meeting.setUpdatedAt(Instant.now());
+        
+        // Publish MeetingEndedEvent
+        eventPublisher.publishMeetingEnded(new MeetingEndedEvent(
+            meeting.getId().toString(),
+            LocalDateTime.ofInstant(meeting.getEndedAt(), ZoneId.systemDefault())
+        ));
+        
+        meetingRepository.save(meeting);
+        return meetingMapper.toResponse(meeting);
     }
 }
