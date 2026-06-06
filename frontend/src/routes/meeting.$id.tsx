@@ -239,7 +239,7 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"assistant" | "chat">("assistant");
+  const [activeTab, setActiveTab] = useState<"assistant" | "chat" | "notes">("assistant");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [assistantMessages, setAssistantMessages] = useState<AssistantMessage[]>([
@@ -261,6 +261,8 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
   const [newParticipantName, setNewParticipantName] = useState("");
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
   const [isRemovingParticipant, setIsRemovingParticipant] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [videoConfig, setVideoConfig] = useState<{
     api_key: string;
     call_id: string;
@@ -277,6 +279,13 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
     queryFn: () => getMeetingByIdFromApi(meeting.id, identity.userId, identity.userName),
     refetchInterval: 2000,
   });
+
+  // Initialize notes from meeting data
+  useEffect(() => {
+    if (liveMeeting?.notes !== undefined) {
+      setNotes(liveMeeting.notes || "");
+    }
+  }, [liveMeeting?.notes]);
 
   const preferredIdentity = liveMeeting ? resolveMeetingIdentity(liveMeeting, user) : identity;
   const identityNeedsSync =
@@ -453,6 +462,44 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
       setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
       console.error("Failed to copy link:", err);
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    if (isSavingNotes) return;
+
+    setIsSavingNotes(true);
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-User-Id": identity.userId,
+        "X-User-Name": identity.userName,
+      };
+
+      console.log("Saving notes for meeting:", meeting.id, "notes:", notes);
+      
+      const response = await fetch(`http://localhost:8083/api/meetings/${meeting.id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ notes }),
+      });
+
+      console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to save notes:", response.status, errorText);
+        throw new Error(`Failed to save notes: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("Save result:", result);
+      
+      await queryClient.invalidateQueries({ queryKey: ["meeting", meeting.id] });
+    } catch (error) {
+      console.error("Failed to save notes:", error);
+    } finally {
+      setIsSavingNotes(false);
     }
   };
 
@@ -633,9 +680,48 @@ function MeetingRoom({ meeting }: { meeting: MeetingPageViewModel }) {
                 Chat
               </span>
             </button>
+            <button
+              onClick={() => setActiveTab("notes")}
+              className={`flex-1 py-3 text-xs font-medium transition-colors ${
+                activeTab === "notes" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
+              }`}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                Notes
+              </span>
+            </button>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
-            {activeTab === "assistant" ? (
+            {activeTab === "notes" ? (
+              <>
+                <div className="space-y-3">
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add your meeting notes here..."
+                    className="w-full h-64 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  />
+                  <Button
+                    onClick={handleSaveNotes}
+                    disabled={isSavingNotes}
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {isSavingNotes ? (
+                      <>
+                        <LoaderCircle className="h-4 w-4 animate-spin mr-2" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Save Notes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            ) : activeTab === "assistant" ? (
               <>
                 <div className="space-y-3">
                   {assistantMessages.map((message) => (

@@ -63,10 +63,27 @@ function BriefingDetail({ meetingId }: { meetingId: string }) {
     data: meeting,
     isLoading: isMeetingLoading,
     isError: isMeetingError,
+    refetch: refetchMeeting,
   } = useQuery({
-    queryKey: ["meeting", meetingId],
-    queryFn: () => getMeetingByIdFromApi(meetingId, user?.id, displayName),
+    queryKey: ["meeting", meetingId, user?.id, displayName],
+    queryFn: async () => {
+      // Fetch directly from meeting service to bypass API gateway caching
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-User-Id": user?.id || "",
+        "X-User-Name": displayName,
+      };
+      
+      const response = await fetch(`http://localhost:8083/api/meetings/${meetingId}`, {
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch meeting: ${response.status}`);
+      }
+      return response.json();
+    },
     enabled: Boolean(meetingId),
+    staleTime: 0, // Always fetch fresh data
   });
 
   // Fetch live context / briefing from context service
@@ -131,10 +148,10 @@ function BriefingDetail({ meetingId }: { meetingId: string }) {
     minute: "2-digit",
   });
 
-  const displayBriefing =
-    liveContext?.summary ||
-    liveContext?.topics?.join(", ") ||
-    "No briefing summary available yet. The AI-powered context will appear once the meeting session begins.";
+  const displayBriefing = meeting.notes || "No notes added yet. Add notes during the meeting to see them here.";
+  
+  console.log("Meeting data in briefing:", meeting);
+  console.log("Notes from meeting:", meeting.notes);
 
   const displayDecisions = liveContext?.decisions?.length
     ? liveContext.decisions.map((d: any) => d.text)

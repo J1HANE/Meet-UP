@@ -20,6 +20,7 @@ export interface BackendMeetingResponse {
   createdAt: string;
   updatedAt: string;
   participants: ParticipantResponse[];
+  notes?: string;
 }
 
 export interface BackendChatInfo {
